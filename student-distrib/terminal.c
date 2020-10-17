@@ -8,10 +8,6 @@
 #define KEYBOARD_IRQ 0x01
 #define KEYBOARD_PORT 0x60
 
-uint32_t table_index;
-uint32_t key_index;
-uint8_t key_buffer[MAX_BUFFER_LENGTH];
-
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',']', ' ', ' ',
