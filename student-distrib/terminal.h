@@ -12,6 +12,7 @@
 #define ATTRIB 0x7
 
 #define TABLE_OFFSET 2
+#define KEY_SIZE 104
 
 #include "types.h"
 #include "lib.h"
