@@ -3,7 +3,7 @@
 #include "terminal.h"
 #include "i8259.h"
 #include "lib.h"
-#include "86_desc.h"
+#include "x86_desc.h"
 
 #define KEYBOARD_IRQ 0x01
 #define KEYBOARD_PORT 0x60
@@ -19,21 +19,23 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
     'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'
 };
 
-/* terminal_close
+/* terminal_open
  *
  * Initialize terminal variables
  * Input - filename
  * Output - Return 0
  */
-void terminal_open(const uint8_t* filename)
+int32_t terminal_open(const uint8_t* filename)
 {
   /* Clear Terminal(s) */
+  clear_buffer(); // Sets keyboard_buffer and key_index
 
   /* Turn on Keyboard IRQ */
 
-  /* Initialize necessary variables */
+  /* Intiialize variables */
+  enter_down = 0;
+  table_index = 0;
 
-  /* Initialize buffer */
 }
 
 /* terminal_close
@@ -69,8 +71,9 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   /* Initialize local variables */
   uint32_t x, count, index, last;
 
+  /* Loop until enter is pressed */
   enter_down = 0;
-  while(!enter_down); /* Loop until enter is pressed */
+  while(!enter_down);
   enter_down = 0;
 
   /* Fail if no bytes, or negative bytes to be returned */
@@ -116,6 +119,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   sti();
 
   /* Clear buffer */
+  clear_buffer();
 
   /* Return the number of bytes written */
   return count;
@@ -212,7 +216,7 @@ int32_t keyboard_handler(void)
       /* Update enter flag */
       enter_down = 1;
 
-      /* Send end of interrupt signal */
+      /* Send end of interrupt signal for keyboard, the first IRQ */
       send_eoi(1);
       return 0;
     }
@@ -241,7 +245,6 @@ int32_t keyboard_handler(void)
   }
 
   /* Send interrupt signal for keyboard, the first IRQ */
-  END_INTERRUPT:
-    send_eoi(1);
-    return 0;
+  send_eoi(1);
+  return 0;
 }
