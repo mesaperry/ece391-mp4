@@ -23,10 +23,11 @@ uint32_t table_index;
 uint32_t key_index;
 uint8_t key_buffer[MAX_BUFF_LENGTH];
 
-
 int32_t terminal_open(const uint8_t* filename);
 int32_t terminal_close(int32_t fd);
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t clear_buffer();
 int32_t keyboard_handler(void);
+
+#endif  /* _TERMINAL_H   */
