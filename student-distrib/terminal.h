@@ -21,7 +21,8 @@
 uint8_t enter_down;
 uint32_t table_index;
 uint32_t key_index;
-uint8_t key_buffer[MAX_BUFFER_LENGTH];
+uint8_t key_buffer[MAX_BUFF_LENGTH];
+
 
 int32_t terminal_open(const uint8_t* filename);
 int32_t terminal_close(int32_t fd);

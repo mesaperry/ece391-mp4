@@ -231,6 +231,7 @@ int32_t keyboard_handler(void)
 
     /* Load keyboard buffer with symbol */
     key_buffer[key_index] = input;
+    
 
     /* Update index in keyboard */
     key_index++;
