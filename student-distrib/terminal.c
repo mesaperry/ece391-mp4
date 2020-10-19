@@ -66,6 +66,9 @@ int32_t terminal_close(int32_t fd)
     return -1; /* Return fail if I/O fd */
   }
 
+  /* Disable terminal */
+  disable_irq(1);
+
   return 0; /* Success */
 }
 
