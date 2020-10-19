@@ -74,6 +74,8 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+student-distrib/Makefile.dep
+
 # C++ - https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
 # Prerequisites
 *.d
@@ -108,7 +110,9 @@ dkms.conf
 *.out
 *.app
 
+# Image files
+*.img
+
 # 391 specific
 *.qcow
 source/
-
