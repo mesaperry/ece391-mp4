@@ -1,7 +1,6 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
-#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
