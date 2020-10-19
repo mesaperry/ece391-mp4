@@ -26,12 +26,26 @@
 volatile int32_t IR_flag;
 
 
-extern void rtc_irq();
+extern void rtc_intr();
 
+/* rtc_init
+ *
+ * DESCRIPTION: Initializes RTC in idt
+ *
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: Sets up IDT
+ */
 void rtc_init() {
-    SET_IDT_ENTRY(idt[RTC_VEC], rtc_irq);
+    SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
 }
 
+/* rtc_handler
+ *
+ * DESCRIPTION: Parses calls to RTC
+ *
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: Sends end of interrupt signal
+ */
 void rtc_handler() {
   /* Raise interrupt flag */
   IR_flag = 1;
@@ -44,7 +58,14 @@ void rtc_handler() {
   send_eoi(RTC_IRQ);
 }
 
-void rtc_enable() {
+/* rtc_open
+ *
+ * DESCRIPTION: starts the irq, will set the default rate
+ *
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: Starts this clock interrupt
+ */
+void rtc_open() {
 
     /* Open critical section */
     cli();
@@ -63,6 +84,27 @@ void rtc_enable() {
     enable_irq(RTC_IRQ);
 }
 
-void rtc_disable() {
+/* rtc_close
+ *
+ * DESCRIPTION: Masks interrupts so rtc doesn't work
+ *
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: disables irqs for rtc
+ */
+int32_t rtc_close() {
+    /* Disable IRQs */
     disable_irq(RTC_IRQ);
+
+    /* Open critical section */
+    cli();
+
+    /* Turn on IRQ 8 */
+    /* Select Reg B and disable NMI */
+    outb((NMI | REG_B), RTC_PORT);
+    outb((inb(CMOS_PORT) & ~PI), CMOS_PORT);
+
+    /* Close critical section */
+    sti();
+
+    return 0;
 }

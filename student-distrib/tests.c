@@ -2,6 +2,8 @@
 #include "x86_desc.h"
 #include "paging.h"
 #include "lib.h"
+#include "terminal.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -82,7 +84,7 @@ void term_write_test(){
  */
 void keyboard_test(){
 	int x = 0;
-	uint8_t buffer[MAX_BUFFER_LENGTH];
+	uint8_t buffer[MAX_BUFF_LENGTH];
 
 	terminal_open(NULL);
 
