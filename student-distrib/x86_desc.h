@@ -22,6 +22,13 @@
 /* Number of vectors in the interrupt descriptor table (IDT) */
 #define NUM_VEC     256
 
+/* Paging */
+#define DIR_ENTRIES 1024
+#define TABLE_ENTRIES 1024
+#define PAGE_SIZE_KB 4096
+
+#define KERNEL_MEMORY_ADDR 0x40000
+
 #ifndef ASM
 
 /* This structure is used to load descriptor base registers
@@ -166,6 +173,49 @@ typedef union idt_desc_t {
 extern idt_desc_t idt[NUM_VEC];
 /* The descriptor used to load the IDTR */
 extern x86_desc_t idt_desc_ptr;
+
+/* An entry into page directory for 4kb pages */
+typedef union pde_t {
+    uint32_t val;
+    struct {
+        uint32_t present         : 1;
+        uint32_t reserved1       : 1;
+        uint32_t reserved2       : 1;
+        uint32_t reserved3       : 1;
+        uint32_t reserved4       : 1;
+        uint32_t reserved5       : 1;
+        uint32_t reserved6       : 1;
+        uint32_t page_size       : 1;
+        uint32_t reserved8       : 1;
+        uint32_t reserved9       : 1;
+        uint32_t reserved10      : 1;
+        uint32_t reserved11      : 1;
+        uint32_t ptr             : 20;
+    } __attribute__((packed));
+} pde_t;
+
+/* An entry into page table */
+typedef union pte_t {
+    uint32_t val;
+    struct {
+        uint32_t present         : 1;
+        uint32_t reserved1       : 1;
+        uint32_t reserved2       : 1;
+        uint32_t reserved3       : 1;
+        uint32_t reserved4       : 1;
+        uint32_t reserved5       : 1;
+        uint32_t reserved6       : 1;
+        uint32_t page_size       : 1;
+        uint32_t reserved8       : 1;
+        uint32_t reserved9       : 1;
+        uint32_t reserved10      : 1;
+        uint32_t reserved11      : 1;
+        uint32_t ptr             : 20;
+    } __attribute__((packed));
+} pte_t;
+
+extern pde_t page_dir[TABLE_ENTRIES];
+extern pte_t page_table[TABLE_ENTRIES];
 
 /* Sets runtime parameters for an IDT entry */
 #define SET_IDT_ENTRY(str, handler)                              \
