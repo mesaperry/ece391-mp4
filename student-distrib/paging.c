@@ -4,6 +4,14 @@
 
 static void init_paging_registers();
 
+/*
+ * init_paging
+ * DESCRIPTION: initialize paging for the kernel
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURNS: none
+ * SIDE EFFECTS: initializes paging register bits, directory, and tables
+ */
 void init_paging()
 {
     int i; /* looping variable */
@@ -55,6 +63,14 @@ void init_paging()
 
 }
 
+/*
+ * init_paging_registers
+ * DESCRIPTION: a local helper function for initializing register bits
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURNS: none
+ * SIDE EFFECTS: changes registers related to paging
+ */
 void
 init_paging_registers()
 {
