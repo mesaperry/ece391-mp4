@@ -18,7 +18,7 @@
 static inline void assertion_failure(){
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
-	asm volatile("int $128");
+	asm volatile("int $12");
 }
 
 
@@ -48,7 +48,6 @@ int idt_test(){
 
 	return result;
 }
-
 
 /* Divide by Zero Exception Test 
  *
@@ -98,12 +97,14 @@ int bound_range(){
 	int y[2];
 	int x;
 	x = y[3];
-	assertion_failure();
+	//assertion_failure();
 	return FAIL;
 }
 
 int idt_woP(){
 	assertion_failure();
+	printf("1");
+	return 1;
 }
 
 /* term_write_test
@@ -140,16 +141,17 @@ void term_write_test(){
  * Coverage: terminal_read, terminal_write
  * Files: terminal.h/c
  */
-void keyboard_test(){
+int keyboard_test(){
 	int x = 0;
 	uint8_t buffer[MAX_BUFF_LENGTH];
 
-	terminal_open(NULL);
+	terminal_init();
 
 	while(1){
 		x = terminal_read(1, buffer, x);
 		terminal_write(1, buffer, x);
 	}
+	return 1;
 }
 
 int page_test()
@@ -190,5 +192,7 @@ void launch_tests(){
 	//TEST_OUTPUT("bounds range", bound_range());
 	//TEST_OUTPUT("pf", pf());
 	// launch your tests here
-	TEST_OUTPUT("IDT without paging", idt_woP());
+	//TEST_OUTPUT("IDT without paging", idt_woP());
+	//TEST_OUTPUT("keybord", );
+	//keyboard_test();
 }
