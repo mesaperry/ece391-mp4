@@ -46,8 +46,6 @@ int idt_test(){
 	return result;
 }
 
-// add more tests here
-
 /* term_write_test
  *
  * Print out characters passed in by buffer
@@ -56,6 +54,7 @@ int idt_test(){
  * Side Effects: None
  * Coverage: terminal_write
  * Files: terminal.h/c
+ */
 void term_write_test(){
 	uint32_t nbytes = 4;
 	uint8_t test_buffer[nbytes];
@@ -70,7 +69,7 @@ void term_write_test(){
 
 	printf("\nNumber of bytes written: %d", bytes_read);
 
-} */
+}
 
 /* Keyboard test
  *
@@ -79,7 +78,8 @@ void term_write_test(){
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: terminal_read, terminal_write
- * Files: keyboard.h/c, terminal.h/c
+ * Files: terminal.h/c
+ */
 void keyboard_test(){
 	int x = 0;
 	uint8_t buffer[MAX_BUFFER_LENGTH];
@@ -90,7 +90,7 @@ void keyboard_test(){
 		x = terminal_read(1, buffer, x);
 		terminal_write(1, buffer, x);
 	}
-} */
+}
 
 int page_test()
 {
