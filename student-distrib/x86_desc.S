@@ -38,7 +38,7 @@ tss_bottom:
 # Define the gdt_desc struct found in x86_desc.h (GDTR:16 bit size of GDT and 32 bit address of GDT)
     .word 0
 gdt_desc:
-    .word gdt_bottom-gdt-1  # GDT size
+    .word gdt_bottom - gdt - 1  # GDT size
     .long gdt # GDT location
 
     .align  16
