@@ -223,8 +223,8 @@ int32_t keyboard_handler(void)
   scancode = inb(KEYBOARD_PORT);
 
   /* Handle keystroke */
-  switch(scancode)
-  {
+  
+  
     /* Get index within the keyboard table */
     table_index = scancode - TABLE_OFFSET;
 
@@ -246,7 +246,7 @@ int32_t keyboard_handler(void)
     /* Close critical section */
     sti();
 
-  }
+  
 
   /* Send interrupt signal for keyboard, the first IRQ */
   send_eoi(1);
