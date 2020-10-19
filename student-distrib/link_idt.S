@@ -1,6 +1,5 @@
 #define ASM     1
-# #include "handlers.h"
-# #include "handlers.c"
+
 
 # Assembly link for IDT setup
 
@@ -33,7 +32,7 @@ keyboard_intr:
     cli
     pushal
     pushfl
-   # call keyboard_handler
+    call keyboard_handler
     popfl
     popal
     sti
@@ -43,7 +42,7 @@ rtc_intr:
     cli
     pushal
     pushfl
-# call rtc_handler
+    call rtc_handler
     popfl
     popal
     sti

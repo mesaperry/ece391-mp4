@@ -2,6 +2,8 @@
 #include "x86_desc.h"
 #include "paging.h"
 #include "lib.h"
+#include "terminal.h"
+
 
 #define PASS 1
 #define FAIL 0
@@ -15,13 +17,13 @@
 static inline void assertion_failure(){
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
-	asm volatile("int $15");
+	asm volatile("int $128");
 }
 
 
 /* Checkpoint 1 tests */
 
-/* IDT Test - Example
+/* IDT Test - whole table
  *
  * Asserts that first 10 IDT entries are not NULL
  * Inputs: None
@@ -35,7 +37,7 @@ int idt_test(){
 
 	int i;
 	int result = PASS;
-	for (i = 0; i < 10; ++i){
+	for (i = 0; i < 256; ++i){
 		if ((idt[i].offset_15_00 == NULL) &&
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
@@ -44,6 +46,63 @@ int idt_test(){
 	}
 
 	return result;
+}
+
+
+/* Divide by Zero Exception Test 
+ *
+ * Asserts divide by 0 Exception
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Load IDT
+ * Files: idt.c
+ */
+int divide_0(){
+	int y = 0;
+	int x = 12;
+	x = x/y;
+	//assertion_failure();
+	return FAIL;
+}
+
+/* dereferencing null Exception Test 
+ *
+ * Asserts Exception
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Load IDT
+ * Files: idt.c
+ */
+int null_deref(){
+	int* y;
+	int x;
+	y = 0;
+	x = *(y);
+	//assertion_failure();
+	return FAIL;
+}
+
+/* bounds Exception Test 
+ *
+ * Asserts bound range Exception
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Load IDT
+ * Files: idt.c
+ */
+int bound_range(){
+	int y[2];
+	int x;
+	x = y[3];
+	assertion_failure();
+	return FAIL;
+}
+
+int idt_woP(){
+	assertion_failure();
 }
 
 /* term_write_test
@@ -82,7 +141,7 @@ void term_write_test(){
  */
 void keyboard_test(){
 	int x = 0;
-	uint8_t buffer[MAX_BUFFER_LENGTH];
+	uint8_t buffer[MAX_BUFF_LENGTH];
 
 	terminal_open(NULL);
 
@@ -123,7 +182,12 @@ int page_test()
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("page_test", page_test());
+	//TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("page_test", page_test());
+	//TEST_OUTPUT("divide by zero", divide_0());
+	//TEST_OUTPUT("dereference null", null_deref());
+	//TEST_OUTPUT("bounds range", bound_range());
+	//TEST_OUTPUT("pf", pf());
 	// launch your tests here
+	TEST_OUTPUT("IDT without paging", idt_woP());
 }

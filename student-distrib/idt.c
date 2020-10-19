@@ -6,7 +6,8 @@
 
 #define UPPER_MASK 0xffff0000 // selects upper memeory bits
 #define SYS_CALL   0x80        
-
+#define KEYBOARD_VEC 0x60
+#define RTC_VEC      0x70
 // assembly link declarations
 
 extern void irq0(); 
@@ -157,11 +158,11 @@ void init_idt()
         idt[irq_n].seg_selector = KERNEL_CS;
         
         // if its 0x80 its a system call
-        if (irq_n == SYS_CALL)
+      /*  if (irq_n == SYS_CALL)
         {
-            SET_IDT_ENTRY(idt[SYS_CALL], sys_call);
+            
             continue;
-        }
+        }*/
         
         // if an exception set the correct gate bit and set the provisional entry
         if (irq_n < 32)
@@ -177,91 +178,13 @@ void init_idt()
     //     fill the actual entreis 
     setup_idt_exceptions();
     setup_idt_interrupts();
-
-    // set up keyboard and rtc
-    //SET_IDT_ENTRY(idt[])
+    SET_IDT_ENTRY(idt[SYS_CALL], sys_call);
+    //set up keyboard and rtc
+    SET_IDT_ENTRY(idt[KEYBOARD_VEC], keybord_intr);
+    SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
 }
 
 ////INTERRUPTS AND EXCEPTIONS? WHERE DO I GET THESE/what do i print
-
-/* @TODO ---------------
-*   setup_idt_exceptions()
-*   IN:  None
-*   OUT: None
-*   Description: Initializes execeptions into idt 
-*   Side Effects: IDT is filled with exception vectors
-*/
-void setup_idt_exceptions()
-{
-    ///SET_IDT_ENTRY(idt[actual_int_num], exception());
-    // for all exceptions
-    
-    SET_IDT_ENTRY(idt[0], excpt0_handler);          // divide_by_zero 
-    SET_IDT_ENTRY(idt[1], excpt1_handler);          // Debug
-    SET_IDT_ENTRY(idt[2], excpt2_handler);          // NMI Interrupt
-    SET_IDT_ENTRY(idt[3], excpt3_handler);          // Breakpoint
-    SET_IDT_ENTRY(idt[4], excpt4_handler);          // Overflow
-    SET_IDT_ENTRY(idt[5], excpt5_handler);          // BOUND Range Exceeded 
-    SET_IDT_ENTRY(idt[6], excpt6_handler);          // Invalid Opcode
-    SET_IDT_ENTRY(idt[7], excpt7_handler);          // Device Not Available
-    SET_IDT_ENTRY(idt[8], excpt8_handler);          // Double Fault
-    SET_IDT_ENTRY(idt[9], excpt9_handler);          // Coprocessor Segment Overrun
-    SET_IDT_ENTRY(idt[10], excpt10_handler);        // Invalid TSS
-    SET_IDT_ENTRY(idt[11], excpt11_handler);        // Segment Not Present
-    SET_IDT_ENTRY(idt[12], excpt12_handler);        // Stack Fault
-    SET_IDT_ENTRY(idt[13], excpt13_handler);        // General Protection
-    SET_IDT_ENTRY(idt[14], excpt14_handler);        // Page Fault
-    SET_IDT_ENTRY(idt[15], excpt15_handler);        // Reserved for Intel
-    SET_IDT_ENTRY(idt[16], excpt16_handler);        // Floating-Point Error
-    SET_IDT_ENTRY(idt[17], excpt17_handler);        // Alignment Check
-    SET_IDT_ENTRY(idt[18], excpt18_handler);        // Machine Check
-    SET_IDT_ENTRY(idt[19], excpt19_handler);        // SIMD floating-point
-    SET_IDT_ENTRY(idt[20], excpt20_handler);
-    SET_IDT_ENTRY(idt[21], excpt21_handler);        // 21-19 Reserved for Intel
-    SET_IDT_ENTRY(idt[22], excpt22_handler);
-    SET_IDT_ENTRY(idt[23], excpt23_handler);
-    SET_IDT_ENTRY(idt[24], excpt24_handler);
-    SET_IDT_ENTRY(idt[25], excpt25_handler);
-    SET_IDT_ENTRY(idt[26], excpt26_handler);
-    SET_IDT_ENTRY(idt[27], excpt27_handler);
-    SET_IDT_ENTRY(idt[28], excpt28_handler);
-    SET_IDT_ENTRY(idt[29], excpt29_handler);
-    SET_IDT_ENTRY(idt[30], excpt30_handler);         // Securtiy Explination
-    SET_IDT_ENTRY(idt[31], excpt31_handler);         // Reserved for Intel
-    
-}
-
-
-/* @TODO ---------------
-*   setup_idt_interrupts()
-*   IN:  None
-*   OUT: None
-*   Description: Initializes interrupts into idt
-*   Side Effects: IDT is filled with interrupt vectors
-*/
-void setup_idt_interrupts()
-{
-    ///SET_IDT_ENTRY(idt[actual_int_num], interrupt());
-    // for all interrupts
-    // starts at x20 and has 16 entries
-    
-    SET_IDT_ENTRY(idt[32], irq0);
-    SET_IDT_ENTRY(idt[33], irq1);
-    SET_IDT_ENTRY(idt[34], irq2);
-    SET_IDT_ENTRY(idt[35], irq3);
-    SET_IDT_ENTRY(idt[36], irq4);
-    SET_IDT_ENTRY(idt[37], irq5);
-    SET_IDT_ENTRY(idt[38], irq6);
-    SET_IDT_ENTRY(idt[39], irq7);
-    SET_IDT_ENTRY(idt[40], irq8);
-    SET_IDT_ENTRY(idt[41], irq9);
-    SET_IDT_ENTRY(idt[42], irq10);
-    SET_IDT_ENTRY(idt[43], irq11);
-    SET_IDT_ENTRY(idt[44], irq12);
-    SET_IDT_ENTRY(idt[45], irq13);
-    SET_IDT_ENTRY(idt[46], irq14);
-    SET_IDT_ENTRY(idt[47], irq15);
-}
 
 /*
 *   except#_handler() 
@@ -500,3 +423,84 @@ void sys_call(){
     printf("A system call was made\n");
     while(1);
 }
+
+
+/* @TODO ---------------
+*   setup_idt_exceptions()
+*   IN:  None
+*   OUT: None
+*   Description: Initializes execeptions into idt 
+*   Side Effects: IDT is filled with exception vectors
+*/
+void setup_idt_exceptions()
+{
+    ///SET_IDT_ENTRY(idt[actual_int_num], exception());
+    // for all exceptions
+    
+    SET_IDT_ENTRY(idt[0], excpt0_handler);          // divide_by_zero 
+    SET_IDT_ENTRY(idt[1], excpt1_handler);          // Debug
+    SET_IDT_ENTRY(idt[2], excpt2_handler);          // NMI Interrupt
+    SET_IDT_ENTRY(idt[3], excpt3_handler);          // Breakpoint
+    SET_IDT_ENTRY(idt[4], excpt4_handler);          // Overflow
+    SET_IDT_ENTRY(idt[5], excpt5_handler);          // BOUND Range Exceeded 
+    SET_IDT_ENTRY(idt[6], excpt6_handler);          // Invalid Opcode
+    SET_IDT_ENTRY(idt[7], excpt7_handler);          // Device Not Available
+    SET_IDT_ENTRY(idt[8], excpt8_handler);          // Double Fault
+    SET_IDT_ENTRY(idt[9], excpt9_handler);          // Coprocessor Segment Overrun
+    SET_IDT_ENTRY(idt[10], excpt10_handler);        // Invalid TSS
+    SET_IDT_ENTRY(idt[11], excpt11_handler);        // Segment Not Present
+    SET_IDT_ENTRY(idt[12], excpt12_handler);        // Stack Fault
+    SET_IDT_ENTRY(idt[13], excpt13_handler);        // General Protection
+    SET_IDT_ENTRY(idt[14], excpt14_handler);        // Page Fault
+    SET_IDT_ENTRY(idt[15], excpt15_handler);        // Reserved for Intel
+    SET_IDT_ENTRY(idt[16], excpt16_handler);        // Floating-Point Error
+    SET_IDT_ENTRY(idt[17], excpt17_handler);        // Alignment Check
+    SET_IDT_ENTRY(idt[18], excpt18_handler);        // Machine Check
+    SET_IDT_ENTRY(idt[19], excpt19_handler);        // SIMD floating-point
+    SET_IDT_ENTRY(idt[20], excpt20_handler);
+    SET_IDT_ENTRY(idt[21], excpt21_handler);        // 21-19 Reserved for Intel
+    SET_IDT_ENTRY(idt[22], excpt22_handler);
+    SET_IDT_ENTRY(idt[23], excpt23_handler);
+    SET_IDT_ENTRY(idt[24], excpt24_handler);
+    SET_IDT_ENTRY(idt[25], excpt25_handler);
+    SET_IDT_ENTRY(idt[26], excpt26_handler);
+    SET_IDT_ENTRY(idt[27], excpt27_handler);
+    SET_IDT_ENTRY(idt[28], excpt28_handler);
+    SET_IDT_ENTRY(idt[29], excpt29_handler);
+    SET_IDT_ENTRY(idt[30], excpt30_handler);         // Securtiy Explination
+    SET_IDT_ENTRY(idt[31], excpt31_handler);         // Reserved for Intel
+    
+}
+
+
+/* @TODO ---------------
+*   setup_idt_interrupts()
+*   IN:  None
+*   OUT: None
+*   Description: Initializes interrupts into idt
+*   Side Effects: IDT is filled with interrupt vectors
+*/
+void setup_idt_interrupts()
+{
+    ///SET_IDT_ENTRY(idt[actual_int_num], interrupt());
+    // for all interrupts
+    // starts at x20 and has 16 entries
+    
+    SET_IDT_ENTRY(idt[32], irq0);
+    SET_IDT_ENTRY(idt[33], irq1);
+    SET_IDT_ENTRY(idt[34], irq2);
+    SET_IDT_ENTRY(idt[35], irq3);
+    SET_IDT_ENTRY(idt[36], irq4);
+    SET_IDT_ENTRY(idt[37], irq5);
+    SET_IDT_ENTRY(idt[38], irq6);
+    SET_IDT_ENTRY(idt[39], irq7);
+    SET_IDT_ENTRY(idt[40], irq8);
+    SET_IDT_ENTRY(idt[41], irq9);
+    SET_IDT_ENTRY(idt[42], irq10);
+    SET_IDT_ENTRY(idt[43], irq11);
+    SET_IDT_ENTRY(idt[44], irq12);
+    SET_IDT_ENTRY(idt[45], irq13);
+    SET_IDT_ENTRY(idt[46], irq14);
+    SET_IDT_ENTRY(idt[47], irq15);
+}
+
