@@ -54,6 +54,9 @@ void rtc_handler() {
   outb(REG_C, RTC_PORT);
   inb(CMOS_PORT);
 
+  /* Checkpoint 1 RTC test */
+  test_interrupts();
+
   /* Send end of interrupt signal */
   send_eoi(RTC_IRQ);
 }
