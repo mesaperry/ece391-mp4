@@ -11,6 +11,12 @@
 /* Ports that each PIC sits on */
 #define MASTER_8259_PORT    0x20
 #define SLAVE_8259_PORT     0xA0
+#define MASTER_8259_PORT_DAT    0x21
+#define SLAVE_8259_PORT_DAT     0xA1
+
+/* IRQ related variable */
+#define 	IRQ_AMNT	8
+#define		IRQ2 		2			// Masking IRQ2 will stop the slave PIC from raising interrupts
 
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning
