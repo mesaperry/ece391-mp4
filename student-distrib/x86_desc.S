@@ -11,6 +11,7 @@
 .globl tss, tss_desc_ptr, ldt, ldt_desc_ptr
 .globl gdt_ptr
 .globl idt_desc_ptr, idt
+.globl page_dir, page_table
 
 .align 4
 
@@ -33,6 +34,12 @@ _tss:
     .byte 0
     .endr
 tss_bottom:
+
+# Define the gdt_desc struct found in x86_desc.h (GDTR:16 bit size of GDT and 32 bit address of GDT)
+    .word 0
+gdt_desc:
+    .word gdt_bottom-gdt-1  # GDT size
+    .long gdt # GDT location
 
     .align  16
 gdt:
@@ -101,8 +108,23 @@ idt_desc_ptr:
     .align  16
 idt:
 _idt:
-    .rept NUM_VEC
-    .quad 0
-    .endr
 
 idt_bottom:
+
+.align PAGE_SIZE_KB     # 4 kB boundaries
+page_dir:
+_page_dir:
+    .rept DIR_ENTRIES
+    .long 0
+    .endr
+
+page_dir_bottom:
+
+.align PAGE_SIZE_KB     # 4kB boundaries
+page_table:
+_page_table:
+    .rept TABLE_ENTRIES
+    .long 0
+    .endr
+
+page_table_bottom:
