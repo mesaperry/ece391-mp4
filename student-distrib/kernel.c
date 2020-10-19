@@ -144,6 +144,11 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
     init_paging();
 
+    /* Initialize clock */
+    rtc_init();
+
+    /* Initialize terminal */
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
