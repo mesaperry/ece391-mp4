@@ -9,9 +9,9 @@
 #include "types.h"
 
 /* Ports that each PIC sits on */
-#define MASTER_8259_PORT_ADD    0x20
+#define MASTER_8259_PORT    0x20
 #define MASTER_8259_PORT_DAT    0x21
-#define SLAVE_8259_PORT_ADD     0xA0
+#define SLAVE_8259_PORT     0xA0
 #define SLAVE_8259_PORT_DAT     0xA1
 
 /* Initialization control words to init each PIC.
