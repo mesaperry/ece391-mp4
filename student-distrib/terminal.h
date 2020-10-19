@@ -5,12 +5,6 @@
 
 #define MAX_BUFF_LENGTH 128
 
-/* Taken from lib.c */
-#define VIDEO 0xA7000
-#define NUM_COLS 80
-#define NUM_ROWS 25
-#define ATTRIB 0x7
-
 #define TABLE_OFFSET 2
 #define KEY_SIZE 104
 
