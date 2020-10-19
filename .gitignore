@@ -116,3 +116,4 @@ student-distrib/Makefile.dep
 # 391 specific
 *.qcow
 source/
+student-distrib/bootimg

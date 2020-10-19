@@ -6,7 +6,7 @@
 #define MAX_BUFF_LENGTH 128
 
 /* Taken from lib.c */
-#define VIDEO 0xB8000
+#define VIDEO 0xA7000
 #define NUM_COLS 80
 #define NUM_ROWS 25
 #define ATTRIB 0x7
@@ -23,6 +23,7 @@ uint32_t table_index;
 uint32_t key_index;
 uint8_t key_buffer[MAX_BUFF_LENGTH];
 
+void terminal_init(void);
 int32_t terminal_open(const uint8_t* filename);
 int32_t terminal_close(int32_t fd);
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);

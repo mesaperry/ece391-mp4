@@ -10,6 +10,8 @@
 #include "tests.h"
 #include "paging.h"
 #include "idt.h"
+#include "rtc.h"
+#include "terminal.h"
 
 #define RUN_TESTS 1
 
@@ -144,6 +146,12 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
     init_paging();
     init_idt();
+
+    /* Initialize clock */
+    rtc_init();
+
+    /* Initialize terminal */
+    terminal_init();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

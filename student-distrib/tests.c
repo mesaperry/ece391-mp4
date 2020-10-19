@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "terminal.h"
 
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0

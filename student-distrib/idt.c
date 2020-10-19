@@ -27,7 +27,7 @@ extern void irq13();
 extern void irq14(); 
 extern void irq15();
 
-extern void keybord_intr();
+extern void keyboard_intr();
 extern void rtc_intr();
 
 void setup_idt_exceptions();
@@ -180,7 +180,7 @@ void init_idt()
     setup_idt_interrupts();
     SET_IDT_ENTRY(idt[SYS_CALL], sys_call);
     //set up keyboard and rtc
-    SET_IDT_ENTRY(idt[KEYBOARD_VEC], keybord_intr);
+    SET_IDT_ENTRY(idt[KEYBOARD_VEC], keyboard_intr);
     SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
 }
 
