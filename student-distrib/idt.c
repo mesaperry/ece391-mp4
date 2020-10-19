@@ -9,7 +9,7 @@
 #define KEYBOARD_VEC 0x60
 #define RTC_VEC      0x70
 // assembly link declarations
-
+extern void keyboard_handler();
 void irq0_handler(); 
 void irq1_handler(); 
 void irq2_handler(); 
