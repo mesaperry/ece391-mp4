@@ -31,7 +31,7 @@ int32_t terminal_open(const uint8_t* filename)
   clear_buffer(); // Sets keyboard_buffer and key_index
 
   /* Turn on Keyboard IRQ */
-  // enable_irq(1);
+  enable_irq(1);
 
   /* Intiialize variables */
   enter_down = 0;
@@ -238,6 +238,6 @@ int32_t keyboard_handler(void)
   }
 
   /* Send interrupt signal for keyboard, the first IRQ */
-  //send_eoi(1);
+  send_eoi(1);
   return 0;
 }
