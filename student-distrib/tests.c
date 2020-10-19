@@ -1,5 +1,6 @@
 #include "tests.h"
 #include "x86_desc.h"
+#include "paging.h"
 #include "lib.h"
 
 #define PASS 1
@@ -91,6 +92,29 @@ void keyboard_test(){
 	}
 } */
 
+int page_test()
+{
+	TEST_HEADER;
+	int result;
+
+	result = PASS;
+	printf("Dereferencing VIDEO addr yields: %x", *(char*)VIDEO);
+	// if (*(char*)VIDEO) {
+	// 	assertion_failure();
+	// 	result = FAIL;
+	// }
+	printf("Dereferencing KERNEL addr yields: %x", *(char*)KERNEL_MEMORY_ADDR);
+	// if (*(char*)KERNEL_MEMORY_ADDR) {
+	// 	assertion_failure();
+	// 	result = FAIL;
+	// }
+	if (*(char*)0x5) {
+		assertion_failure();
+		result = FAIL;
+	}
+	return result;
+}
+
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -100,5 +124,6 @@ void keyboard_test(){
 /* Test suite entry point */
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("page_test", page_test());
 	// launch your tests here
 }
