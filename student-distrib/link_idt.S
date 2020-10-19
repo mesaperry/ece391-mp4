@@ -1,18 +1,55 @@
+#define ASM     1
+#include "handlers.h"
+# #include "handlers.c"
+
 # Assembly link for IDT setup
 
 .text
 
 # setup for exception#
-.global excpt0, excpt1, excpt2, excpt3, excpt4, excpt5, excpt6, excpt7, excpt8, excpt9, excpt10, excpt11, excpt12, excpt13, excpt14, excpt15, excpt16, excpt17, excpt18, excpt19, excpt20, excpt21, excpt22, excpt23, excpt24, excpt25, excpt26, excpt27, excpt28, excpt29, excpt30, excpt31
+.globl excpt0, excpt1, excpt2, excpt3, excpt4, excpt5, excpt6, excpt7, excpt8, excpt9, excpt10, excpt11, excpt12, excpt13, excpt14, excpt15, excpt16, excpt17, excpt18, excpt19, excpt20, excpt21, excpt22, excpt23, excpt24, excpt25, excpt26, excpt27, excpt28, excpt29, excpt30, excpt31
 
 # setup for sys_call functions
-.global sys_call
+.globl sys_call
 
 .extern gen_sys_call
 
 # handlers for exceptions
 .extern excpt0_handler, excpt1_handler, excpt2_handler, excpt3_handler, excpt4_handler, excpt5_handler, excpt6_handler, excpt7_handler, excpt8_handler, excpt9_handler, excpt10_handler, excpt11_handler, excpt12_handler, excpt13_handler, excpt14_handler, excpt15_handler, excpt16_handler, excpt17_handler, excpt18_handler, excpt19_handler, excpt20_handler, excpt21_handler, excpt22_handler, excpt23_handler, excpt24_handler, excpt25_handler, excpt26_handler, excpt27_handler, excpt28_handler, excpt29_handler, excpt30_handler, excpt31_handler
+.globl excpt0_handler, excpt1_handler, excpt2_handler, excpt3_handler, excpt4_handler, excpt5_handler, excpt6_handler, excpt7_handler, excpt8_handler, excpt9_handler, excpt10_handler, excpt11_handler, excpt12_handler, excpt13_handler, excpt14_handler, excpt15_handler, excpt16_handler, excpt17_handler, excpt18_handler, excpt19_handler, excpt20_handler, excpt21_handler, excpt22_handler, excpt23_handler, excpt24_handler, excpt25_handler, excpt26_handler, excpt27_handler, excpt28_handler, excpt29_handler, excpt30_handler, excpt31_handler
 
+# setup for keyboard and rtc
+.globl keyboard_intr, rtc_intr
+
+# handlers for keyboard and rtc
+.extern keyboard_handler, rtc_handler
+
+# interrupt handler linkages for keyboard and rtc
+# clear intr
+# push regs and flags
+# call handler
+# pop regs and flags
+# iret
+
+keyboard_intr:
+    cli
+    pushal
+    pushfl
+    call keyboard_handler
+    popfl
+    popal
+    sti
+    iret
+
+rtc_intr:
+    cli
+    pushal
+    pushfl
+    call rtc_handler
+    popfl
+    popal
+    sti
+    iret
 
 # interrupt handler linkages
 # push regs and flags

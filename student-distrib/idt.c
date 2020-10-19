@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "x86_desc.h"
+#include "handlers.h"
 #include "lib.h"
 
 #define UPPER_MASK 0xffff0000 // selects upper memeory bits
@@ -57,6 +58,15 @@ extern void irq12();
 extern void irq13(); 
 extern void irq14(); 
 extern void irq15();
+
+extern void keybord_intr();
+extern void rtc_intr();
+
+void setup_idt_exceptions();
+void setup_idt_exceptions();
+void setup_idt_interrupts();
+void provisional_interrupt();
+void provisional_exception();
 
 /*
 *   provisional_interrupt
@@ -164,6 +174,9 @@ void init_idt()
     //     fill the actual entreis 
     setup_idt_exceptions();
     setup_idt_interrupts();
+
+    // set up keyboard and rtc
+    //SET_IDT_ENTRY(idt[])
 }
 
 ////INTERRUPTS AND EXCEPTIONS? WHERE DO I GET THESE/what do i print
