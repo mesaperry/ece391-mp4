@@ -1,6 +1,6 @@
 
+#include "irq_handle.h"
 #include "idt.h"
-
 #include "x86_desc.h"
 #include "lib.h"
 
@@ -9,23 +9,7 @@
 #define KEYBOARD_VEC 0x60
 #define RTC_VEC      0x70
 // assembly link declarations
-extern void keyboard_handler();
-void irq0_handler(); 
-void irq1_handler(); 
-void irq2_handler(); 
-void irq3_handler(); 
-void irq4_handler(); 
-void irq5_handler();
-void irq6_handler(); 
-void irq7_handler(); 
-void irq8_handler(); 
-void irq9_handler(); 
-void irq10_handler(); 
-void irq11_handler();
-void irq12_handler(); 
-void irq13_handler(); 
-void irq14_handler(); 
-void irq15_handler();
+
 
 void keyboard_intr();
 void rtc_intr();
@@ -110,7 +94,7 @@ void provisional_exception()
     [31- Segment Selector -16-15- Seg Offset -0]
     seg_selector                offset_15_00
 */
-
+// delete handlers and set entries to non-present
 
 
 /*
@@ -265,154 +249,6 @@ void setup_idt_interrupts()
     SET_IDT_ENTRY(idt[47], irq15_handler);
 }
 
-void irq0_handler()
-{
-        cli();
-
-        printf("Interrupt0:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq1_handler()
-{
-       keyboard_handler();
-}
-
-
-void irq2_handler()
-{
-        cli();
-        printf("Interrupt2:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq3_handler()
-{
-        cli();
-        printf("Interrupt3:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq4_handler()
-{
-        cli();
-        printf("Interrupt4:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq5_handler()
-{
-        cli();
-        printf("Interrupt5:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq6_handler()
-{
-        cli();
-        printf("Interrupt6:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq7_handler()
-{
-        cli();
-        printf("Interrupt7:     interrupt\n");
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq8_handler()
-{
-        cli();
-        printf("Interrupt8: RTC interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq9_handler()
-{
-        cli();
-        printf("Interrupt9:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq10_handler()
-{
-        cli();
-        printf("Interrupt10:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq11_handler()
-{
-        cli();
-        printf("Interrupt11:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq12_handler()
-{
-        cli();
-        printf("Interrupt12:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq13_handler()
-{
-        cli();
-        printf("Interrupt13:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq14_handler()
-{
-        cli();
-        printf("Interrupt14:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
-
-
-void irq15_handler()
-{
-        cli();
-        printf("Interrupt15:     interrupt\n");
-        outb(0xA0, 0x20);
-        outb(0x20, 0x20); //EOI
-        sti();
-}
 
 
 /*
