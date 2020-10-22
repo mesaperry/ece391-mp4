@@ -9,7 +9,22 @@
 #define KEYBOARD_VEC 0x60
 #define RTC_VEC      0x70
 // assembly link declarations
-
+extern void irq0();
+extern void irq1();
+extern void irq2();
+extern void irq3();
+extern void irq4();
+extern void irq5();
+extern void irq6();
+extern void irq7();
+extern void irq8();
+extern void irq9();
+extern void irq10();
+extern void irq11();
+extern void irq12();
+extern void irq13();
+extern void irq14();
+extern void irq15();
 
 void keyboard_intr();
 void rtc_intr();
@@ -54,7 +69,6 @@ void excpt29_handler();
 void excpt30_handler();
 void excpt31_handler();
 
-// @TODO fix and assembly file
 
 /*
 *   provisional_interrupt
@@ -231,22 +245,22 @@ void setup_idt_interrupts()
     // for all interrupts
     // starts at x20 and has 16 entries
     
-    SET_IDT_ENTRY(idt[32], irq0_handler);
-    SET_IDT_ENTRY(idt[33], irq1_handler);
-    SET_IDT_ENTRY(idt[34], irq2_handler);
-    SET_IDT_ENTRY(idt[35], irq3_handler);
-    SET_IDT_ENTRY(idt[36], irq4_handler);
-    SET_IDT_ENTRY(idt[37], irq5_handler);
-    SET_IDT_ENTRY(idt[38], irq6_handler);
-    SET_IDT_ENTRY(idt[39], irq7_handler);
-    SET_IDT_ENTRY(idt[40], irq8_handler);
-    SET_IDT_ENTRY(idt[41], irq9_handler);
-    SET_IDT_ENTRY(idt[42], irq10_handler);
-    SET_IDT_ENTRY(idt[43], irq11_handler);
-    SET_IDT_ENTRY(idt[44], irq12_handler);
-    SET_IDT_ENTRY(idt[45], irq13_handler);
-    SET_IDT_ENTRY(idt[46], irq14_handler);
-    SET_IDT_ENTRY(idt[47], irq15_handler);
+    SET_IDT_ENTRY(idt[32], irq0);
+    SET_IDT_ENTRY(idt[33], irq1); //already set for keyboard
+    SET_IDT_ENTRY(idt[34], irq2);
+    SET_IDT_ENTRY(idt[35], irq3);
+    SET_IDT_ENTRY(idt[36], irq4);
+    SET_IDT_ENTRY(idt[37], irq5);
+    SET_IDT_ENTRY(idt[38], irq6);
+    SET_IDT_ENTRY(idt[39], irq7);
+    SET_IDT_ENTRY(idt[40], irq8);// already set for rtc
+    SET_IDT_ENTRY(idt[41], irq9);
+    SET_IDT_ENTRY(idt[42], irq10);
+    SET_IDT_ENTRY(idt[43], irq11);
+    SET_IDT_ENTRY(idt[44], irq12);
+    SET_IDT_ENTRY(idt[45], irq13);
+    SET_IDT_ENTRY(idt[46], irq14);
+    SET_IDT_ENTRY(idt[47], irq15);
 }
 
 
