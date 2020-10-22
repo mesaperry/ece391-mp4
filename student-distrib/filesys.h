@@ -13,7 +13,9 @@
 *
 */
 
+typedef struct dentry_t{
 
+}dentry_t;
 
 // filesystem
 /* Initializes filesystem */
