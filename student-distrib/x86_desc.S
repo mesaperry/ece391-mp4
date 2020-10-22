@@ -111,7 +111,7 @@ _idt:
 
 idt_bottom:
 
-.align PAGE_SIZE_KB     # 4 kB boundaries
+.align PAGE_SIZE_KB     # 4kB boundaries
 page_dir:
 _page_dir:
     .rept DIR_ENTRIES
