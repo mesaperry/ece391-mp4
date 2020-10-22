@@ -232,7 +232,7 @@ void setup_idt_exceptions()
 }
 
 
-/* @TODO ---------------
+/* 
 *   setup_idt_interrupts()
 *   IN:  None
 *   OUT: None
@@ -255,9 +255,6 @@ void setup_idt_interrupts()
     SET_IDT_ENTRY(idt[39], irq7);
     SET_IDT_ENTRY(idt[40], irq8);// already set for rtc
     SET_IDT_ENTRY(idt[41], irq9);
-    SET_IDT_ENTRY(idt[42], irq10);
-    SET_IDT_ENTRY(idt[43], irq11);
-    SET_IDT_ENTRY(idt[44], irq12);
     SET_IDT_ENTRY(idt[45], irq13);
     SET_IDT_ENTRY(idt[46], irq14);
     SET_IDT_ENTRY(idt[47], irq15);
