@@ -50,7 +50,7 @@ int idt_test(){
 }
 
 
-/* Divide by Zero Exception Test 
+/* Divide by Zero Exception Test
  *
  * Asserts divide by 0 Exception
  * Inputs: None
@@ -67,7 +67,7 @@ int divide_0(){
 	return FAIL;
 }
 
-/* dereferencing null Exception Test 
+/* dereferencing null Exception Test
  *
  * Asserts Exception
  * Inputs: None
@@ -85,7 +85,7 @@ int null_deref(){
 	return FAIL;
 }
 
-/* bounds Exception Test 
+/* bounds Exception Test
  *
  * Asserts bound range Exception
  * Inputs: None
@@ -155,24 +155,23 @@ void keyboard_test(){
 int page_test()
 {
 	TEST_HEADER;
-	int result;
+	char _ignore0 __attribute__((unused)) = *(char*)VIDEO;
+	char _ignore1 __attribute__((unused)) = *(char*)KERNEL_MEMORY_ADDR;
+	return PASS;
+}
 
-	result = PASS;
-	printf("Dereferencing VIDEO addr yields: %x", *(char*)VIDEO);
-	// if (*(char*)VIDEO) {
-	// 	assertion_failure();
-	// 	result = FAIL;
-	// }
-	printf("Dereferencing KERNEL addr yields: %x", *(char*)KERNEL_MEMORY_ADDR);
-	// if (*(char*)KERNEL_MEMORY_ADDR) {
-	// 	assertion_failure();
-	// 	result = FAIL;
-	// }
-	if (*(char*)0x5) {
-		assertion_failure();
-		result = FAIL;
-	}
-	return result;
+/* These should fail */
+int force_page_exception_1()
+{
+	TEST_HEADER;
+	char _ignore __attribute__((unused)) = *(char*)(0x0);
+	return FAIL;
+}
+int force_page_exception_2()
+{
+	TEST_HEADER;
+	char _ignore __attribute__((unused)) = *(char*)(0xFFFFFFFF);
+	return FAIL;
 }
 
 /* Checkpoint 2 tests */
@@ -184,11 +183,12 @@ int page_test()
 /* Test suite entry point */
 void launch_tests(){
 	//TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("page_test", page_test());
+	//TEST_OUTPUT("Deref video and kernel memory", page_test());
+	// TEST_OUTPUT("Force page exception 1", force_page_exception_1());
+	// TEST_OUTPUT("Force page exception 2", force_page_exception_2());
 	//TEST_OUTPUT("divide by zero", divide_0());
 	//TEST_OUTPUT("dereference null", null_deref());
 	//TEST_OUTPUT("bounds range", bound_range());
 	//TEST_OUTPUT("pf", pf());
-	// launch your tests here
-	TEST_OUTPUT("IDT without paging", idt_woP());
+	//TEST_OUTPUT("IDT without paging", idt_woP());
 }

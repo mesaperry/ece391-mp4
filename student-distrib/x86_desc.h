@@ -27,7 +27,7 @@
 #define TABLE_ENTRIES 1024
 #define PAGE_SIZE_KB 4096
 
-#define KERNEL_MEMORY_ADDR 0x40000
+#define KERNEL_MEMORY_ADDR 0x400000
 
 #ifndef ASM
 
@@ -174,48 +174,65 @@ extern idt_desc_t idt[NUM_VEC];
 /* The descriptor used to load the IDTR */
 extern x86_desc_t idt_desc_ptr;
 
-/* An entry into page directory for 4kb pages */
-typedef union pde_t {
+/* An entry into page directory for 4mb pages */
+typedef union pde_4mb_t {
     uint32_t val;
     struct {
-        uint32_t present         : 1;
-        uint32_t reserved1       : 1;
-        uint32_t reserved2       : 1;
-        uint32_t reserved3       : 1;
-        uint32_t reserved4       : 1;
-        uint32_t reserved5       : 1;
-        uint32_t reserved6       : 1;
-        uint32_t page_size       : 1;
-        uint32_t reserved8       : 1;
-        uint32_t reserved9       : 1;
-        uint32_t reserved10      : 1;
-        uint32_t reserved11      : 1;
-        uint32_t ptr             : 20;
-    } __attribute__((packed));
-} pde_t;
+        uint32_t present         : 1;  /* 0     */
+        uint32_t read_write      : 1;  /* 1     */
+        uint32_t supervisor      : 1;  /* 2     */
+        uint32_t write_through   : 1;  /* 3     */
+        uint32_t cache_disable   : 1;  /* 4     */
+        uint32_t accessed        : 1;  /* 5     */
+        uint32_t dirty           : 1;  /* 6     */
+        uint32_t page_size       : 1;  /* 7     */
+        uint32_t global          : 1;  /* 8     */
+        uint32_t ignored         : 3;  /* 11:9  */
+        uint32_t mem_type        : 1;  /* 12    */
+        uint32_t ptr_unused      : 8;  /* 20:13 */
+        uint32_t reserved        : 1;  /* 21    */
+        uint32_t ptr             : 10; /* 31:22 */
+    } __attribute__((packed, aligned (PAGE_SIZE_KB)));
+} pde_4mb_t;
 
-/* An entry into page table */
-typedef union pte_t {
+/* An entry into page directory for tables */
+typedef union pde_pte_t {
     uint32_t val;
     struct {
-        uint32_t present         : 1;
-        uint32_t reserved1       : 1;
-        uint32_t reserved2       : 1;
-        uint32_t reserved3       : 1;
-        uint32_t reserved4       : 1;
-        uint32_t reserved5       : 1;
-        uint32_t reserved6       : 1;
-        uint32_t page_size       : 1;
-        uint32_t reserved8       : 1;
-        uint32_t reserved9       : 1;
-        uint32_t reserved10      : 1;
-        uint32_t reserved11      : 1;
-        uint32_t ptr             : 20;
-    } __attribute__((packed));
-} pte_t;
+        uint32_t present         : 1;  /* 0     */
+        uint32_t read_write      : 1;  /* 1     */
+        uint32_t supervisor      : 1;  /* 2     */
+        uint32_t write_through   : 1;  /* 3     */
+        uint32_t cache_disable   : 1;  /* 4     */
+        uint32_t accessed        : 1;  /* 5     */
+        uint32_t ignored0        : 1;  /* 6     */
+        uint32_t page_size       : 1;  /* 7     */
+        uint32_t ignored1        : 4;  /* 11:8  */
+        uint32_t ptr             : 20; /* 31:12 */
+    } __attribute__((packed, aligned (PAGE_SIZE_KB)));
+} pde_pte_t;
 
-extern pde_t page_dir[TABLE_ENTRIES];
-extern pte_t page_table[TABLE_ENTRIES];
+/* An entry into page table for 4kb pages */
+typedef union pte_4kb_t {
+    uint32_t val;
+    struct {
+        uint32_t present         : 1;  /* 0     */
+        uint32_t read_write      : 1;  /* 1     */
+        uint32_t supervisor      : 1;  /* 2     */
+        uint32_t write_through   : 1;  /* 3     */
+        uint32_t cache_disable   : 1;  /* 4     */
+        uint32_t accessed        : 1;  /* 5     */
+        uint32_t dirty           : 1;  /* 6     */
+        uint32_t reserved        : 1;  /* 7     */
+        uint32_t global          : 1;  /* 8     */
+        uint32_t ignored         : 3;  /* 11:9  */
+        uint32_t ptr             : 20; /* 31:12 */
+    } __attribute__((packed, aligned (PAGE_SIZE_KB)));
+} pte_4kb_t;
+
+/* requires casting to access */
+extern uint32_t page_dir[TABLE_ENTRIES] __attribute__((aligned (PAGE_SIZE_KB)));
+extern uint32_t page_table[TABLE_ENTRIES] __attribute__((aligned (PAGE_SIZE_KB)));
 
 /* Sets runtime parameters for an IDT entry */
 #define SET_IDT_ENTRY(str, handler)                              \
