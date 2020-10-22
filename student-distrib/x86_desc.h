@@ -31,6 +31,24 @@
 
 #ifndef ASM
 
+// Placed here so they are read before irq_handle
+extern void irq0_handler(void);
+extern void irq1_handler(void);
+extern void irq2_handler(void);
+extern void irq3_handler(void);
+extern void irq4_handler(void);
+extern void irq5_handler(void);
+extern void irq6_handler(void);
+extern void irq7_handler(void);
+extern void irq8_handler(void);
+extern void irq9_handler(void);
+extern void irq10_handler(void);
+extern void irq11_handler(void);
+extern void irq12_handler(void);
+extern void irq13_handler(void);
+extern void irq14_handler(void);
+extern void irq15_handler(void);
+
 /* This structure is used to load descriptor base registers
  * like the GDTR and IDTR */
 typedef struct x86_desc {
