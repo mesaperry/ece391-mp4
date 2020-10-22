@@ -49,7 +49,7 @@ int idt_test(){
 	return result;
 }
 
-/* Divide by Zero Exception Test 
+/* Divide by Zero Exception Test
  *
  * Asserts divide by 0 Exception
  * Inputs: None
@@ -66,7 +66,7 @@ int divide_0(){
 	return FAIL;
 }
 
-/* dereferencing null Exception Test 
+/* dereferencing null Exception Test
  *
  * Asserts Exception
  * Inputs: None
@@ -84,7 +84,7 @@ int null_deref(){
 	return FAIL;
 }
 
-/* bounds Exception Test 
+/* bounds Exception Test
  *
  * Asserts bound range Exception
  * Inputs: None
@@ -194,5 +194,5 @@ void launch_tests(){
 	// launch your tests here
 	//TEST_OUTPUT("IDT without paging", idt_woP());
 	//TEST_OUTPUT("keybord", );
-	//keyboard_test();
+	keyboard_test();
 }
