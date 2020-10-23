@@ -12,6 +12,7 @@
 #include "idt.h"
 #include "rtc.h"
 #include "terminal.h"
+#include "filesys.h"
 
 #define RUN_TESTS 1
 
@@ -145,7 +146,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     init_paging();
-    
+    init_filesys(((module_t*)mbi->mods_addr)->mod_start);
+
     // initialize IDT
     init_idt();
 

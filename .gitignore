@@ -110,9 +110,6 @@ student-distrib/Makefile.dep
 *.out
 *.app
 
-# Image files
-*.img
-
 # 391 specific
 *.qcow
 source/
