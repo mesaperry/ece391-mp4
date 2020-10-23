@@ -12,6 +12,17 @@
 *   DEFINE data block type/struct
 *
 */
+typedef struct dataBlock{
+
+}dataBlock;
+
+typedef struct bootBlock{
+
+}bootBlock;
+
+typedef struct inode{
+
+}inode;
 
 typedef struct dentry_t{
 
