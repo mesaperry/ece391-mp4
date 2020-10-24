@@ -21,8 +21,9 @@
 */
 
 /* local variables */
-uint32_t filesys_addr;
-boot_block_t boot_block;
+uint32_t filesys_addr;    /* Address of filesys in memory          */
+boot_block_t boot_block;  /* Local copy of boot_block from filesys */
+uint32_t dr_count;        /* Indexing variable of files in filesys */
 
 /*
  * init_filesys
@@ -147,4 +148,19 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     }
 
     return byte_count;
+}
+
+/*
+ * directory_read
+ * DESCRIPTION: Reads the next file in the filesys_img
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURNS: the name of the next file in the filesys_img, or empty string
+ *          if we reached the end of the directory
+ * SIDE EFFECTS: increments dr_count
+ */
+char*
+directory_read()
+{
+
 }
