@@ -195,5 +195,5 @@ void launch_tests(){
 	// launch your tests here
 	//TEST_OUTPUT("IDT without paging", idt_woP());
 	//TEST_OUTPUT("keybord", );
-	keyboard_test();
+	//keyboard_test();
 }

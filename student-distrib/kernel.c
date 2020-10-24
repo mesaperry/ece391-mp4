@@ -12,6 +12,7 @@
 #include "idt.h"
 #include "rtc.h"
 #include "terminal.h"
+#include "filesys.h"
 
 #define RUN_TESTS 1
 
