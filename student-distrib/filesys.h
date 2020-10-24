@@ -56,6 +56,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 /* Puts byte data from file into buffer based on inode and offset */
 int32_t read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length);
+/* Returns the next file name in the filesys */
+uint8_t* directory_read();
 
 // file operations
 /*  */

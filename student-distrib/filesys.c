@@ -23,7 +23,7 @@
 /* local variables */
 uint32_t filesys_addr;    /* Address of filesys in memory          */
 boot_block_t boot_block;  /* Local copy of boot_block from filesys */
-uint32_t dr_count;        /* Indexing variable of files in filesys */
+uint32_t dr_index;        /* Indexing variable of files in filesys */
 
 /*
  * init_filesys
@@ -38,6 +38,7 @@ init_filesys(uint32_t fs_addr)
 {
     filesys_addr = fs_addr;
     boot_block = *((boot_block_t*)filesys_addr);
+    dr_index = 0;
 }
 
 /*
@@ -55,6 +56,7 @@ read_dentry_by_name (const uint8_t* fname, dentry_t* dentry)
     /* Purposefully not checking if fname input is too long */
 
     if (fname == NULL || dentry == NULL) return -1;
+    if (fname[0] == '\0') return -1;  /* empty string */
 
     int i;    /* looping variable */
     int j;    /* looping variable */
@@ -66,13 +68,11 @@ read_dentry_by_name (const uint8_t* fname, dentry_t* dentry)
             if (boot_block.dentries[i].name[j] != fname[j]) break;
 
             /* if we reach EOS at the same time in both strings */
-            /*   and we aren't at the beginning of the string   */
-            /*   (empty string)                                 */
             /*     OR                                           */
             /*   we have reached the end of the string and we   */
             /*   we haven't broken out in previous conditional  */
             /*   .... then we match                             */
-            if ((!(boot_block.dentries[i].name[j] | fname[j]) && j)
+            if (((boot_block.dentries[i].name[j] | fname[j]) == '\0')
                     || (j == FNAME_MAX_LEN - 1))
             {
                 *dentry = boot_block.dentries[i];
@@ -99,7 +99,7 @@ int32_t
 read_dentry_by_index (uint32_t index, dentry_t* dentry)
 {
     /* Only fails if index is out of bounds */
-    if (index < 0 || index >= DENTRY_COUNT) return -1;
+    if (index < 0 || index >= boot_block.dentry_count) return -1;
     if (dentry == NULL) return -1;
 
     /* valid, so copy it in */
@@ -131,7 +131,6 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[inode_i];
     data_block_t* data_blocks = (data_block_t*)(filesys_addr + BLOCK_SIZE*(1 + boot_block.inode_count));
     uint32_t byte_count; /* indexing variable */
-    uint32_t db_index;   /* data block index  */
 
     /* Not the most efficient way. To avoid this many operations each    */
     /*   cycle, we can do three separate loops:                          */
@@ -142,7 +141,6 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     /* But do this for now                                               */
     for (byte_count = 0; byte_count + offset < length && byte_count + offset < inode.length; byte_count++) {
         /* Don't *have* to do this every time, so this is lazy way */
-        // db_index = (byte_count + offset) >> BLOCK_SIZE_LOG_2;
         buffer[byte_count] = data_blocks[inode.data_indices[(byte_count + offset) >> BLOCK_SIZE_LOG_2]]
                                 .data[(byte_count + offset) & BLOCK_MASK];
     }
@@ -153,14 +151,29 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
 /*
  * directory_read
  * DESCRIPTION: Reads the next file in the filesys_img
- * INPUTS: none
+ * INPUTS: buffer in which to put the name
  * OUTPUTS: none
- * RETURNS: the name of the next file in the filesys_img, or empty string
- *          if we reached the end of the directory
- * SIDE EFFECTS: increments dr_count
+ * RETURNS: 0 if success, -1 if end of directory reached.
+ *          Should never fail.
+ * SIDE EFFECTS: increments dr_index
  */
-char*
+uint8_t*
 directory_read()
 {
+    dentry_t dentry;
+    int i; /* character read index */
+    uint8_t buf[FNAME_MAX_LEN + 1];
+    buf[FNAME_MAX_LEN] = '\0';    /* make sure we include a failsafe EOS */
+    int read_result = read_dentry_by_index(dr_index++, &dentry);
 
+    if (read_result < 0) {
+        /* Reached the end of dentries */
+        dr_index = 0;
+        return NULL;
+    }
+
+    for (i = 0; (i < FNAME_MAX_LEN) && (dentry.name[i] != '\0'); i++) {
+        buf[i] = (dentry.name[i]);
+    }
+    return buf;
 }
