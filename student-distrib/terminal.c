@@ -230,41 +230,41 @@ int32_t keyboard_handler(void)
   {
     case CAPS_LOCK:
     {
-      /* if on turn off, and vice versa
+      * if on turn off, and vice versa
       capslock_check = !capslock_check;
       goto SEND_EOI;
     }
     case L_SHIFT:
     {
-      /* set keyboard offset to access SHIFTed keys
+      / set keyboard offset to access SHIFTed keys
       key_offset = SHIFT_OFFSET;
       L_shift_check = 1;
       goto SEND_EOI;
     }
     case L_SHIFT_OFF:
     {
-      /* Reset keyboard offset to 0, for unSHIFTed keys
+      / Reset keyboard offset to 0, for unSHIFTed keys
       key_offset = 0;
       L_shift_check = 0;
       goto SEND_EOI;
     }
     case R_SHIFT:
     {
-      /* set keyboard offset to access SHIFTed keys
+      / set keyboard offset to access SHIFTed keys
       key_offset = SHIFT_OFFSET;
       R_shift_check = 1;
       goto SEND_EOI;
     }
     case R_SHIFT_OFF:
     {
-      /* Reset keyboard offset to 0, for unSHIFTed keys
+      / Reset keyboard offset to 0, for unSHIFTed keys
       key_offset = 0;
       R_shift_check = 0;
       goto SEND_EOI;
     }
     case SPACE:
     {
-      /* Print space key and add to buffer
+      / Print space key and add to buffer
       putc(' ');
       key_buffer[key_index] = ' ';
       key_inde++;
@@ -272,7 +272,7 @@ int32_t keyboard_handler(void)
     }
     case TAB:
     {
-      /* Print tab key (4 spaces) and add to buffer
+      / Print tab key (4 spaces) and add to buffer
       uint32_t x;
       for(x = 0; x < 4; x++){
         putc(' ');
@@ -283,74 +283,74 @@ int32_t keyboard_handler(void)
     }
     case BACK:
     {
-      /* If at beginning of terminal, return
+      / If at beginning of terminal, return
       if (key_index <= 0) {
         return 0;
       }
 
-      /* Print backspace
+      / Print backspace
       print_backspace();
 
-      /* Update keyboard buffer
+      / Update keyboard buffer
       key_index--;
       key_buffer[key_index] = '\0';
       goto SEND_EOI;
     }
     case CTRL:
     {
-      /* turn on flag
+      / turn on flag
       ctrl_check = 1;
       goto SEND_EOI;
     }
     case CTRL_OFF:
     {
-      /* turn off flag
+      * turn off flag
       ctrl_check = 0;
       goto SEND_EOI;
     }
     case ALT:
     {
-      /* turn on flag
+      * turn on flag
       alt_check = 1;
       goto SEND_EOI;
     }
     case ALT_OFF:
     {
-      /* turn off flag
+       turn off flag
       alt_check = 0;
       goto SEND_EOI;
     }
     case ENTER:
     {
-      /* put newline character in buffer
+      / put newline character in buffer
       key_buffer[key_index] = '\n';
 
-      /* set enter flag
+      / set enter flag
       enter_down = 1;
       goto SEND_EOI;
     }
     default:
     {
-      /* Get index within the keyboard table
+      / Get index within the keyboard table
       // table_index = scancode - TABLE_OFFSET;
 
-      /* Prep letter value to write
+      / Prep letter value to write
       input = KEY_TABLE[scancode];
 
-      /* Open critical section
+      / Open critical section
       cli();
 
-      /* Print letter to screen
+      / Print letter to screen
       putc(input);
       putc(scancode);
 
-      /* Load keyboard buffer with symbol
+      / Load keyboard buffer with symbol
       key_buffer[key_index] = input;
 
-      /* Update index in keyboard buffer
+      / Update index in keyboard buffer
       key_index++;
 
-      /* Close critical section 
+      / Close critical section
       sti();
     }
   }*/
@@ -377,7 +377,7 @@ int32_t keyboard_handler(void)
     /* Close critical section */
     sti();
 
-    SEND_EOI:
+  //  SEND_EOI:
       /* Send interrupt signal for keyboard, the first IRQ */
       send_eoi(1);
       return 0;
