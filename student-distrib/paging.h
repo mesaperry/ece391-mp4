@@ -13,9 +13,13 @@
 #define DIR_ENTRY_PAGE_OFFSET 22   /* byte offset required to get dir entry */
 
 /* Initialize paging in kernel */
-extern void init_paging();
+void init_paging();
+/* Enable paging in control registers */
+void enable_paging();
+/* Disable paging in control registers */
+void disable_paging();
 
 /* Translate virtual to physical memory location */
-extern uint32_t trnsl_v_to_p(uint32_t p);
+uint32_t trnsl_v_to_p(uint32_t p);
 
 #endif

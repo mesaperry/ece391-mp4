@@ -2,8 +2,6 @@
 #include "paging.h"
 #include "lib.h"
 
-static void init_paging_registers();
-
 /*
  * init_paging
  * DESCRIPTION: initialize paging for the kernel
