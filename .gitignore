@@ -111,7 +111,7 @@ student-distrib/Makefile.dep
 *.app
 
 # Image files
-*.img
+student-distrib/mp3.img
 
 # 391 specific
 *.qcow
