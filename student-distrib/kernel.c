@@ -146,6 +146,14 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     init_paging();
+
+    // PROBLEM: need to initialize filesystem, but with paging enabled,
+    //   I don't think the memory addresses match up anymore. If we just
+    //   moved init_paging after init_filesys, then some functions within
+    //   filesys.c will still not work correctly because the addresses to
+    //   access the filesys_img will have been saved with the location
+    //   before paging was enabled.
+    //   Or does paging not change this value???
     init_filesys(((module_t*)mbi->mods_addr)->mod_start);
 
     // initialize IDT
