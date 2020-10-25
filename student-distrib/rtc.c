@@ -18,6 +18,7 @@
 
 #define NMI                 0x80 // Non-Mask Interrupt(NMI) Bit
 #define PI                  0x40 // Periodic Interrupt(PI) Bit
+#define RATE_MASK           0xF0 // Non-rate bits of register A
 
 #define REG_A               0x0A // Registers
 #define REG_B               0x0B
@@ -54,11 +55,73 @@ void rtc_handler() {
   outb(REG_C, RTC_PORT);
   inb(CMOS_PORT);
 
-  /* Test for checkpoint 1 */
-//   test_interrupts();
-
   /* Send end of interrupt signal */
   send_eoi(RTC_IRQ);
+}
+
+/* rtc_read
+ *
+ * DESCTIPTION: wait for interrupt
+ * 
+ * INPUT/OUTPUT: always returns 0
+ * SIDE EFFECTS: makes thread wait
+ */
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    IR_flag = 0;
+    while(!IR_flag); // wait for interrupt
+    return 0;
+}
+
+/* rtc_write
+ *
+ * DESCTIPTION:
+ * 
+ * INPUT/OUTPUT:
+ * SIDE EFFECTS:
+ */
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
+    int32_t frequency;
+    uint8_t rate;
+
+    /* should only accept a 4-byte integer as input */
+    if (nbytes != 4 || buf == NULL)
+        return -1;
+
+    frequency = *((int32_t*)buf);
+
+    /* get RTC rate from frequency */
+    /* can only be power of 2 and no greater than 1024 */
+    switch(frequency) {
+        case 0:
+            rate = 0x0;
+        case 2:
+            rate = 0xF;
+        case 4:
+            rate = 0xE;
+        case 8:
+            rate = 0xD;
+        case 16:
+            rate = 0xC;
+        case 32:
+            rate = 0xB;
+        case 64:
+            rate = 0xA;
+        case 128:
+            rate = 0x9;
+        case 256:
+            rate = 0x8;
+        case 512:
+            rate = 0x7;
+        case 1024:
+            rate = 0x6;
+        default:
+            return -1;
+    }
+
+    cli();
+    outb((NMI | REG_A), RTC_PORT);
+    outb((inb(CMOS_PORT) & RATE_MASK) | rate, CMOS_PORT);
+    sti();
 }
 
 /* rtc_open
@@ -68,7 +131,7 @@ void rtc_handler() {
  * INPUT/OUTPUT: none
  * SIDE EFFECTS: Starts this clock interrupt
  */
-void rtc_open() {
+int32_t rtc_open(const uint8_t* filename) {
 
     /* Open critical section */
     cli();
@@ -85,6 +148,8 @@ void rtc_open() {
 
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
+
+    return 0;
 }
 
 /* rtc_close
@@ -94,7 +159,7 @@ void rtc_open() {
  * INPUT/OUTPUT: none
  * SIDE EFFECTS: disables irqs for rtc
  */
-int32_t rtc_close() {
+int32_t rtc_close(int32_t fd) {
     /* Disable IRQs */
     disable_irq(RTC_IRQ);
 

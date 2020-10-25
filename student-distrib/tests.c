@@ -179,7 +179,7 @@ int force_page_exception_2()
 
 int rtc_test(){
 	clear();
-	rtc_open();
+	rtc_open(NULL);
 
 	return 1;
 }
