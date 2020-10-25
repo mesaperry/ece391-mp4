@@ -39,6 +39,8 @@ uint8_t capslock_check;
 uint8_t alt_check;
 uint8_t enter_down;
 
+uint8_t current_line;
+
 uint32_t table_index;
 uint32_t key_index;
 uint32_t key_offset;

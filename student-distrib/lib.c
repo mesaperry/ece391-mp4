@@ -3,9 +3,8 @@
 
 #include "lib.h"
 
-#define NUM_COLS    80
-#define NUM_ROWS    25
-#define ATTRIB      0x7
+#define VGA1 0x3D4
+#define VGA2 0x3D5
 
 static int screen_x;
 static int screen_y;
@@ -25,6 +24,56 @@ void clear(void) {
     screen_y = 0;
 }
 
+/* update_cursor
+ *
+ * DESCRIPTION: Updates location of the cursor
+ *
+ * INPUTS: x, y
+ * OUTPUTS
+ * SIDE EFFECTS: Polls location of cursor then updates
+ */
+void update_cursor(int x, int y){
+
+ int32_t position = (y * NUM_COLS) + x;
+
+  /* cursor low port to VGA index reg */
+  outb(0x0F, VGA1);
+  outb((unsigned char)(position & 0xFF), VGA2);
+
+  /* cursor high port to VGA index reg */
+  outb(0x0E, VGA1);
+  outb((unsigned char)((position >> 8) & 0xFF), VGA2);
+}
+
+/* print_backspace
+ *
+ * DESCRIPTION: Handles backspace, updates terminal after
+ *
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: handle backspace
+ */
+void print_backspace(){
+  if(screen_x == 0 && screen_y == 0){
+      /* do nothing */
+  }
+  else if(screen_x == 0){
+    screen_y--;
+    screen_x = NUM_COLS - 1;
+    /* Update cursor */
+    update_cursor(screen_x, screen_y);
+  }
+  else {
+    screen_x--;
+    /* Update cursor */
+    update_cursor(screen_x, screen_y);
+  }
+
+
+  *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+
+  update_cursor(screen_x, screen_y);
+}
+
 /* get_screen_x()
  * Inputs: None
  * Return Value: screen_x
@@ -39,6 +88,22 @@ int32_t get_screen_x(void) {
  * Function: Returns screen_y */
 int32_t get_screen_y(void) {
     return screen_y;
+}
+
+/* get_screen_x()
+ * Inputs: None
+ * Return Value: screen_x
+ * Function: Returns screen_x */
+void set_screen_x(int x) {
+    screen_x = x;
+}
+
+/* get_screen_y()
+ * Inputs: None
+ * Return Value: screen_y
+ * Function: Returns screen_y */
+void set_screen_y(int y) {
+    screen_y = y;
 }
 
 /* Standard printf().

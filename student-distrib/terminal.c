@@ -45,11 +45,15 @@ void terminal_init(void) {
   alt_check = 0;
   enter_down = 0;
   table_index = 0;
+  current_line = 0;
 
   int x;
   for(x = 0; x < MAX_BUFF_LENGTH; x++){
 			key_buffer[x] = '\0';
   }
+
+  /* Set cursor to top-left of screen */
+  update_cursor(0,0);
 }
 
 /* terminal_open
@@ -274,6 +278,10 @@ int32_t keyboard_handler(void)
       putc(' ');
       key_buffer[key_index] = ' ';
       key_index++;
+
+      /* Update cursor                                                                */
+      update_cursor(key_index % NUM_COLS, current_line);
+
       goto SEND_EOI;
     }
     case TAB:
@@ -284,6 +292,9 @@ int32_t keyboard_handler(void)
         putc(' ');
         key_buffer[key_index] = ' ';
         key_index++;
+
+        /* Update cursor                                                                */
+        update_cursor(key_index % NUM_COLS, current_line);
       }
       goto SEND_EOI;
     }
@@ -295,7 +306,7 @@ int32_t keyboard_handler(void)
       }
 
       /* Print backspace */
-    //  print_backspace();
+      print_backspace();
 
       /* Update keyboard buffer */
       key_index--;
@@ -377,6 +388,9 @@ int32_t keyboard_handler(void)
 
         /* Update index in keyboard buffer */
         key_index++;
+
+        /* Update cursor                                                                */
+        update_cursor(key_index % NUM_COLS, current_line);
       }
     }
   }
