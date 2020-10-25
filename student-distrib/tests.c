@@ -177,6 +177,13 @@ int force_page_exception_2()
 	return FAIL;
 }
 
+int rtc_test(){
+	clear();
+	rtc_open();
+
+	return 1;
+}
+
 /* Checkpoint 2 tests */
 
 int print_all_filesys()
@@ -255,4 +262,5 @@ void launch_tests(){
 	// TEST_OUTPUT("print all filesys", print_all_filesys());
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
+
 }
