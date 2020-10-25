@@ -8,6 +8,8 @@
 #define KEYBOARD_IRQ 0x01
 #define KEYBOARD_PORT 0x60
 
+#define INPUT_CUTOFF 0x3E
+
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',']', ' ', ' ',
@@ -26,6 +28,9 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
  * Output - None
  */
 void terminal_init(void) {
+  /* Clear Screen */
+  clear();
+
   /* Clear Terminal(s) */
   clear_buffer(); // Sets keyboard_buffer and key_index
 
@@ -355,14 +360,15 @@ int32_t keyboard_handler(void)
     }
   }*/
 
+  // Shift line for every 80 presses in key_buff
+
+  if(scancode < INPUT_CUTOFF)
+  {
     /* Get index within the keyboard table */
     table_index = scancode - TABLE_OFFSET;
 
     /* Prep letter value to write */
     input = KEY_TABLE[table_index];
-
-    /* Open critical section */
-    cli();
 
     /* Print letter to screen */
     putc(input);
@@ -372,10 +378,7 @@ int32_t keyboard_handler(void)
 
     /* Update index in keyboard buffer */
     key_index++;
-
-    /* Close critical section */
-    sti();
-
+  }
   //  SEND_EOI:
       /* Send interrupt signal for keyboard, the first IRQ */
       send_eoi(1);

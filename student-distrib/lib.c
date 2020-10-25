@@ -21,6 +21,24 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    screen_x = 0;
+    screen_y = 0;
+}
+
+/* get_screen_x()
+ * Inputs: None
+ * Return Value: screen_x
+ * Function: Returns screen_x */
+int32_t get_screen_x(void) {
+    return screen_x;
+}
+
+/* get_screen_y()
+ * Inputs: None
+ * Return Value: screen_y
+ * Function: Returns screen_y */
+int32_t get_screen_y(void) {
+    return screen_y;
 }
 
 /* Standard printf().
