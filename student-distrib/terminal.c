@@ -356,17 +356,16 @@ int32_t keyboard_handler(void)
   }*/
 
     /* Get index within the keyboard table */
-    // table_index = scancode - TABLE_OFFSET;
+    table_index = scancode - TABLE_OFFSET;
 
     /* Prep letter value to write */
-    input = KEY_TABLE[scancode];
+    input = KEY_TABLE[table_index];
 
     /* Open critical section */
     cli();
 
     /* Print letter to screen */
     putc(input);
-    putc(scancode);
 
     /* Load keyboard buffer with symbol */
     key_buffer[key_index] = input;
