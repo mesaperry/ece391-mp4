@@ -5,7 +5,7 @@
 #include "lib.h"
 
 #define UPPER_MASK 0xffff0000 // selects upper memeory bits
-#define SYS_CALL   0x80        
+#define SYS_CALL   0x80
 #define KEYBOARD_VEC 0x60
 #define RTC_VEC      0x70
 // assembly link declarations
@@ -72,7 +72,7 @@ void excpt31_handler();
 
 /*
 *   provisional_interrupt
-*   IN: None 
+*   IN: None
 *   OUT: message
 *   Description: a provisional empty interupt for init idt
 *   Side Effects: clears and restores interrupts and prints a message
@@ -87,7 +87,7 @@ void provisional_interrupt()
 
 /*
 *   provisional_exception
-*   IN: None 
+*   IN: None
 *   OUT: message
 *   Description: a provisional empty exception for init idt
 *   Side Effects: prints a message and gives a while(1) loop
@@ -123,45 +123,45 @@ void init_idt()
     int irq_n;
     // initalize idt ptr to idtr
     lidt(idt_desc_ptr);
-    
 
-    // first fill the idt with blank gates (provisional) 
+
+    // first fill the idt with blank gates (provisional)
     for (irq_n = 0; irq_n < NUM_VEC; irq_n++)
     {
-        
+
         // mark the entry as in the memeory
         idt[irq_n].present = 0x1;
-        
+
         // if the intr is a sys call mark it as Desc Power Lvl 3, else mark it as kernel
         if(irq_n == SYS_CALL) {idt[irq_n].dpl = 0x3;}
         else
         {
             idt[irq_n].dpl = 0x0;
-        }    
-        
+        }
+
         // set the reserved bit
         idt[irq_n].reserved0 = 0x0;
-        
+
         // set the size bit to 1 for 32-bit instructions
-        idt[irq_n].size = 0x1; 
+        idt[irq_n].size = 0x1;
 
         idt[irq_n].reserved1 = 0x1;
         idt[irq_n].reserved2 = 0x1;
 
-        // set to 0 for not intel defined vector 
+        // set to 0 for not intel defined vector
         idt[irq_n].reserved3 = 0x0;
         idt[irq_n].reserved4 = 0x0;
 
         // set the segment selector
         idt[irq_n].seg_selector = KERNEL_CS;
-        
+
         // if its 0x80 its a system call
       /*  if (irq_n == SYS_CALL)
         {
-            
+
             continue;
         }*/
-        
+
         // if an exception set the correct gate bit and set the provisional entry
         if (irq_n < 32)
         {
@@ -172,8 +172,8 @@ void init_idt()
             SET_IDT_ENTRY(idt[irq_n], provisional_interrupt);
         }
     }
-    // after all entries are set up and provisionals are placed in 
-    //     fill the actual entreis 
+    // after all entries are set up and provisionals are placed in
+    //     fill the actual entreis
     setup_idt_exceptions();
     setup_idt_interrupts();
     SET_IDT_ENTRY(idt[SYS_CALL], sys_call);
@@ -188,20 +188,20 @@ void init_idt()
 *   setup_idt_exceptions()
 *   IN:  None
 *   OUT: None
-*   Description: Initializes execeptions into idt 
+*   Description: Initializes execeptions into idt
 *   Side Effects: IDT is filled with exception vectors
 */
 void setup_idt_exceptions()
 {
     ///SET_IDT_ENTRY(idt[actual_int_num], exception());
     // for all exceptions
-    
-    SET_IDT_ENTRY(idt[0], excpt0_handler);          // divide_by_zero 
+
+    SET_IDT_ENTRY(idt[0], excpt0_handler);          // divide_by_zero
     SET_IDT_ENTRY(idt[1], excpt1_handler);          // Debug
     SET_IDT_ENTRY(idt[2], excpt2_handler);          // NMI Interrupt
     SET_IDT_ENTRY(idt[3], excpt3_handler);          // Breakpoint
     SET_IDT_ENTRY(idt[4], excpt4_handler);          // Overflow
-    SET_IDT_ENTRY(idt[5], excpt5_handler);          // BOUND Range Exceeded 
+    SET_IDT_ENTRY(idt[5], excpt5_handler);          // BOUND Range Exceeded
     SET_IDT_ENTRY(idt[6], excpt6_handler);          // Invalid Opcode
     SET_IDT_ENTRY(idt[7], excpt7_handler);          // Device Not Available
     SET_IDT_ENTRY(idt[8], excpt8_handler);          // Double Fault
@@ -228,11 +228,11 @@ void setup_idt_exceptions()
     SET_IDT_ENTRY(idt[29], excpt29_handler);
     SET_IDT_ENTRY(idt[30], excpt30_handler);         // Securtiy Explination
     SET_IDT_ENTRY(idt[31], excpt31_handler);         // Reserved for Intel
-    
+
 }
 
 
-/* 
+/*
 *   setup_idt_interrupts()
 *   IN:  None
 *   OUT: None
@@ -244,7 +244,7 @@ void setup_idt_interrupts()
     ///SET_IDT_ENTRY(idt[actual_int_num], interrupt());
     // for all interrupts
     // starts at x20 and has 16 entries
-    
+
     SET_IDT_ENTRY(idt[32], irq0);
     SET_IDT_ENTRY(idt[33], irq1); //already set for keyboard
     SET_IDT_ENTRY(idt[34], irq2);
@@ -263,7 +263,7 @@ void setup_idt_interrupts()
 
 
 /*
-*   except#_handler() 
+*   except#_handler()
 *   IN: None
 *   OUT: exception message
 *   Description: Handler for exception, prints exception message and loops
@@ -273,224 +273,224 @@ void setup_idt_interrupts()
 
 void excpt0_handler()
 {
-    
+
     printf("EXCEPTION0: Divide by Zero Error\n");
     while(1);
 }
 
 void excpt1_handler()
 {
-    
+
     printf("EXCEPTION1: Debug\n");
     while(1);
 }
 
 void excpt2_handler()
 {
-    
+
     printf("EXCEPTION2: NMI Interrupt\n");
     while(1);
 }
 
 void excpt3_handler()
 {
-    
+
     printf("EXCEPTION3: Breakpoint\n");
     while(1);
 }
 
 void excpt4_handler()
 {
-    
+
     printf("EXCEPTION4: Overflow");
     while(1);
 }
 
 void excpt5_handler()
 {
-    
+
     printf("EXCEPTION5: BOUND Range Exceeded");
     while(1);
 }
 
 void excpt6_handler()
 {
-    
+
     printf("EXCEPTION6: Invalid Opcode");
     while(1);
 }
 
 void excpt7_handler()
 {
-    
+
     printf("EXCEPTION7: Device Not Available");
     while(1);
 }
 
 void excpt8_handler()
 {
-    
+
     printf("EXCEPTION8: double fault\n");
     while(1);
 }
 
 void excpt9_handler()
 {
-    
+
     printf("EXCEPTION9: Coprocessor Segment Overrun");
     while(1);
 }
 
 void excpt10_handler()
 {
-    
+
     printf("EXCEPTION10: Invalid TSS");
     while(1);
 }
 
 void excpt11_handler()
 {
-    
+
     printf("EXCEPTION11: Segment Not Present\n");
     while(1);
 }
 
 void excpt12_handler()
 {
-    
+
     printf("EXCEPTION12: Stack Fault\n");
     while(1);
 }
 
 void excpt13_handler()
 {
-    
+
     printf("EXCEPTION13: General Protection");
     while(1);
 }
 
 void excpt14_handler()
 {
-    
+
     printf("EXCEPTION14: Page Fault\n");
     while(1);
 }
 
 void excpt15_handler()
 {
-    
+
     printf("EXCEPTION15: Reserved for Intel");
     while(1);
 }
 
 void excpt16_handler()
 {
-    
+
     printf("EXCEPTION16: Floating-Point Error");
     while(1);
 }
 
 void excpt17_handler()
 {
-    
+
     printf("EXCEPTION17: Alignment Check");
     while(1);
 }
 
 void excpt18_handler()
 {
-    
+
     printf("EXCEPTION18: Machine Check");
     while(1);
 }
 
 void excpt19_handler()
 {
-    
+
     printf("EXCEPTION19: SIMD Floating-Point\n");
     while(1);
 }
 
 void excpt20_handler()
 {
-    
+
     printf("EXCEPTION20: Virtualization Exception");
     while(1);
 }
 
 void excpt21_handler()
 {
-    
+
     printf("EXCEPTION21: Reserved for Intel");
     while(1);
 }
 
 void excpt22_handler()
 {
-    
+
     printf("EXCEPTION22: Reserved for Intel");
-    while(1);   
+    while(1);
 }
 
 void excpt23_handler()
 {
-    
+
     printf("EXCEPTION23: Reserved for Intel");
     while(1);
 }
 
 void excpt24_handler()
 {
-    
+
     printf("EXCEPTION24: Reserved for Intel");
     while(1);
 }
 
 void excpt25_handler()
 {
-    
+
     printf("EXCEPTION25: Reserved for Intel");
     while(1);
 }
 
 void excpt26_handler()
 {
-    
+
     printf("EXCEPTION26: Reserved for Intel");
     while(1);
 }
 
 void excpt27_handler()
 {
-    
+
     printf("EXCEPTION27: Reserved for Intel");
     while(1);
 }
 
 void excpt28_handler()
 {
-    
+
     printf("EXCEPTION28: Reserved for Intel");
     while(1);
 }
 
 void excpt29_handler()
 {
-    
+
     printf("EXCEPTION29: Reserved for Intel");
     while(1);
 }
 
 void excpt30_handler()
 {
-    
+
     printf("EXCEPTION30: Security Explination");
     while(1);
 }
 
 void excpt31_handler()
 {
-    
+
     printf("EXCEPTION31: Reserved for Intel");
     while(1);
 }
@@ -499,4 +499,3 @@ void sys_call(){
     printf("A system call was made\n");
     while(1);
 }
-

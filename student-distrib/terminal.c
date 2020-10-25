@@ -8,6 +8,8 @@
 #define KEYBOARD_IRQ 0x01
 #define KEYBOARD_PORT 0x60
 
+#define INPUT_CUTOFF 0x3E
+
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',']', ' ', ' ',
@@ -26,6 +28,9 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
  * Output - None
  */
 void terminal_init(void) {
+  /* Clear Screen */
+  clear();
+
   /* Clear Terminal(s) */
   clear_buffer(); // Sets keyboard_buffer and key_index
 
@@ -33,13 +38,22 @@ void terminal_init(void) {
   enable_irq(1);
 
   /* Intiialize variables */
+  R_shift_check = 0;
+  L_shift_check = 0;
+  ctrl_check = 0;
+  capslock_check = 0;
+  alt_check = 0;
   enter_down = 0;
   table_index = 0;
+  current_line = 0;
 
   int x;
   for(x = 0; x < MAX_BUFF_LENGTH; x++){
 			key_buffer[x] = '\0';
   }
+
+  /* Set cursor to top-left of screen */
+  update_cursor(0,0);
 }
 
 /* terminal_open
@@ -226,158 +240,164 @@ int32_t keyboard_handler(void)
   scancode = inb(KEYBOARD_PORT);
 
   /* Handle keystroke */
-/*  switch(scancode)
+  switch(scancode)
   {
     case CAPS_LOCK:
     {
-      * if on turn off, and vice versa
+      /* if on turn off, and vice versa */
       capslock_check = !capslock_check;
       goto SEND_EOI;
     }
     case L_SHIFT:
     {
-      / set keyboard offset to access SHIFTed keys
-      key_offset = SHIFT_OFFSET;
+      /* set keyboard offset to access SHIFTed keys */
       L_shift_check = 1;
       goto SEND_EOI;
     }
     case L_SHIFT_OFF:
     {
-      / Reset keyboard offset to 0, for unSHIFTed keys
-      key_offset = 0;
+      /* Reset keyboard offset to 0, for unSHIFTed keys */
       L_shift_check = 0;
       goto SEND_EOI;
     }
     case R_SHIFT:
     {
-      / set keyboard offset to access SHIFTed keys
-      key_offset = SHIFT_OFFSET;
+      /* set keyboard offset to access SHIFTed keys */
       R_shift_check = 1;
       goto SEND_EOI;
     }
     case R_SHIFT_OFF:
     {
-      / Reset keyboard offset to 0, for unSHIFTed keys
-      key_offset = 0;
+      /* Reset keyboard offset to 0, for unSHIFTed keys */
       R_shift_check = 0;
       goto SEND_EOI;
     }
     case SPACE:
     {
-      / Print space key and add to buffer
+      /* Print space key and add to buffer */
       putc(' ');
       key_buffer[key_index] = ' ';
-      key_inde++;
+      key_index++;
+
+      /* Update cursor                                                                */
+      update_cursor(key_index % NUM_COLS, current_line);
+
       goto SEND_EOI;
     }
     case TAB:
     {
-      / Print tab key (4 spaces) and add to buffer
+      /* Print tab key (4 spaces) and add to buffer */
       uint32_t x;
       for(x = 0; x < 4; x++){
         putc(' ');
         key_buffer[key_index] = ' ';
         key_index++;
+
+        /* Update cursor                                                                */
+        update_cursor(key_index % NUM_COLS, current_line);
       }
       goto SEND_EOI;
     }
     case BACK:
     {
-      / If at beginning of terminal, return
+      /* If at beginning of terminal, return */
       if (key_index <= 0) {
         return 0;
       }
 
-      / Print backspace
+      /* Print backspace */
       print_backspace();
 
-      / Update keyboard buffer
+      /* Update keyboard buffer */
       key_index--;
       key_buffer[key_index] = '\0';
       goto SEND_EOI;
     }
     case CTRL:
     {
-      / turn on flag
+      /* turn on flag */
       ctrl_check = 1;
       goto SEND_EOI;
     }
     case CTRL_OFF:
     {
-      * turn off flag
+      /* turn off flag */
       ctrl_check = 0;
       goto SEND_EOI;
     }
     case ALT:
     {
-      * turn on flag
+      /* turn on flag */
       alt_check = 1;
       goto SEND_EOI;
     }
     case ALT_OFF:
     {
-       turn off flag
+      /* turn off flag */
       alt_check = 0;
       goto SEND_EOI;
     }
     case ENTER:
     {
-      / put newline character in buffer
+      /* put newline character in buffer */
       key_buffer[key_index] = '\n';
 
-      / set enter flag
+      /* set enter flag */
       enter_down = 1;
       goto SEND_EOI;
     }
     default:
     {
-      / Get index within the keyboard table
-      // table_index = scancode - TABLE_OFFSET;
+      /* Only check for key-press scancodes, no key-release scancodes */
+      if(scancode < INPUT_CUTOFF)
+      {
+        /* Get index within the keyboard table */
+        table_index = scancode - TABLE_OFFSET;
 
-      / Prep letter value to write
-      input = KEY_TABLE[scancode];
+        /* Handle shifts */
+        if(L_shift_check || R_shift_check){
+          table_index += SHIFT_OFFSET;
+        }
 
-      / Open critical section
-      cli();
+        /* Handle capslock */
+        if(capslock_check){
+          /* Only add if the input scancode is within letter bounds */
+          /* Letters Q-P: 0x10-0x19
+           * Letters A-L: 0x1E-0x26
+           * Letters Z-M: 0x2C-0x32 */
+          if((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1e && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32)){
+            /* Cancel out effect of capslock with shift */
+            if(L_shift_check || R_shift_check){
+              table_index -= SHIFT_OFFSET;
+            }
+            else{
+              /* Shift letters */
+              table_index += SHIFT_OFFSET;
+            }
+          }
+        }
 
-      / Print letter to screen
-      putc(input);
-      putc(scancode);
+        /* Prep letter value to write */
+        input = KEY_TABLE[table_index];
 
-      / Load keyboard buffer with symbol
-      key_buffer[key_index] = input;
+        /* Print letter to screen */
+        putc(input);
 
-      / Update index in keyboard buffer
-      key_index++;
+        /* Load keyboard buffer with symbol */
+        key_buffer[key_index] = input;
 
-      / Close critical section
-      sti();
+        /* Update index in keyboard buffer */
+        key_index++;
+
+        /* Update cursor                                                                */
+        update_cursor(key_index % NUM_COLS, current_line);
+      }
     }
-  }*/
+  }
 
-    /* Get index within the keyboard table */
-    // table_index = scancode - TABLE_OFFSET;
+  // Shift line for every 80 presses in key_buff
 
-    /* Prep letter value to write */
-    input = KEY_TABLE[scancode];
-
-    /* Open critical section */
-    cli();
-
-    /* Print letter to screen */
-    putc(input);
-    putc(scancode);
-
-    /* Load keyboard buffer with symbol */
-    key_buffer[key_index] = input;
-
-    /* Update index in keyboard buffer */
-    key_index++;
-
-    /* Close critical section */
-    sti();
-
-  //  SEND_EOI:
+  SEND_EOI:
       /* Send interrupt signal for keyboard, the first IRQ */
       send_eoi(1);
       return 0;
