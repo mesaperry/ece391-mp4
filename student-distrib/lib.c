@@ -45,6 +45,24 @@ void update_cursor(int x, int y){
   outb((unsigned char)((position >> 8) & 0xFF), VGA2);
 }
 
+/* wrap_around
+ *
+ * DESCRIPTION: If end of line reached update to next
+ *
+ * INPUTS: x, y
+ * OUTPUTS
+ * SIDE EFFECTS: Polls location of cursor then updates
+ */
+void wrap_around(void)
+{
+  /* Update screen_x and screen_y */
+  screen_y++;
+  screen_x = 0;
+
+  /* Re-draw cursor */
+  update_cursor(screen_x, screen_y);
+}
+
 /* print_backspace
  *
  * DESCRIPTION: Handles backspace, updates terminal after
@@ -253,6 +271,8 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
+
+        update_cursor(screen_x, screen_y);
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;

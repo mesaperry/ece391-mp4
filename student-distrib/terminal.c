@@ -234,7 +234,7 @@ int32_t clear_buffer()
 int32_t keyboard_handler(void)
 {
   /* Initialize variables */
-  uint8_t scancode, input;
+  uint8_t scancode, input, temp;
 
   /* Get keystroke from keyboard */
   scancode = inb(KEYBOARD_PORT);
@@ -389,8 +389,19 @@ int32_t keyboard_handler(void)
         /* Update index in keyboard buffer */
         key_index++;
 
-        /* Update cursor                                                                */
-        update_cursor(key_index % NUM_COLS, current_line);
+        /* Get current screen_x */
+        temp = get_screen_x();
+
+        /* Update cursor  */
+        if(key_index == 80)
+        {
+          wrap_around();
+          current_line++;
+        }
+        else
+        {
+          update_cursor(key_index % NUM_COLS, current_line);
+        }
       }
     }
   }
