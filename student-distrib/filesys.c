@@ -177,3 +177,33 @@ directory_read()
     }
     return buf;
 }
+
+/*
+ * file_read
+ * DESCRIPTION: Reads the next file in the filesys_img
+ * INPUTS: buffer in which to put the data
+ * OUTPUTS: none
+ * RETURNS: 0 if success, -1 if end of directory reached.
+ *          Should never fail.
+ * SIDE EFFECTS: 
+ */
+uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
+{
+    dentry_t* dentry;
+    // use file_name to read from dentry
+    uint8_t* file = read_directory();
+    while(file != file_name)
+    {
+        file = read_directory();
+        if (file == NULL)
+        {
+            printf("There is no such file");
+            return NULL;
+        }
+    }
+
+    int32_t dentry_loc = read_dentry_by_name(file, dentry);
+    int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
+    
+}
+

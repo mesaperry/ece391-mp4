@@ -249,13 +249,3 @@ void launch_tests(){
 	// launch your tests here
 	//TEST_OUTPUT("IDT without paging", idt_woP());
 	//TEST_OUTPUT("keybord", );
-//<<<<<<< HEAD
-	keyboard_test();
-	//term_write_test();
-//=======
-	// keyboard_test();
-	// TEST_OUTPUT("print all filesys", print_all_filesys());
-	// TEST_OUTPUT("read filesys inode", read_data_filesys());
-	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
-//>>>>>>> 067e9235574c23cf3d71c2b72e63372dfa38a773
-}
