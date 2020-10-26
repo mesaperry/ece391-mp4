@@ -168,6 +168,7 @@ int force_page_exception_1()
 	char _ignore __attribute__((unused)) = *(char*)(0x0);
 	return FAIL;
 }
+
 int force_page_exception_2()
 {
 	TEST_HEADER;
