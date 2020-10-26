@@ -2,9 +2,12 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
 
 #define VGA1 0x3D4
 #define VGA2 0x3D5
+
+#define MAX_BUFF_LENGTH 128
 
 static int screen_x;
 static int screen_y;
@@ -274,13 +277,17 @@ void putc(uint8_t c) {
 
         update_cursor(screen_x, screen_y);
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        if(get_key_index() < MAX_BUFF_LENGTH)
+        {
+          *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+          *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+          screen_x++;
+          screen_x %= NUM_COLS;
+          screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        }
     }
 }
+
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert

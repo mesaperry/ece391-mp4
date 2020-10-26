@@ -46,6 +46,7 @@ void terminal_init(void) {
   enter_down = 0;
   table_index = 0;
   current_line = 0;
+  wrapped = 0;
 
   int x;
   for(x = 0; x < MAX_BUFF_LENGTH; x++){
@@ -146,11 +147,11 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
     buffer[index] = '\n'; /* Append newline to last space in buffer if overflow */
   }
 
-  /* Close critical section */
-  sti();
-
   /* Clear buffer */
   clear_buffer();
+
+  /* Close critical section */
+  sti();
 
   /* Return the number of bytes written */
   return count;
@@ -223,6 +224,17 @@ int32_t clear_buffer()
 
   /* Return 0 on success */
   return 0;
+}
+/* get_key_index
+ * used by lib.c
+ * Returns the value of the key index
+ * Input - None
+ * Output - Returns key_index
+ */
+uint32_t get_key_index(void)
+{
+  /* Return variable */
+  return key_index;
 }
 
 /*
@@ -341,13 +353,21 @@ int32_t keyboard_handler(void)
     {
       /* put newline character in buffer */
       key_buffer[key_index] = '\n';
+      putc('\n');
+      wrapped = 0;
+      key_index = 0;
+      current_line++;
+      clear_buffer();
 
       /* set enter flag */
+      /* Should trigger terminal_write */
       enter_down = 1;
+
       goto SEND_EOI;
     }
     default:
     {
+
       /* Only check for key-press scancodes, no key-release scancodes */
       if(scancode < INPUT_CUTOFF)
       {
@@ -380,27 +400,51 @@ int32_t keyboard_handler(void)
         /* Prep letter value to write */
         input = KEY_TABLE[table_index];
 
-        /* Print letter to screen */
-        putc(input);
+        // Clear screen upon ctrl+L
+        if(ctrl_check && (input == 'l' || input == 'L')){
+          /* Re-set screen and buffer */
+          clear();
+          clear_buffer();
+          key_index = 0;
 
-        /* Load keyboard buffer with symbol */
-        key_buffer[key_index] = input;
+          /* Update cursor */
+          update_cursor(0, 0);
 
-        /* Update index in keyboard buffer */
-        key_index++;
+          set_screen_x(0);
+          set_screen_y(0);
+
+          /* End interrupt */
+          send_eoi(1);
+          return 0;
+        }
+
+        if(key_index < MAX_BUFF_LENGTH)
+        {
+          /* Print letter to screen */
+          putc(input);
+
+          /* Load keyboard buffer with symbol */
+          key_buffer[key_index] = input;
+
+          /* Update index in keyboard buffer */
+          key_index++;
+        }
 
         /* Get current screen_x */
         temp = get_screen_x();
 
         /* Update cursor  */
-        if(key_index == 80)
+        if(key_index == 80 && !wrapped)
         {
           wrap_around();
           current_line++;
+          wrapped = 1;
         }
-        else
+        else if(key_index < MAX_BUFF_LENGTH)
         {
+          /* Update cursor until, buffer is full */
           update_cursor(key_index % NUM_COLS, current_line);
+
         }
       }
     }

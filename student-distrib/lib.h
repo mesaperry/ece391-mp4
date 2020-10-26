@@ -31,6 +31,7 @@ int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
 
 void update_cursor(int x, int y);
 void print_backspace();
+void wrap_around(void);
 
 int32_t get_screen_x(void);
 int32_t get_screen_y(void);

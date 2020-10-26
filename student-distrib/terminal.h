@@ -13,7 +13,6 @@
 #define BACK_OFF 0x8E
 #define TAB 0x0F
 #define ENTER 0x1C
-#define ENTER_OFF 0x9C
 #define SPACE 0x39
 #define CAPS_LOCK 0x3A
 
@@ -40,6 +39,7 @@ uint8_t alt_check;
 uint8_t enter_down;
 
 uint8_t current_line;
+uint8_t wrapped;
 
 uint32_t table_index;
 uint32_t key_index;
@@ -52,6 +52,7 @@ int32_t terminal_close(int32_t fd);
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t clear_buffer();
+uint32_t get_key_index(void);
 int32_t keyboard_handler(void);
 
 #endif  /* _TERMINAL_H   */
