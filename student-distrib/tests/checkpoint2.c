@@ -1,7 +1,8 @@
 #include "../tests.h"
 #include "checkpoint2.h"
 #include "../types.h"
-
+#include "../terminal.h"
+#include "../lib.h"
 #include "../filesys.h"
 #include "../utils/char_util.h"
 #include "../utils/clock_util.h"
@@ -121,12 +122,19 @@ int test_read_files()
 {
 	TEST_HEADER;
 	uint8_t data[10000];
+	char read[10];
 
 	printf("frame0.txt:\n");
 	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 50);
 	print_buf(data, 50);
 
 	printf("\n");
+
+	while (1)
+	{
+		
+		if (terminal_read(1, read, 1)) break;
+	}
 
 	printf("frame1.txt:\n");
 	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 500) != -1)
@@ -137,6 +145,12 @@ int test_read_files()
 
 	printf("\n\n");
 
+	while (1)
+	{
+		
+		if (terminal_read(1, read, 1)) break;
+	}
+
 	printf("fish:\n");
 	if (read_file_bytes_by_name((uint8_t*)"fish", data, 4500) != -1)
 	{
@@ -146,20 +160,33 @@ int test_read_files()
 
 	printf("\n");
 
+	while (1)
+	{
+		
+		if (terminal_read(1, read, 1)) break;
+	}
+
 	printf("verlargetextwithverylongname.tx(t):\n");
 	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 10000) != -1) print_buf(data, 10000);
 
-
 	printf("\n");
 
+	while (1)
+	{
+		
+		if (terminal_read(1, read, 1)) break;
+	}
 
 	printf("grep:\n");
-
 	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000);
-
 
 	printf("\n");
 
+	while (1)
+	{
+		
+		if (terminal_read(1, read, 1)) break;
+	}
 
 	printf("ls:\n");
 	if (read_file_bytes_by_name((uint8_t*)"ls", data, 5000) != -1) print_buf(data, 5000);
