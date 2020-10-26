@@ -13,11 +13,9 @@ int print_all_filesys()
 {
 	TEST_HEADER;
 	uint8_t name[FNAME_MAX_LEN + 1];
-	directory_read(name);
-	while (name != NULL) {
+	while (directory_read(name)) {
 		printf("%s", name);
 		printf("\n");
-		directory_read(name);
 	}
 	return PASS;
 }
@@ -239,11 +237,11 @@ int test_write()
 
 void test_all_checkpoint2()
 {
-	// TEST_OUTPUT("print all filesys", print_all_filesys());
-	// TEST_OUTPUT("read filesys inode", read_data_filesys());
-	// TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
-	// TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
-	// TEST_OUTPUT("Read Files Test: ", test_read_files());
-	// TEST_OUTPUT("Open close", test_open_close());
-	// TEST_OUTPUT("Write Test", test_write());
+	TEST_OUTPUT("print all filesys", print_all_filesys());
+	TEST_OUTPUT("read filesys inode", read_data_filesys());
+	TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
+	TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
+	TEST_OUTPUT("Read Files Test: ", test_read_files());
+	TEST_OUTPUT("Open close", test_open_close());
+	TEST_OUTPUT("Write Test", test_write());
 }

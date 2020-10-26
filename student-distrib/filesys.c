@@ -1,4 +1,5 @@
 #include "filesys.h"
+#include "lib.h"
 
 /*
 *   @TODO ----------------
@@ -152,7 +153,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
  * DESCRIPTION: Reads the next file in the filesys_img
  * INPUTS: buffer in which to put the name
  * OUTPUTS: none
- * RETURNS: 0 if success, -1 if end of directory reached.
+ * RETURNS: 1 if success, 0 if end of directory reached.
  *          Should never fail.
  * SIDE EFFECTS: increments dr_index
  */
@@ -161,18 +162,19 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
 {
     dentry_t dentry;
     int i; /* character read index */
-    buf[FNAME_MAX_LEN] = '\0';    /* make sure we include a failsafe EOS */
+    buf[FNAME_MAX_LEN] = '\0';    /* failsafe EOS */
     int read_result = read_dentry_by_index(dr_index++, &dentry);
 
     if (read_result < 0) {
         /* Reached the end of dentries */
         dr_index = 0;
-        return -1;
+        return 0;
     }
-    for (i = 0; (i < FNAME_MAX_LEN) && (dentry.name[i - 1] != '\0'); i++) {
+    for (i = 0; (i < FNAME_MAX_LEN) && (dentry.name[i] != '\0'); i++) {
         buf[i] = (uint8_t)(dentry.name[i]);
     }
-    return 0;
+    buf[i] = (uint8_t)'\0';
+    return 1;
 }
 
 /*
