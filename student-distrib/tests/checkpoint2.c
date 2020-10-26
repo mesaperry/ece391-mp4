@@ -427,4 +427,5 @@ void test_all_checkpoint2()
 	wait_sync(2000);
 	TEST_OUTPUT("Test writing files", test_write());
 	wait_sync(2000);
+	printf("Checkpoint 2 Tests Done.\n");
 }
