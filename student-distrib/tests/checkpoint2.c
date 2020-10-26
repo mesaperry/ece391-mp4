@@ -11,6 +11,16 @@
 
 /* Checkpoint 2 tests */
 
+
+/* print_all_filesys
+ *
+ * Print out the filesys like ls would in linux
+ * Inputs: None
+ * Outputs: none
+ * Side Effects: prints the filesystem to the terminal
+ * Coverage: directory_read
+ * Files: filesys.h/c
+ */
 int print_all_filesys()
 {
 	TEST_HEADER;
@@ -19,6 +29,15 @@ int print_all_filesys()
 	return PASS;
 }
 
+/* read_data_filesys
+ *
+ * Demonstrates read_data reading bytes
+ * Inputs: None
+ * Outputs: none
+ * Side Effects: prints the inodes checked before it found the data and how many bytes it compied
+ * Coverage: read_data
+ * Files: filesys.h/c
+ */
 int read_data_filesys()
 {
 	TEST_HEADER;
@@ -35,6 +54,16 @@ int read_data_filesys()
 	return PASS;
 }
 
+
+/* filesys_corner_cases
+ *
+ * Attempts to read invalid dentrys
+ * Inputs: None
+ * Outputs: output string
+ * Side Effects: None
+ * Coverage: read_dentry_by_name/by_index
+ * Files: filesys.h/c
+ */
 int filesys_corner_cases()
 {
 	TEST_HEADER;
@@ -62,6 +91,15 @@ int filesys_corner_cases()
 	return PASS;
 }
 
+
+/* read_file_bytes_by_name
+ *
+ * Helper function to check if bytes from a file were read correctly
+ * Inputs: None
+ * Outputs: 0 on success, -1 on failure
+ * Side Effects: None
+
+ */
 /* Retuns 0 if file read correctly, -1 if failed */
 int read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length)
 {
@@ -73,6 +111,13 @@ int read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length)
 
 
 
+/* verify_executable
+ *
+ * Helper function that checks if a file has the start of the exe files
+ * Inputs: None
+ * Outputs: 0 on success, -1 on failure
+ * Side Effects: None
+ */
 /* Returns -1 if not executable, 0 if executable */
 int verify_executable(char* exe)
 {
@@ -85,6 +130,16 @@ int verify_executable(char* exe)
 	return 0;
 }
 
+
+/* test_read_file_bytes_by_name
+ *
+ * reads the begining of files and makes sure that each file is appropriate type
+ * Inputs: None
+ * Outputs: output string
+ * Side Effects: None
+ * Coverage: read_dentry_by_name/by_index/read_data
+ * Files: filesys.h/c
+ */
 int test_read_file_bytes_by_name()
 {
 	TEST_HEADER;
@@ -117,91 +172,68 @@ int test_read_file_bytes_by_name()
 }
 
 
-// test read files - this function requires the user to press enter to move to the next file
+/* reading_help
+ *
+ * Helper function that performs the actual test for read_files
+ * gets the file size and creates appropriate buffer
+ * then reads the data from the file to the screen and waits 5000ms
+ * Inputs: fname 	- 	the filename to read
+ * Outputs: none
+ * Side Effects: the file is read to the terminal screen
+ */
+void reading_help(char* fname)
+{
+	uint32_t size;
+	size = file_size((uint8_t*)fname);
+	uint8_t data[size];
+	printf("%s \n", fname);
+	read_file_bytes_by_name((uint8_t*)fname, data, size);
+	print_buf(data, size);
+	printf("\n");
+
+	wait_sync(5000);
+}
+
+/* test_read_files
+ *
+ * reads example files for tests
+ * Inputs: None
+ * Outputs: none
+ * Side Effects: reads sample files to the terminal screen
+ * Coverage: read_data/read_dentry_by_name
+ * Files: filesys.h/c
+ */
 int test_read_files()
 {
 	TEST_HEADER;
-	uint8_t data[10000];
-	char read[10];
-	uint32_t size;
-
-	size = file_size((uint8_t*)"frame0.txt");
-	printf("frame0.txt:\n");
-	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, size);
-	print_buf(data, size);
-
-	printf("\n");
-
-	while (1)
-	{
-
-		if (terminal_read(1, read, 1)) break;
-	}
 
 
+	reading_help("frame0.txt");
 
-	size = file_size((uint8_t*)"frame1.txt");
-	printf("frame1.txt:\n");
-	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, size) != -1)
-	{
-		print_buf(data, size);
-	}
+	reading_help("frame1.txt");
 
+	reading_help("fish");
 
-	printf("\n\n");
+	reading_help("verylargetextwithverylongname.txt");
 
-	while (1)
-	{
+	reading_help("grep");
 
-		if (terminal_read(1, read, 1)) break;
-	}
-	/*size = file_size((uint8_t*)"fish");
-	printf("fish:\n");
-	if (read_file_bytes_by_name((uint8_t*)"fish", data, size) != -1)
-	{
+	reading_help("ls");
 
-		print_buf(data, size);
-	}*/
-
-	printf("\n");
-
-	while (1)
-	{
-
-		if (terminal_read(1, read, 1)) break;
-	}
-	size = file_size((uint8_t*)"verylargetextwithverylongname.txt");
-	printf("verlargetextwithverylongname.tx(t):\n");
-	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, size) != -1) print_buf(data, size);
-
-	printf("\n");
-
-	while (1)
-	{
-
-		if (terminal_read(1, read, 1)) break;
-	}
-
-	size = file_size((uint8_t*)"grep");
-	printf("grep:\n");
-	if (read_file_bytes_by_name((uint8_t*)"grep", data, size) != -1) print_buf(data, size);
-
-	printf("\n");
-
-	while (1)
-	{
-
-		if (terminal_read(1, read, 1)) break;
-	}
-
-	size = file_size((uint8_t*)"ls");
-	printf("ls:\n");
-	if (read_file_bytes_by_name((uint8_t*)"ls", data, size) != -1) print_buf(data, size);
 
 	printf("\n");
 	return PASS;
 }
 
+/* test_open_close
+ *
+ * attempts to open files that dont exist and close files
+ * Inputs: None
+ * Outputs: output string
+ * Side Effects: None
+ * Coverage: file_open/file_close/dir_open/dir_close
+ * Files: filesys.h/c
+ */
 // test opens_and_closes
 int test_open_close()
 {
@@ -248,6 +280,15 @@ int test_open_close()
 	return PASS;
 }
 
+/* test_write
+ *
+ * attempts to write to files - nothing should happen read-only
+ * Inputs: None
+ * Outputs: output string
+ * Side Effects: None
+ * Coverage: file_write/dir_write
+ * Files: filesys.h/c
+ */
 int test_write()
 {
 	TEST_HEADER;
@@ -268,6 +309,7 @@ int test_write()
 	printf("Cannot write Read-Only\n");
 	return PASS;
 }
+
 
 /* rtc_driver_test
  *
@@ -371,9 +413,11 @@ int rtc_rate_test()
 
 void test_all_checkpoint2()
 {
-	TEST_OUTPUT("print all filesys", print_all_filesys());
-	//TEST_OUTPUT("read filesys inode", read_data_filesys());
-	//TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
-	//TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
+	// TEST_OUTPUT("print all filesys", print_all_filesys());
+	// TEST_OUTPUT("read filesys inode", read_data_filesys());
+	// TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
+	// TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
 	// TEST_OUTPUT("Read Files Test: ", test_read_files());
+	// TEST_OUTPUT("Test Open and Close", test_open_close());
+	// TEST_OUTPUT("Test writing files", test_write());
 }
