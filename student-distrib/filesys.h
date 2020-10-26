@@ -60,23 +60,21 @@ int32_t read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t 
 uint32_t directory_read(uint8_t buf[FNAME_MAX_LEN + 1]);
 
 // file operations
+/* placeholders for file operations for syscalls and explicit tests are made in test.c for cp2 */
+int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes);
 /*  */
-int32_t file_read();
+int32_t file_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes);
 /*  */
-int32_t file_write();
+int32_t file_open(uint8_t * fd);
 /*  */
-int32_t file_open();
-/*  */
-int32_t file_close();
+int32_t file_close(uint8_t * fd);
 
 // dir operations
 /*  */
-int32_t dir_read();
+int32_t dir_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes);
 /*  */
-int32_t dir_write();
+int32_t dir_open(uint8_t * fd);
 /*  */
-int32_t dir_open();
-/*  */
-int32_t dir_close();
+int32_t dir_close(uint8_t * fd);
 
 #endif //_FILESYS_H

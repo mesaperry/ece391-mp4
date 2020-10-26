@@ -128,6 +128,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     if (buffer == NULL) return -1;
 
     inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[inode_i];
+    if ((length*2) > inode.length) return -1;
     data_block_t* data_blocks = (data_block_t*)(filesys_addr + BLOCK_SIZE*(1 + boot_block.inode_count));
     uint32_t byte_count; /* indexing variable */
 
@@ -184,22 +185,93 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
  *          Should never fail.
  * SIDE EFFECTS:
  */
-// uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
-// {
-    // dentry_t* dentry;
-    // // use file_name to read from dentry
-    // uint8_t* file = read_directory();
-    // while(file != file_name)
-    // {
-    //     file = read_directory();
-    //     if (file == NULL)
-    //     {
-    //         printf("There is no such file");
-    //         return NULL;
-    //     }
-    // }
-    //
-    // int32_t dentry_loc = read_dentry_by_name(file, dentry);
-    // int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
+int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+{
+    return 0;
+}
 
-// }
+/*
+ * file_write
+ * DESCRIPTION: writes to given file
+ * INPUTS:  fd           - File Descriptor
+ *          buf          - buffer in which to put the data
+ *          num_bytes    - Number of bytes to be written
+ * OUTPUTS: none
+ * RETURNS: -1 always fails read-only
+ * SIDE EFFECTS: you can't do that
+ */
+int32_t file_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+{
+    return -1;
+}
+
+
+/*
+ * file_open
+ * DESCRIPTION: opens the given file, interacts with system call 
+ * INPUTS: fd   - File Descriptor
+ * OUTPUTS: none
+ * RETURNS: 0 if success, -1 if file does not exist
+ * SIDE EFFECTS:
+ */
+int32_t file_open(uint8_t * fd)
+{
+    return 0;
+}
+
+
+/*
+ * file_close
+ * DESCRIPTION: closes the given file
+ * INPUTS:  fd  -   File Descriptor
+ * OUTPUTS: none
+ * RETURNS: 0 if success, -1 if file is not open or does not exisit
+ * SIDE EFFECTS:
+ */
+int32_t file_close(uint8_t * fd)
+{
+    return 0;
+}
+
+/*
+ * dir_write
+ * DESCRIPTION: writes directory, always fails read-only
+ * INPUTS:  fd        - File Descriptor
+ *          buf       - buffer in which to put the data
+ *          num_bytes - number of bytes to write   
+ * OUTPUTS: none
+ * RETURNS: -1 should always fail
+ * SIDE EFFECTS:
+ */
+int32_t dir_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+{
+    return -1;
+}
+
+/*
+ * dir_open
+ * DESCRIPTION: opens given directory, empty since flat and 1 dir
+ * INPUTS: fd   - File Descriptor
+ * OUTPUTS: none
+ * RETURNS: 0 if success, shud never fail
+ * SIDE EFFECTS: No dir open
+ */
+int32_t dir_open(uint8_t * fd)
+{
+    return 0;
+}
+
+
+/*
+ * dir_close
+ * DESCRIPTION: closes given directory
+ * INPUTS: fd - File Descriptor 
+ * OUTPUTS: none
+ * RETURNS: 0 if success, -1 if directroy does not exist, returns 0 right now since 1 dir
+ * SIDE EFFECTS:
+ */
+int32_t dir_close(uint8_t * fd)
+{
+    return 0;
+}
+

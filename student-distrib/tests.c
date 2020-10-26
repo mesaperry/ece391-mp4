@@ -287,6 +287,106 @@ int test_read_file_bytes_by_name()
 	return PASS;
 }
 
+// test read files 
+int test_read_files()
+{
+	TEST_HEADER;
+	uint8_t data[5000];
+	data[4999] = '\0';
+	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 80);
+	printf("%s", data);
+	printf("\n");
+	
+	/*read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 80);
+	puts(data);
+
+	printf("\n");*/
+
+	if(read_file_bytes_by_name((uint8_t*)"fish", data, 4500) == -1) printf("fuck");
+	printf("%s", data);
+	
+	printf("\n");
+
+	read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 5000);
+	printf("%s", data);
+	printf("\n");
+
+	read_file_bytes_by_name((uint8_t*)"grep", data, 1000);
+	printf("%s", data);	
+	printf("\n");
+
+	read_file_bytes_by_name((uint8_t*)"ls", data, 1000);
+	printf("%s", data);
+	return PASS;
+}
+
+// test opens_and_closes
+int test_open_close()
+{
+	TEST_HEADER;
+	dentry_t dentry;
+	if (read_dentry_by_name((uint8_t*)"hag_in_a_bag.txt", &dentry) != -1)
+	{
+		printf("lol open_file failure\n");
+		return FAIL;
+	}
+	printf("hag_in_a_bag.txt doesn't exist : good \n");
+	
+	if (read_dentry_by_name((uint8_t*)"frame0.txt", &dentry) == -1)
+	{
+		printf("No you're wrong its there, I saw it in air bud\n");
+		return FAIL;
+	}
+	printf("frame0.txt exisits\n");
+
+	if (file_open((uint8_t*)"frame0.txt") == -1)
+	{
+		printf("file not opened\n");
+		return FAIL;
+	}
+// always ret 1
+	if (dir_open((uint8_t*)"") == -1)
+	{
+		printf("dir not opend");
+		return FAIL;
+	}
+
+	if (file_close((uint8_t*)"frame0.txt") == -1)
+	{
+		printf("cannot close file\n");
+		return FAIL;
+	}
+
+	if (dir_close((uint8_t*)"") == -1)
+	{
+		printf("literally how did you mess this up?");
+		return FAIL;
+	}
+
+	return PASS;
+}
+
+int test_write()
+{
+	TEST_HEADER;
+	uint8_t buf[100];
+	buf[99] = '\0';
+	if (file_write((uint8_t*)"frame0.txt", buf, 20) != -1)
+	{
+		printf("ERROR: shudnt be able to write\n");
+		return FAIL;
+	}
+	printf("Cannot write Read-Only\n");
+
+	if (dir_write((uint8_t*)"", buf, 20) != -1)
+	{
+		printf("ERROR: shudnt be able to write\n");
+		return FAIL;
+	}
+	printf("Cannot write Read-Only\n");
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -306,8 +406,13 @@ void launch_tests(){
 	//TEST_OUTPUT("IDT without paging", idt_woP());
 	//TEST_OUTPUT("keybord", );
 	// keyboard_test();
+	
+	/* start checkpoint 2*/
 	// TEST_OUTPUT("print all filesys", print_all_filesys());
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
-	// TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
+	//TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
+	TEST_OUTPUT("Read Files Test: ", test_read_files());
+	//TEST_OUTPUT("Open close", test_open_close());
+	//TEST_OUTPUT("Write Test", test_write());
 }
