@@ -293,13 +293,24 @@ int test_read_files()
 {
 	TEST_HEADER;
 	uint8_t data[10000];
+	int count = 0;
+	
 	printf("frame0.txt:\n");
 	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 50);
 	print_buf(data, 50);
+<<<<<<< HEAD
 
 	printf("\n");
 
 	printf("frame1.txt:\n");
+=======
+	
+
+	printf("\n");
+	
+
+	printf("frame1.txt:\n");	
+>>>>>>> c3304160540393a58afa91f64c6ce5656bd2ece1
 	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 500) != -1)
 	{
 		print_buf(data, 500);
@@ -307,6 +318,10 @@ int test_read_files()
 
 
 	printf("\n\n");
+<<<<<<< HEAD
+=======
+	
+>>>>>>> c3304160540393a58afa91f64c6ce5656bd2ece1
 
 	printf("fish:\n");
 	if (read_file_bytes_by_name((uint8_t*)"fish", data, 4500) != -1)
@@ -314,22 +329,37 @@ int test_read_files()
 
 		print_buf(data, 4500);
 	}
+<<<<<<< HEAD
 
 	printf("\n");
+=======
+	
+	
+	printf("\n");
+	
+>>>>>>> c3304160540393a58afa91f64c6ce5656bd2ece1
 
 	printf("verlargetextwithverylongname.tx(t):\n");
 	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 10000) != -1) print_buf(data, 10000);
 
 
 	printf("\n");
+	
+	
 	printf("grep:\n");
+<<<<<<< HEAD
 
 	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000);
 
+=======
+	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000); 
+	
+>>>>>>> c3304160540393a58afa91f64c6ce5656bd2ece1
 
 	printf("\n");
-	printf("ls:\n");
+	
 
+	printf("ls:\n");
 	if (read_file_bytes_by_name((uint8_t*)"ls", data, 5000) != -1) print_buf(data, 5000);
 
 	printf("\n");
