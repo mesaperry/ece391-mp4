@@ -191,7 +191,7 @@ void reading_help(char* fname)
 	print_buf(data, size);
 	printf("\n");
 
-	wait_sync(5000);
+	wait_sync(2000);
 }
 
 /* test_read_files
@@ -413,11 +413,18 @@ int rtc_rate_test()
 
 void test_all_checkpoint2()
 {
-	// TEST_OUTPUT("print all filesys", print_all_filesys());
-	// TEST_OUTPUT("read filesys inode", read_data_filesys());
-	// TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
-	// TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
-	// TEST_OUTPUT("Read Files Test: ", test_read_files());
-	// TEST_OUTPUT("Test Open and Close", test_open_close());
-	// TEST_OUTPUT("Test writing files", test_write());
+	TEST_OUTPUT("print all filesys", print_all_filesys());
+	wait_sync(2000);
+	TEST_OUTPUT("read filesys inode", read_data_filesys());
+	wait_sync(2000);
+	TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
+	wait_sync(2000);
+	TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
+	wait_sync(2000);
+	TEST_OUTPUT("Read Files Test: ", test_read_files());
+	wait_sync(2000);
+	TEST_OUTPUT("Test Open and Close", test_open_close());
+	wait_sync(2000);
+	TEST_OUTPUT("Test writing files", test_write());
+	wait_sync(2000);
 }
