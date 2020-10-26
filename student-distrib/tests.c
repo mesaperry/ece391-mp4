@@ -81,7 +81,7 @@ int null_deref(){
 	int x;
 	y = 0;
 	x = *(y);
-	//assertion_failure();
+	// assertion_failure();
 	return FAIL;
 }
 
@@ -240,6 +240,65 @@ int filesys_corner_cases()
 	return PASS;
 }
 
+/* rtc_driver_test
+ *
+ * Tests bad inputs and return values
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: rtc_read, rtc_write, rtc_open, rtc_close
+ * Files: rtc.h/c
+ */
+int rtc_driver_test()
+{
+	int32_t freq;
+	int16_t freq_16;
+
+	if (rtc_open(NULL) != 0) {
+		printf("rtc_open didn't return successfully\n");
+		return FAIL;
+	}
+	if (rtc_read(0, NULL, 0) != 0) {
+		printf("rtc_read didn't return successfully\n");
+		return FAIL;
+	}
+	if (rtc_write(0, NULL, 0) != -1) {
+		printf("rtc_write didn't reject a NULL input\n");
+		return FAIL;
+	}
+	freq_16 = 32;
+	if (rtc_write(0, &freq_16, sizeof(freq_16)) != -1) {
+		printf("rtc_write didn't reject a 2 byte input\n");
+		return FAIL;
+	}
+	freq = 515;
+	if (rtc_write(0, &freq, sizeof(freq)) != -1) {
+		printf("rtc_write didn't reject a non-power-of-2 frequency\n");
+		return FAIL;
+	}
+	freq = 2048;
+	if (rtc_write(0, &freq, sizeof(freq)) != -1) {
+		printf("rtc_write didn't reject a >1024 Hz frequency\n");
+		return FAIL;
+	}
+	freq = 1;
+	if (rtc_write(0, &freq, sizeof(freq)) != -1) {
+		printf("rtc_write didn't reject a 1 Hz frequency\n");
+		return FAIL;
+	}
+	freq = 2;
+	if (rtc_write(0, &freq, sizeof(freq)) != 0) {
+		printf("rtc_write didn't succeed with a 2 Hz frequency\n");
+		return FAIL;
+	}
+	if (rtc_close(0) != 0) {
+		printf("rtc_close didn't return successfully\n");
+		return FAIL;
+	}
+
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -262,5 +321,6 @@ void launch_tests(){
 	// TEST_OUTPUT("print all filesys", print_all_filesys());
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
-
+	clear();
+	TEST_OUTPUT("RTC I/O", rtc_driver_test());
 }
