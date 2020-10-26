@@ -152,7 +152,7 @@ int32_t rtc_open(const uint8_t* filename) {
     sti();
 
     /* Set clock rate to default */
-    rtc_write(0, &DEF_FREQ, 0);
+    rtc_write(0, &DEF_FREQ, sideof(DEF_FREQ));
 
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
