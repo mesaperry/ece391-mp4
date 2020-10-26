@@ -299,6 +299,46 @@ int rtc_driver_test()
 	return PASS;
 }
 
+/* rtc_rate_test
+ *
+ * Tests varying RTC frequencies
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: Tries to print to console every second, regardless of RTC rate
+ * Coverage: rtc_write
+ * Files: rtc.h/c
+ */
+void rtc_rate_test()
+{
+	int num_secs = 3; // number of seconds to test each frequency for
+	const int32_t test_freqs[] = {
+		2, 4, 8, 16, 32, 64, 128, 256, 512, 1024
+	};
+	const int num_freqs = sizeof(test_freqs) / sizeof(int32_t);
+	int32_t freq;
+	int freq_i;
+	int tick;
+
+	rtc_open(NULL);
+	clear();
+
+	for (freq_i = 0; freq_i < num_freqs; freq_i++) {
+
+		freq = test_freqs[freq_i];
+		rtc_write(0, &freq, sizeof(freq));
+
+		for (tick = 0; tick < num_secs * freq; tick++) {
+
+			/* wait for RTC tick */
+			if (tick == 0 || (tick % freq == 0)) {
+				printf("%dth tick on %d Hz RTC clock\n", tick, freq);
+			}
+			rtc_read(0, NULL, 0);
+
+		}
+	}
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -321,6 +361,6 @@ void launch_tests(){
 	// TEST_OUTPUT("print all filesys", print_all_filesys());
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
-	clear();
-	TEST_OUTPUT("RTC I/O", rtc_driver_test());
+	// TEST_OUTPUT("RTC I/O", rtc_driver_test());
+	rtc_rate_test();
 }
