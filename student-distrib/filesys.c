@@ -1,6 +1,5 @@
 #include "filesys.h"
 
-
 /*
 *   @TODO ----------------
 *   FUNCTIONS: ret type - int32_t, -1 on failure
@@ -138,8 +137,8 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     /*     2. copy data from as many data blocks as we have length       */
     /*        divided by 4096                                            */
     /*     3. copy data from one more block until we reach length        */
-    /* But do this for now                                               */
-    for (byte_count = 0; byte_count + offset < length && byte_count + offset < inode.length; byte_count++) {
+    /* But we're not doing this... do this for now                       */
+    for (byte_count = 0; (byte_count + offset < length) && (byte_count + offset < inode.length); byte_count++) {
         /* Don't *have* to do this every time, so this is lazy way */
         buffer[byte_count] = data_blocks[inode.data_indices[(byte_count + offset) >> BLOCK_SIZE_LOG_2]]
                                 .data[(byte_count + offset) & BLOCK_MASK];
@@ -157,25 +156,23 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
  *          Should never fail.
  * SIDE EFFECTS: increments dr_index
  */
-uint8_t*
-directory_read()
+uint32_t
+directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
 {
     dentry_t dentry;
     int i; /* character read index */
-    uint8_t buf[FNAME_MAX_LEN + 1];
     buf[FNAME_MAX_LEN] = '\0';    /* make sure we include a failsafe EOS */
     int read_result = read_dentry_by_index(dr_index++, &dentry);
 
     if (read_result < 0) {
         /* Reached the end of dentries */
         dr_index = 0;
-        return NULL;
+        return -1;
     }
-
-    for (i = 0; (i < FNAME_MAX_LEN) && (dentry.name[i] != '\0'); i++) {
-        buf[i] = (dentry.name[i]);
+    for (i = 0; (i < FNAME_MAX_LEN) && (dentry.name[i - 1] != '\0'); i++) {
+        buf[i] = (uint8_t)(dentry.name[i]);
     }
-    return buf;
+    return 0;
 }
 
 /*
@@ -185,25 +182,24 @@ directory_read()
  * OUTPUTS: none
  * RETURNS: 0 if success, -1 if end of directory reached.
  *          Should never fail.
- * SIDE EFFECTS: 
+ * SIDE EFFECTS:
  */
-uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
-{
-    dentry_t* dentry;
-    // use file_name to read from dentry
-    uint8_t* file = read_directory();
-    while(file != file_name)
-    {
-        file = read_directory();
-        if (file == NULL)
-        {
-            printf("There is no such file");
-            return NULL;
-        }
-    }
+// uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
+// {
+    // dentry_t* dentry;
+    // // use file_name to read from dentry
+    // uint8_t* file = read_directory();
+    // while(file != file_name)
+    // {
+    //     file = read_directory();
+    //     if (file == NULL)
+    //     {
+    //         printf("There is no such file");
+    //         return NULL;
+    //     }
+    // }
+    //
+    // int32_t dentry_loc = read_dentry_by_name(file, dentry);
+    // int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
 
-    int32_t dentry_loc = read_dentry_by_name(file, dentry);
-    int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
-    
-}
-
+// }
