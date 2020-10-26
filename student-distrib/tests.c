@@ -287,36 +287,51 @@ int test_read_file_bytes_by_name()
 	return PASS;
 }
 
+
 // test read files 
 int test_read_files()
 {
 	TEST_HEADER;
-	uint8_t data[5000];
-	data[4999] = '\0';
-	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 80);
-	printf("%s", data);
-	printf("\n");
-	
-	/*read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 80);
-	puts(data);
-
-	printf("\n");*/
-
-	if(read_file_bytes_by_name((uint8_t*)"fish", data, 4500) == -1) printf("fuck");
-	printf("%s", data);
+	uint8_t data[10000];
+	printf("frame0.txt:\n");
+	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 50);
+	print_buf(data, 50);
 	
 	printf("\n");
+	
+	printf("frame1.txt:\n");	
+	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 500) != -1)
+	{
+		print_buf(data, 500);
+	}
+	
 
-	read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 5000);
-	printf("%s", data);
+	printf("\n\n");
+	
+	printf("fish:\n");
+	if (read_file_bytes_by_name((uint8_t*)"fish", data, 4500) != -1)
+	{
+		
+		print_buf(data, 4500);
+	}
+	
 	printf("\n");
-
-	read_file_bytes_by_name((uint8_t*)"grep", data, 1000);
-	printf("%s", data);	
+	
+	printf("verlargetextwithverylongname.tx(t):\n");
+	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 10000) != -1) print_buf(data, 10000);
+	
+	
 	printf("\n");
+	printf("grep:\n");
 
-	read_file_bytes_by_name((uint8_t*)"ls", data, 1000);
-	printf("%s", data);
+	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000); 
+	
+
+	printf("\n");
+	printf("ls:\n");
+
+	if (read_file_bytes_by_name((uint8_t*)"ls", data, 5000) != -1) print_buf(data, 5000);
+	
 	return PASS;
 }
 

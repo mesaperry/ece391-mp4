@@ -128,7 +128,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     if (buffer == NULL) return -1;
 
     inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[inode_i];
-    if ((length*2) > inode.length) return -1;
+    if ((buffer || length) > inode.length) return -1;
     data_block_t* data_blocks = (data_block_t*)(filesys_addr + BLOCK_SIZE*(1 + boot_block.inode_count));
     uint32_t byte_count; /* indexing variable */
 
