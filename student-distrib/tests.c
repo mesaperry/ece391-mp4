@@ -4,6 +4,6 @@
 
 /* Test suite entry point */
 void launch_tests(){
-	test_all_checkpoint1();
+	// test_all_checkpoint1();
 	test_all_checkpoint2();
 }

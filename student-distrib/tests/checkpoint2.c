@@ -427,5 +427,9 @@ void test_all_checkpoint2()
 	wait_sync(2000);
 	TEST_OUTPUT("Test writing files", test_write());
 	wait_sync(2000);
+	TEST_OUTPUT("rtc driver test", rtc_driver_test());
+	wait_sync(2000);
+	TEST_OUTPUT("rtc rate test", rtc_rate_test());
+
 	printf("Checkpoint 2 Tests Done.\n");
 }
