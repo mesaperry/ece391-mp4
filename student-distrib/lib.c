@@ -2,9 +2,12 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
 
 #define VGA1 0x3D4
 #define VGA2 0x3D5
+
+#define MAX_BUFF_LENGTH 128
 
 static int screen_x;
 static int screen_y;
@@ -271,16 +274,55 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
-
-        update_cursor(screen_x, screen_y);
+        if(screen_y == NUM_ROWS)
+        {
+          scroll_handle();
+        }
+        else
+        {
+          update_cursor(screen_x, screen_y);
+        }
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        if(get_key_index() < MAX_BUFF_LENGTH)
+        {
+          *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+          *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+          screen_x++;
+          screen_x %= NUM_COLS;
+          screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        }
     }
 }
+
+/* scroll_handle
+ *
+ * DESCRIPTION: Handles terminal when text reaches bottom of screen
+ *
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: Scrolls terminal
+ */
+void scroll_handle(void){
+  int32_t x, y;
+
+  /* Shift memory up 1 row */
+ for(y = 0; y < NUM_ROWS - 1; y++){
+     for(x = 0; x < NUM_COLS - 1; x++){
+        *(uint8_t *)(video_mem + ((NUM_COLS * y + x) << 1)) = *(uint8_t *)(video_mem + (((NUM_COLS * (y+1) + x)) << 1));
+        *(uint8_t *)(video_mem + ((NUM_COLS * y + x) << 1) + 1) = ATTRIB;
+     }
+ }
+
+  /* Change last row to all ' ' */
+  for(x = 0; x < NUM_COLS; x++){
+    *(uint8_t *)(video_mem + ((NUM_COLS * (NUM_ROWS-1) + x) << 1)) = ' ';
+    *(uint8_t *)(video_mem + ((NUM_COLS * (NUM_ROWS-1) + x) << 1)+1) = ATTRIB;
+  }
+
+  /* Update variable and cursor */
+  screen_y--;
+  update_cursor(0, screen_y);
+}
+
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
  * Inputs: uint32_t value = number to convert

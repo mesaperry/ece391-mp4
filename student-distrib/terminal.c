@@ -46,6 +46,7 @@ void terminal_init(void) {
   enter_down = 0;
   table_index = 0;
   current_line = 0;
+  wrapped = 0;
 
   int x;
   for(x = 0; x < MAX_BUFF_LENGTH; x++){
@@ -146,11 +147,11 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
     buffer[index] = '\n'; /* Append newline to last space in buffer if overflow */
   }
 
-  /* Close critical section */
-  sti();
-
   /* Clear buffer */
   clear_buffer();
+
+  /* Close critical section */
+  sti();
 
   /* Return the number of bytes written */
   return count;
@@ -224,6 +225,17 @@ int32_t clear_buffer()
   /* Return 0 on success */
   return 0;
 }
+/* get_key_index
+ * used by lib.c
+ * Returns the value of the key index
+ * Input - None
+ * Output - Returns key_index
+ */
+uint32_t get_key_index(void)
+{
+  /* Return variable */
+  return key_index;
+}
 
 /*
 * keyboard_handler(void)
@@ -234,7 +246,7 @@ int32_t clear_buffer()
 int32_t keyboard_handler(void)
 {
   /* Initialize variables */
-  uint8_t scancode, input, temp;
+  uint8_t scancode, input, temp_x, temp_y;
 
   /* Get keystroke from keyboard */
   scancode = inb(KEYBOARD_PORT);
@@ -341,13 +353,21 @@ int32_t keyboard_handler(void)
     {
       /* put newline character in buffer */
       key_buffer[key_index] = '\n';
+      putc('\n');
+      wrapped = 0;
+      key_index = 0;
+      current_line++;
+      clear_buffer();
 
       /* set enter flag */
+      /* Should trigger terminal_write */
       enter_down = 1;
+
       goto SEND_EOI;
     }
     default:
     {
+
       /* Only check for key-press scancodes, no key-release scancodes */
       if(scancode < INPUT_CUTOFF)
       {
@@ -380,33 +400,67 @@ int32_t keyboard_handler(void)
         /* Prep letter value to write */
         input = KEY_TABLE[table_index];
 
-        /* Print letter to screen */
-        putc(input);
+        // Clear screen upon ctrl+L
+        if(ctrl_check && (input == 'l' || input == 'L')){
+          /* Re-set screen and buffer */
+          clear();
+          clear_buffer();
+          key_index = 0;
 
-        /* Load keyboard buffer with symbol */
-        key_buffer[key_index] = input;
+          /* Update cursor */
+          update_cursor(0, 0);
 
-        /* Update index in keyboard buffer */
-        key_index++;
+          set_screen_x(0);
+          set_screen_y(0);
 
-        /* Get current screen_x */
-        temp = get_screen_x();
+          /* End interrupt */
+          send_eoi(1);
+          return 0;
+        }
+
+        if(key_index < MAX_BUFF_LENGTH)
+        {
+          /* Print letter to screen */
+          putc(input);
+
+          /* Load keyboard buffer with symbol */
+          key_buffer[key_index] = input;
+
+          /* Update index in keyboard buffer */
+          key_index++;
+        }
+
+        /* Get current screen_x and screen_y */
+        temp_x = get_screen_x();
+        temp_y = get_screen_y() + 1;
 
         /* Update cursor  */
-        if(key_index == 80)
+        if(key_index == 80 && !wrapped)
         {
-          wrap_around();
-          current_line++;
+          /* Check if screen_Y has reached end of screen */
+          if(temp_y == NUM_ROWS)
+          {
+            set_screen_y(temp_y);
+            scroll_handle();
+          }
+          else
+          {
+            wrap_around();
+          }
+
+          /* Declare wrapped and update line to print to after handling */
+          wrapped = 1;
+          current_line = temp_y;
+          update_cursor(0, temp_y);
         }
-        else
+        else if(key_index < MAX_BUFF_LENGTH)
         {
+          /* Update cursor until, buffer is full */
           update_cursor(key_index % NUM_COLS, current_line);
         }
       }
     }
   }
-
-  // Shift line for every 80 presses in key_buff
 
   SEND_EOI:
       /* Send interrupt signal for keyboard, the first IRQ */
