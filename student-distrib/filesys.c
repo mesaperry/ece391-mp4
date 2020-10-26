@@ -184,22 +184,22 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
  *          Should never fail.
  * SIDE EFFECTS:
  */
-uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
-{
-    dentry_t* dentry;
-    // use file_name to read from dentry
-    uint8_t* file = read_directory();
-    while(file != file_name)
-    {
-        file = read_directory();
-        if (file == NULL)
-        {
-            printf("There is no such file");
-            return NULL;
-        }
-    }
+// uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
+// {
+    // dentry_t* dentry;
+    // // use file_name to read from dentry
+    // uint8_t* file = read_directory();
+    // while(file != file_name)
+    // {
+    //     file = read_directory();
+    //     if (file == NULL)
+    //     {
+    //         printf("There is no such file");
+    //         return NULL;
+    //     }
+    // }
+    //
+    // int32_t dentry_loc = read_dentry_by_name(file, dentry);
+    // int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
 
-    int32_t dentry_loc = read_dentry_by_name(file, dentry);
-    int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
-
-}
+// }

@@ -181,7 +181,7 @@ int force_page_exception_2()
 int print_all_filesys()
 {
 	TEST_HEADER;
-	uint8_t* name[FNAME_MAX_LEN + 1];
+	uint8_t name[FNAME_MAX_LEN + 1];
 	directory_read(name);
 	while (name != NULL) {
 		printf("%s", name);
