@@ -128,7 +128,6 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     if (buffer == NULL) return -1;
 
     inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[inode_i];
-    if ((buffer || length) > inode.length) return -1;
     data_block_t* data_blocks = (data_block_t*)(filesys_addr + BLOCK_SIZE*(1 + boot_block.inode_count));
     uint32_t byte_count; /* indexing variable */
 
@@ -208,7 +207,7 @@ int32_t file_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
 
 /*
  * file_open
- * DESCRIPTION: opens the given file, interacts with system call 
+ * DESCRIPTION: opens the given file, interacts with system call
  * INPUTS: fd   - File Descriptor
  * OUTPUTS: none
  * RETURNS: 0 if success, -1 if file does not exist
@@ -238,7 +237,7 @@ int32_t file_close(uint8_t * fd)
  * DESCRIPTION: writes directory, always fails read-only
  * INPUTS:  fd        - File Descriptor
  *          buf       - buffer in which to put the data
- *          num_bytes - number of bytes to write   
+ *          num_bytes - number of bytes to write
  * OUTPUTS: none
  * RETURNS: -1 should always fail
  * SIDE EFFECTS:
@@ -265,7 +264,7 @@ int32_t dir_open(uint8_t * fd)
 /*
  * dir_close
  * DESCRIPTION: closes given directory
- * INPUTS: fd - File Descriptor 
+ * INPUTS: fd - File Descriptor
  * OUTPUTS: none
  * RETURNS: 0 if success, -1 if directroy does not exist, returns 0 right now since 1 dir
  * SIDE EFFECTS:
@@ -274,4 +273,3 @@ int32_t dir_close(uint8_t * fd)
 {
     return 0;
 }
-
