@@ -1,4 +1,5 @@
-#include "string.h"
+#include "char_util.h"
+#include "../lib.h"
 
 int32_t string_length(const uint8_t* s)
 {
@@ -35,4 +36,13 @@ int32_t substring(const uint8_t* s, uint8_t* buf, uint32_t start, uint32_t end)
     }
     buf[end - start] = '\0';
     return 0;
+}
+
+void print_buf(uint8_t* buf, uint32_t bytes)
+{
+	int i;
+	for (i = 0; i < bytes; i++)
+	{
+		putc(buf[i]);
+	}
 }
