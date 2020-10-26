@@ -6,6 +6,7 @@
 #include "../filesys.h"
 #include "../utils/char_util.h"
 #include "../utils/clock_util.h"
+#include "../utils/file_util.h"
 #include "../rtc.h"
 
 /* Checkpoint 2 tests */
@@ -14,10 +15,7 @@ int print_all_filesys()
 {
 	TEST_HEADER;
 	uint8_t name[FNAME_MAX_LEN + 1];
-	while (directory_read(name)) {
-		printf("%s", name);
-		printf("\n");
-	}
+	while (directory_read(name)) print_file_info(name);
 	return PASS;
 }
 
@@ -131,17 +129,17 @@ int test_read_files()
 	printf("frame0.txt:\n");
 	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, size);
 	print_buf(data, size);
-	
+
 	printf("\n");
 
 	while (1)
 	{
-		
+
 		if (terminal_read(1, read, 1)) break;
 	}
-	
-	
-	
+
+
+
 	size = file_size((uint8_t*)"frame1.txt");
 	printf("frame1.txt:\n");
 	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, size) != -1)
@@ -154,7 +152,7 @@ int test_read_files()
 
 	while (1)
 	{
-		
+
 		if (terminal_read(1, read, 1)) break;
 	}
 	/*size = file_size((uint8_t*)"fish");
@@ -169,7 +167,7 @@ int test_read_files()
 
 	while (1)
 	{
-		
+
 		if (terminal_read(1, read, 1)) break;
 	}
 	size = file_size((uint8_t*)"verylargetextwithverylongname.txt");
@@ -180,7 +178,7 @@ int test_read_files()
 
 	while (1)
 	{
-		
+
 		if (terminal_read(1, read, 1)) break;
 	}
 
@@ -192,7 +190,7 @@ int test_read_files()
 
 	while (1)
 	{
-		
+
 		if (terminal_read(1, read, 1)) break;
 	}
 
@@ -373,9 +371,9 @@ int rtc_rate_test()
 
 void test_all_checkpoint2()
 {
-	//TEST_OUTPUT("print all filesys", print_all_filesys());
+	TEST_OUTPUT("print all filesys", print_all_filesys());
 	//TEST_OUTPUT("read filesys inode", read_data_filesys());
 	//TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
 	//TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
-	TEST_OUTPUT("Read Files Test: ", test_read_files());
+	// TEST_OUTPUT("Read Files Test: ", test_read_files());
 }

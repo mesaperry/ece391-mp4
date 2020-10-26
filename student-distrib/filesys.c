@@ -45,13 +45,10 @@ init_filesys(uint32_t fs_addr)
 uint32_t file_size(uint8_t* fname)
 {
 	dentry_t dentry;
-	uint32_t i;
 	if (read_dentry_by_name(fname, &dentry) < 0) return -1;
-    i = dentry.inode_index;
-	inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[i];
+	inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[dentry.inode_index];
     return inode.length;
 }
-
 
 
 /*
