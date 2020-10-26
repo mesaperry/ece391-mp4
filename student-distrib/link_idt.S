@@ -68,7 +68,7 @@ irq0:
 irq1:
         pushal
         pushfl
-        call irq1_handler
+        call keyboard_handler
         popfl
         popal
         iret
@@ -170,4 +170,3 @@ irq15:
         popfl
         popal
         iret
-

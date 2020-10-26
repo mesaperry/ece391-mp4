@@ -147,8 +147,6 @@ int keyboard_test(){
 	int x = 0;
 	uint8_t buffer[MAX_BUFF_LENGTH];
 
-	terminal_init();
-
 	while(1){
 		x = terminal_read(1, buffer, x);
 		terminal_write(1, buffer, x);

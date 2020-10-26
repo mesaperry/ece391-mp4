@@ -7,6 +7,9 @@
 
 #include "types.h"
 
+#define NUM_COLS    80
+#define NUM_ROWS    25
+#define ATTRIB      0x7
 #define VIDEO       0xB8000
 
 int32_t printf(int8_t *format, ...);
@@ -25,6 +28,14 @@ void* memmove(void* dest, const void* src, uint32_t n);
 int32_t strncmp(const int8_t* s1, const int8_t* s2, uint32_t n);
 int8_t* strcpy(int8_t* dest, const int8_t*src);
 int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
+
+void update_cursor(int x, int y);
+void print_backspace();
+
+int32_t get_screen_x(void);
+int32_t get_screen_y(void);
+void set_screen_x(int x);
+void set_screen_y(int y);
 
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);
