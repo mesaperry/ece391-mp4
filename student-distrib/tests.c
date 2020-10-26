@@ -178,10 +178,19 @@ int force_page_exception_2()
 }
 
 int rtc_test(){
-	clear();
+	const int num_ints = 1000;
+	int i;
+
 	rtc_open(NULL);
 
-	return 1;
+	for (i = 0; i < num_ints; i++) {
+		test_interrupts();
+		rtc_read(0, NULL, 0);
+	}
+
+	clear();
+
+	return PASS;
 }
 
 /* Checkpoint 2 tests */
@@ -310,7 +319,7 @@ int rtc_driver_test()
  */
 void rtc_rate_test()
 {
-	int num_secs = 3; // number of seconds to test each frequency for
+	int num_secs = 2; // number of seconds to test each frequency for
 	const int32_t test_freqs[] = {
 		2, 4, 8, 16, 32, 64, 128, 256, 512, 1024
 	};
@@ -320,7 +329,6 @@ void rtc_rate_test()
 	int tick;
 
 	rtc_open(NULL);
-	clear();
 
 	for (freq_i = 0; freq_i < num_freqs; freq_i++) {
 
@@ -362,5 +370,7 @@ void launch_tests(){
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
 	// TEST_OUTPUT("RTC I/O", rtc_driver_test());
+	rtc_test();
+	TEST_OUTPUT("RTC Driver I/O", rtc_driver_test());
 	rtc_rate_test();
 }
