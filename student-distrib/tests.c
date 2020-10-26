@@ -293,12 +293,16 @@ int test_read_files()
 {
 	TEST_HEADER;
 	uint8_t data[10000];
+	int count = 0;
+	
 	printf("frame0.txt:\n");
 	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 50);
 	print_buf(data, 50);
 	
+
 	printf("\n");
 	
+
 	printf("frame1.txt:\n");	
 	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 500) != -1)
 	{
@@ -308,6 +312,7 @@ int test_read_files()
 
 	printf("\n\n");
 	
+
 	printf("fish:\n");
 	if (read_file_bytes_by_name((uint8_t*)"fish", data, 4500) != -1)
 	{
@@ -315,21 +320,25 @@ int test_read_files()
 		print_buf(data, 4500);
 	}
 	
+	
 	printf("\n");
 	
+
 	printf("verlargetextwithverylongname.tx(t):\n");
 	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 10000) != -1) print_buf(data, 10000);
 	
 	
 	printf("\n");
+	
+	
 	printf("grep:\n");
-
 	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000); 
 	
 
 	printf("\n");
-	printf("ls:\n");
+	
 
+	printf("ls:\n");
 	if (read_file_bytes_by_name((uint8_t*)"ls", data, 5000) != -1) print_buf(data, 5000);
 	
 	return PASS;
