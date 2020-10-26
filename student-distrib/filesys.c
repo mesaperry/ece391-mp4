@@ -157,7 +157,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
  * SIDE EFFECTS: increments dr_index
  */
 uint32_t
-directory_read(uint8_t* buf[FNAME_MAX_LEN + 1])
+directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
 {
     dentry_t dentry;
     int i; /* character read index */
@@ -182,7 +182,7 @@ directory_read(uint8_t* buf[FNAME_MAX_LEN + 1])
  * OUTPUTS: none
  * RETURNS: 0 if success, -1 if end of directory reached.
  *          Should never fail.
- * SIDE EFFECTS: 
+ * SIDE EFFECTS:
  */
 uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
 {
@@ -201,6 +201,5 @@ uint32_t file_read(uint8_t file_name, uint8_t* buf, uint32_t num_bytes)
 
     int32_t dentry_loc = read_dentry_by_name(file, dentry);
     int32_t data_read = read_data(dentry_loc->inode_index, offset, buf, num_bytes);
-    
-}
 
+}
