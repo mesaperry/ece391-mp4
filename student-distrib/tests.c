@@ -5,6 +5,7 @@
 #include "terminal.h"
 #include "filesys.h"
 #include "utils/char_util.h"
+#include "utils/clock_util.h"
 #include "tests/checkpoint1.h"
 
 #include "rtc.h"
@@ -172,7 +173,8 @@ void rtc_rate_test()
 
 /* Test suite entry point */
 void launch_tests(){
-	test_all_checkpoint1();
+	// test_all_checkpoint1();
+
 
 	/* start checkpoint 2*/
 	// TEST_OUTPUT("print all filesys", print_all_filesys());

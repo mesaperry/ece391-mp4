@@ -1,4 +1,5 @@
 #include "clock_util.h"
+#include "../rtc.h"
 
 /*
  * wait_sync
@@ -10,7 +11,20 @@
  */
 void wait_sync(uint32_t ms_delay)
 {
-    // TODO
+    const uint32_t frequency = 512;         // current frequency in Hz
+    int num_ticks;                          // number of RTC ticks to wait for
+    int tick;                               // current tick
+
+    rtc_open(NULL);
+    rtc_write(0, &frequency, sizeof(frequency));
+
+    num_ticks = (ms_delay * frequency) / 1000;
+
+    /* read <num_ticks> ticks before returning */
+    for (tick = 0; tick < num_ticks; tick++) {
+        rtc_read(0, NULL, 0);
+    }
+
 }
 
 /*

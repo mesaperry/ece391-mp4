@@ -105,7 +105,7 @@ int32_t rtc_write( int32_t fd,
     }
     
     /* verify input is 0 or a power of 2 */
-    if (frequency & (frequency - 1) != 0) {
+    if ((frequency & (frequency - 1)) != 0) {
         return -1;
     }
 
@@ -183,4 +183,40 @@ int32_t rtc_close(int32_t fd) {
     sti();
 
     return 0;
+}
+
+/* rtc_get_rate
+ *
+ * DESCRIPTION: Gets the current RTC rate
+ *
+ * INPUT/OUTPUT: Returns RTC rate
+ * SIDE EFFECTS: None
+ */
+uint8_t rtc_get_rate() {
+    uint8_t rate;
+
+    cli();
+    outb((NMI | REG_A), RTC_PORT);
+    rate = inb(CMOS_PORT) & ~RATE_MASK;
+    sti();
+
+    return rate;
+}
+
+/* rtc_is_on
+ *
+ * DESCRIPTION: Checks if IRQ 8 is on
+ *
+ * INPUT/OUTPUT: Returns 1 if on, 0 if off
+ * SIDE EFFECTS: None
+ */
+int rtc_is_on() {
+    int is_on;
+
+    cli();
+    outb(REG_B | NMI, RTC_PORT);
+    is_on = (PI & inb(CMOS_PORT)) != 0;
+    sti();
+
+    return is_on;
 }
