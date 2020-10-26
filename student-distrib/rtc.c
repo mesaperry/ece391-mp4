@@ -24,6 +24,8 @@
 #define REG_B               0x0B
 #define REG_C               0x0C
 
+static const int32_t DEF_FREQ = 2;
+
 volatile int32_t IR_flag;
 
 
@@ -31,10 +33,10 @@ extern void rtc_intr();
 
 /* rtc_init
  *
- * DESCRIPTION: Initializes RTC in idt
+ * DESCRIPTION: Initializes RTC in IDT
  *
- * INPUT/OUTPUT: none
- * SIDE EFFECTS: Sets up IDT
+ * INPUT/OUTPUT: None
+ * SIDE EFFECTS: Sets up RTC IDT
  */
 void rtc_init() {
     SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
@@ -44,7 +46,7 @@ void rtc_init() {
  *
  * DESCRIPTION: Parses calls to RTC
  *
- * INPUT/OUTPUT: none
+ * INPUT/OUTPUT: None
  * SIDE EFFECTS: Sends end of interrupt signal
  */
 void rtc_handler() {
@@ -61,10 +63,10 @@ void rtc_handler() {
 
 /* rtc_read
  *
- * DESCTIPTION: wait for interrupt
+ * DESCTIPTION: Waits for interrupt
  * 
- * INPUT/OUTPUT: always returns 0
- * SIDE EFFECTS: makes thread wait
+ * INPUT/OUTPUT: Always returns 0
+ * SIDE EFFECTS: Makes thread wait
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     IR_flag = 0;
@@ -74,62 +76,65 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
 
 /* rtc_write
  *
- * DESCTIPTION:
+ * DESCTIPTION: Sets RTC clock interrupt rate in Hz
  * 
- * INPUT/OUTPUT:
- * SIDE EFFECTS:
+ * INPUT/OUTPUT: Inputs rate, outputs 0 on success or -1 on failure
+ * SIDE EFFECTS: Adjusts clock rate
  */
-int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
-    int32_t frequency;
-    uint8_t rate;
+int32_t rtc_write( int32_t fd,
+                   const void* buf,
+                   int32_t nbytes ) {
+    int32_t frequency;                      // input frequency
+    uint8_t rate;                           // clock rate used to set RTC register
 
-    /* should only accept a 4-byte integer as input */
-    if (nbytes != 4 || buf == NULL)
+    /* verify input is a 4-byte int */
+    if (nbytes != 4 || buf == NULL) {
         return -1;
+    }
 
     frequency = *((int32_t*)buf);
+    
+    /* verify frequency is no greater than 1024 Hz */
+    if (frequency > 1024) {
+        return -1;
+    }
+    
+    /* verify frequency is not 1 Hz */
+    if (frequency == 1) {
+        return -1;
+    }
+    
+    /* verify input is 0 or a power of 2 */
+    if (frequency & (frequency - 1) != 0) {
+        return -1;
+    }
 
     /* get RTC rate from frequency */
-    /* can only be power of 2 and no greater than 1024 */
-    switch(frequency) {
-        case 0:
-            rate = 0x0;
-        case 2:
-            rate = 0xF;
-        case 4:
-            rate = 0xE;
-        case 8:
-            rate = 0xD;
-        case 16:
-            rate = 0xC;
-        case 32:
-            rate = 0xB;
-        case 64:
-            rate = 0xA;
-        case 128:
-            rate = 0x9;
-        case 256:
-            rate = 0x8;
-        case 512:
-            rate = 0x7;
-        case 1024:
-            rate = 0x6;
-        default:
-            return -1;
+    if (frequency != 0) {
+        rate = 17;
+        while (frequency != 0) {
+            frequency >>= 1;
+            rate--;
+        }
+    }
+    else {
+        rate = 0;
     }
 
     cli();
     outb((NMI | REG_A), RTC_PORT);
     outb((inb(CMOS_PORT) & RATE_MASK) | rate, CMOS_PORT);
     sti();
+
+    return 0;
 }
 
 /* rtc_open
  *
- * DESCRIPTION: starts the irq, will set the default rate
+ * DESCRIPTION: Enables RTC IRQ, initializes to default rate
  *
- * INPUT/OUTPUT: none
- * SIDE EFFECTS: Starts this clock interrupt
+ * INPUT/OUTPUT: Always returns 0
+ * SIDE EFFECTS: Starts RTC interrupts
  */
 int32_t rtc_open(const uint8_t* filename) {
 
@@ -146,6 +151,9 @@ int32_t rtc_open(const uint8_t* filename) {
     /* Close critical section */
     sti();
 
+    /* Set clock rate to default */
+    rtc_write(0, &DEF_FREQ, 0);
+
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
 
@@ -154,10 +162,10 @@ int32_t rtc_open(const uint8_t* filename) {
 
 /* rtc_close
  *
- * DESCRIPTION: Masks interrupts so rtc doesn't work
+ * DESCRIPTION: Disables RTC IRQ
  *
- * INPUT/OUTPUT: none
- * SIDE EFFECTS: disables irqs for rtc
+ * INPUT/OUTPUT: Always returns 0
+ * SIDE EFFECTS: Disables RTC interrupts
  */
 int32_t rtc_close(int32_t fd) {
     /* Disable IRQs */
