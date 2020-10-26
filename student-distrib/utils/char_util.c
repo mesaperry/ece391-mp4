@@ -1,5 +1,5 @@
-#include "string.h"
-#include "lib.h"
+#include "char_util.h"
+#include "../lib.h"
 
 int32_t string_length(const uint8_t* s)
 {

@@ -1,5 +1,5 @@
 /* String utils */
-#include "types.h"
+#include "../types.h"
 
 int32_t string_length(const uint8_t* s);
 /* Calculate whether two strings are equal */

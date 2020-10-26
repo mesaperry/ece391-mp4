@@ -4,7 +4,7 @@
 #include "lib.h"
 #include "terminal.h"
 #include "filesys.h"
-#include "string.h"
+#include "utils/char_util.h"
 
 #include "rtc.h"
 
@@ -288,7 +288,7 @@ int test_read_file_bytes_by_name()
 }
 
 
-// test read files 
+// test read files
 int test_read_files()
 {
 	TEST_HEADER;
@@ -296,42 +296,43 @@ int test_read_files()
 	printf("frame0.txt:\n");
 	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 50);
 	print_buf(data, 50);
-	
+
 	printf("\n");
-	
-	printf("frame1.txt:\n");	
+
+	printf("frame1.txt:\n");
 	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 500) != -1)
 	{
 		print_buf(data, 500);
 	}
-	
+
 
 	printf("\n\n");
-	
+
 	printf("fish:\n");
 	if (read_file_bytes_by_name((uint8_t*)"fish", data, 4500) != -1)
 	{
-		
+
 		print_buf(data, 4500);
 	}
-	
+
 	printf("\n");
-	
+
 	printf("verlargetextwithverylongname.tx(t):\n");
 	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 10000) != -1) print_buf(data, 10000);
-	
-	
+
+
 	printf("\n");
 	printf("grep:\n");
 
-	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000); 
-	
+	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000);
+
 
 	printf("\n");
 	printf("ls:\n");
 
 	if (read_file_bytes_by_name((uint8_t*)"ls", data, 5000) != -1) print_buf(data, 5000);
-	
+
+	printf("\n");
 	return PASS;
 }
 
@@ -346,7 +347,7 @@ int test_open_close()
 		return FAIL;
 	}
 	printf("hag_in_a_bag.txt doesn't exist : good \n");
-	
+
 	if (read_dentry_by_name((uint8_t*)"frame0.txt", &dentry) == -1)
 	{
 		printf("No you're wrong its there, I saw it in air bud\n");
@@ -421,13 +422,13 @@ void launch_tests(){
 	//TEST_OUTPUT("IDT without paging", idt_woP());
 	//TEST_OUTPUT("keybord", );
 	// keyboard_test();
-	
+
 	/* start checkpoint 2*/
 	// TEST_OUTPUT("print all filesys", print_all_filesys());
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
 	//TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
-	TEST_OUTPUT("Read Files Test: ", test_read_files());
+	// TEST_OUTPUT("Read Files Test: ", test_read_files());
 	//TEST_OUTPUT("Open close", test_open_close());
 	//TEST_OUTPUT("Write Test", test_write());
 }
