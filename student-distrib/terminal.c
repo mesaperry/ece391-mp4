@@ -246,7 +246,7 @@ uint32_t get_key_index(void)
 int32_t keyboard_handler(void)
 {
   /* Initialize variables */
-  uint8_t scancode, input, temp;
+  uint8_t scancode, input, temp_x, temp_y;
 
   /* Get keystroke from keyboard */
   scancode = inb(KEYBOARD_PORT);
@@ -430,27 +430,37 @@ int32_t keyboard_handler(void)
           key_index++;
         }
 
-        /* Get current screen_x */
-        temp = get_screen_x();
+        /* Get current screen_x and screen_y */
+        temp_x = get_screen_x();
+        temp_y = get_screen_y() + 1;
 
         /* Update cursor  */
         if(key_index == 80 && !wrapped)
         {
-          wrap_around();
-          current_line++;
+          /* Check if screen_Y has reached end of screen */
+          if(temp_y == NUM_ROWS)
+          {
+            set_screen_y(temp_y);
+            scroll_handle();
+          }
+          else
+          {
+            wrap_around();
+          }
+
+          /* Declare wrapped and update line to print to after handling */
           wrapped = 1;
+          current_line = temp_y;
+          update_cursor(0, temp_y);
         }
         else if(key_index < MAX_BUFF_LENGTH)
         {
           /* Update cursor until, buffer is full */
           update_cursor(key_index % NUM_COLS, current_line);
-
         }
       }
     }
   }
-
-  // Shift line for every 80 presses in key_buff
 
   SEND_EOI:
       /* Send interrupt signal for keyboard, the first IRQ */
