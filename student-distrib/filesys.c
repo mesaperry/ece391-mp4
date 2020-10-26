@@ -41,6 +41,19 @@ init_filesys(uint32_t fs_addr)
     dr_index = 0;
 }
 
+/* returns bytes read */
+uint32_t file_size(uint8_t* fname)
+{
+	dentry_t dentry;
+	uint32_t i;
+	if (read_dentry_by_name(fname, &dentry) < 0) return -1;
+    i = dentry.inode_index;
+	inode_t inode = ((inode_t*)(filesys_addr + BLOCK_SIZE))[i];
+    return inode.length;
+}
+
+
+
 /*
  * read_dentry_by_name
  * DESCRIPTION: copies matching dentry data into location of pointer
@@ -48,7 +61,7 @@ init_filesys(uint32_t fs_addr)
  *         dentry -- the location at which to save dentry data
  * OUTPUTS: data to dentry location
  * RETURNS: -1 if failure, 0 if success
- * SIDE EFFECTS: none
+ * SIDE EFFECTS: copys file to dentry data
  */
 int32_t
 read_dentry_by_name (const uint8_t* fname, dentry_t* dentry)

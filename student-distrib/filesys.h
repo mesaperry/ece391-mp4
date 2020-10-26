@@ -58,6 +58,8 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length);
 /* Returns the next file name in the filesys */
 uint32_t directory_read(uint8_t buf[FNAME_MAX_LEN + 1]);
+/* returnrs file size */ 
+uint32_t file_size(uint8_t* fname);
 
 // file operations
 /* placeholders for file operations for syscalls and explicit tests are made in test.c for cp2 */

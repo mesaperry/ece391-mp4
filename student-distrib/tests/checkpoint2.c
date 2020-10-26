@@ -73,6 +73,8 @@ int read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length)
 	return 0;
 }
 
+
+
 /* Returns -1 if not executable, 0 if executable */
 int verify_executable(char* exe)
 {
@@ -117,17 +119,19 @@ int test_read_file_bytes_by_name()
 }
 
 
-// test read files
+// test read files - this function requires the user to press enter to move to the next file
 int test_read_files()
 {
 	TEST_HEADER;
 	uint8_t data[10000];
 	char read[10];
+	uint32_t size;
 
+	size = file_size((uint8_t*)"frame0.txt");
 	printf("frame0.txt:\n");
-	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 50);
-	print_buf(data, 50);
-
+	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, size);
+	print_buf(data, size);
+	
 	printf("\n");
 
 	while (1)
@@ -135,11 +139,14 @@ int test_read_files()
 		
 		if (terminal_read(1, read, 1)) break;
 	}
-
+	
+	
+	
+	size = file_size((uint8_t*)"frame1.txt");
 	printf("frame1.txt:\n");
-	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, 500) != -1)
+	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, size) != -1)
 	{
-		print_buf(data, 500);
+		print_buf(data, size);
 	}
 
 
@@ -150,13 +157,13 @@ int test_read_files()
 		
 		if (terminal_read(1, read, 1)) break;
 	}
-
+	/*size = file_size((uint8_t*)"fish");
 	printf("fish:\n");
-	if (read_file_bytes_by_name((uint8_t*)"fish", data, 4500) != -1)
+	if (read_file_bytes_by_name((uint8_t*)"fish", data, size) != -1)
 	{
 
-		print_buf(data, 4500);
-	}
+		print_buf(data, size);
+	}*/
 
 	printf("\n");
 
@@ -165,9 +172,9 @@ int test_read_files()
 		
 		if (terminal_read(1, read, 1)) break;
 	}
-
+	size = file_size((uint8_t*)"verylargetextwithverylongname.txt");
 	printf("verlargetextwithverylongname.tx(t):\n");
-	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, 10000) != -1) print_buf(data, 10000);
+	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, size) != -1) print_buf(data, size);
 
 	printf("\n");
 
@@ -177,8 +184,9 @@ int test_read_files()
 		if (terminal_read(1, read, 1)) break;
 	}
 
+	size = file_size((uint8_t*)"grep");
 	printf("grep:\n");
-	if (read_file_bytes_by_name((uint8_t*)"grep", data, 5000) != -1) print_buf(data, 5000);
+	if (read_file_bytes_by_name((uint8_t*)"grep", data, size) != -1) print_buf(data, size);
 
 	printf("\n");
 
@@ -188,8 +196,9 @@ int test_read_files()
 		if (terminal_read(1, read, 1)) break;
 	}
 
+	size = file_size((uint8_t*)"ls");
 	printf("ls:\n");
-	if (read_file_bytes_by_name((uint8_t*)"ls", data, 5000) != -1) print_buf(data, 5000);
+	if (read_file_bytes_by_name((uint8_t*)"ls", data, size) != -1) print_buf(data, size);
 
 	printf("\n");
 	return PASS;
@@ -264,11 +273,11 @@ int test_write()
 
 void test_all_checkpoint2()
 {
-	TEST_OUTPUT("print all filesys", print_all_filesys());
-	TEST_OUTPUT("read filesys inode", read_data_filesys());
-	TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
-	TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
+	//TEST_OUTPUT("print all filesys", print_all_filesys());
+	//TEST_OUTPUT("read filesys inode", read_data_filesys());
+	//TEST_OUTPUT("filesys_corner_cases", filesys_corner_cases());
+	//TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
 	TEST_OUTPUT("Read Files Test: ", test_read_files());
-	TEST_OUTPUT("Open close", test_open_close());
-	TEST_OUTPUT("Write Test", test_write());
+	//TEST_OUTPUT("Open close", test_open_close());
+	//TEST_OUTPUT("Write Test", test_write());
 }
