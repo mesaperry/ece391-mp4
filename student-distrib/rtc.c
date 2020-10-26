@@ -18,10 +18,13 @@
 
 #define NMI                 0x80 // Non-Mask Interrupt(NMI) Bit
 #define PI                  0x40 // Periodic Interrupt(PI) Bit
+#define RATE_MASK           0xF0 // Non-rate bits of register A
 
 #define REG_A               0x0A // Registers
 #define REG_B               0x0B
 #define REG_C               0x0C
+
+static const int32_t DEF_FREQ = 2;
 
 volatile int32_t IR_flag;
 
@@ -30,10 +33,10 @@ extern void rtc_intr();
 
 /* rtc_init
  *
- * DESCRIPTION: Initializes RTC in idt
+ * DESCRIPTION: Initializes RTC in IDT
  *
- * INPUT/OUTPUT: none
- * SIDE EFFECTS: Sets up IDT
+ * INPUT/OUTPUT: None
+ * SIDE EFFECTS: Sets up RTC IDT
  */
 void rtc_init() {
     SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
@@ -43,7 +46,7 @@ void rtc_init() {
  *
  * DESCRIPTION: Parses calls to RTC
  *
- * INPUT/OUTPUT: none
+ * INPUT/OUTPUT: None
  * SIDE EFFECTS: Sends end of interrupt signal
  */
 void rtc_handler() {
@@ -58,14 +61,82 @@ void rtc_handler() {
   send_eoi(RTC_IRQ);
 }
 
+/* rtc_read
+ *
+ * DESCTIPTION: Waits for interrupt
+ * 
+ * INPUT/OUTPUT: Always returns 0
+ * SIDE EFFECTS: Makes thread wait
+ */
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    IR_flag = 0;
+    while(!IR_flag); // wait for interrupt
+    return 0;
+}
+
+/* rtc_write
+ *
+ * DESCTIPTION: Sets RTC clock interrupt rate in Hz
+ * 
+ * INPUT/OUTPUT: Inputs rate, outputs 0 on success or -1 on failure
+ * SIDE EFFECTS: Adjusts clock rate
+ */
+int32_t rtc_write( int32_t fd,
+                   const void* buf,
+                   int32_t nbytes ) {
+    int32_t frequency;                      // input frequency
+    uint8_t rate;                           // clock rate used to set RTC register
+
+    /* verify input is a 4-byte int */
+    if (nbytes != 4 || buf == NULL) {
+        return -1;
+    }
+
+    frequency = *((int32_t*)buf);
+    
+    /* verify frequency is no greater than 1024 Hz */
+    if (frequency > 1024) {
+        return -1;
+    }
+    
+    /* verify frequency is not 1 Hz */
+    if (frequency == 1) {
+        return -1;
+    }
+    
+    /* verify input is 0 or a power of 2 */
+    if ((frequency & (frequency - 1)) != 0) {
+        return -1;
+    }
+
+    /* get RTC rate from frequency */
+    if (frequency != 0) {
+        rate = 17;
+        while (frequency != 0) {
+            frequency >>= 1;
+            rate--;
+        }
+    }
+    else {
+        rate = 0;
+    }
+
+    cli();
+    outb((NMI | REG_A), RTC_PORT);
+    outb((inb(CMOS_PORT) & RATE_MASK) | rate, CMOS_PORT);
+    sti();
+
+    return 0;
+}
+
 /* rtc_open
  *
- * DESCRIPTION: starts the irq, will set the default rate
+ * DESCRIPTION: Enables RTC IRQ, initializes to default rate
  *
- * INPUT/OUTPUT: none
- * SIDE EFFECTS: Starts this clock interrupt
+ * INPUT/OUTPUT: Always returns 0
+ * SIDE EFFECTS: Starts RTC interrupts
  */
-void rtc_open() {
+int32_t rtc_open(const uint8_t* filename) {
 
     /* Open critical section */
     cli();
@@ -80,18 +151,23 @@ void rtc_open() {
     /* Close critical section */
     sti();
 
+    /* Set clock rate to default */
+    rtc_write(0, &DEF_FREQ, sizeof(DEF_FREQ));
+
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
+
+    return 0;
 }
 
 /* rtc_close
  *
- * DESCRIPTION: Masks interrupts so rtc doesn't work
+ * DESCRIPTION: Disables RTC IRQ
  *
- * INPUT/OUTPUT: none
- * SIDE EFFECTS: disables irqs for rtc
+ * INPUT/OUTPUT: Always returns 0
+ * SIDE EFFECTS: Disables RTC interrupts
  */
-int32_t rtc_close() {
+int32_t rtc_close(int32_t fd) {
     /* Disable IRQs */
     disable_irq(RTC_IRQ);
 
@@ -107,4 +183,40 @@ int32_t rtc_close() {
     sti();
 
     return 0;
+}
+
+/* rtc_get_rate
+ *
+ * DESCRIPTION: Gets the current RTC rate
+ *
+ * INPUT/OUTPUT: Returns RTC rate
+ * SIDE EFFECTS: None
+ */
+uint8_t rtc_get_rate() {
+    uint8_t rate;
+
+    cli();
+    outb((NMI | REG_A), RTC_PORT);
+    rate = inb(CMOS_PORT) & ~RATE_MASK;
+    sti();
+
+    return rate;
+}
+
+/* rtc_is_on
+ *
+ * DESCRIPTION: Checks if IRQ 8 is on
+ *
+ * INPUT/OUTPUT: Returns 1 if on, 0 if off
+ * SIDE EFFECTS: None
+ */
+int rtc_is_on() {
+    int is_on;
+
+    cli();
+    outb(REG_B | NMI, RTC_PORT);
+    is_on = (PI & inb(CMOS_PORT)) != 0;
+    sti();
+
+    return is_on;
 }

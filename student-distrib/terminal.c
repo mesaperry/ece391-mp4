@@ -319,15 +319,15 @@ int32_t keyboard_handler(void)
     }
     case BACK:
     {
-      if(key_index != 0)
+      if((key_index - clear_offset) != 0)
       {
+        /* Print backspace */
+        print_backspace();
+
         /* Update keyboard buffer */
         key_index--;
         key_buffer[key_index] = '\0';
       }
-
-      /* Print backspace */
-      print_backspace();
 
       goto SEND_EOI;
     }
