@@ -118,91 +118,42 @@ int test_read_file_bytes_by_name()
 	return PASS;
 }
 
+void reading_help(char* fname)	
+{
+	uint32_t size;
+	char read[10]; // arbitrary
+	size = file_size((uint8_t*)fname);
+	uint8_t data[size];
+	printf("%s \n", fname);
+	read_file_bytes_by_name((uint8_t*)fname, data, size);
+	print_buf(data, size);
+	printf("\n");
 
-// test read files - this function requires the user to press enter to move to the next file
+	wait_sync(5000);
+}
+// test read files - this function prints the contents of a file after 5000ms
 int test_read_files()
 {
 	TEST_HEADER;
-	uint8_t data[10000];
-	char read[10];
-	uint32_t size;
-
-	size = file_size((uint8_t*)"frame0.txt");
-	printf("frame0.txt:\n");
-	read_file_bytes_by_name((uint8_t*)"frame0.txt", data, size);
-	print_buf(data, size);
 	
-	printf("\n");
 
-	while (1)
-	{
-		
-		if (terminal_read(1, read, 1)) break;
-	}
+	reading_help("frame0.txt");
+
+	reading_help("frame1.txt");
+	
+	reading_help("fish");
+
+	reading_help("verylargetextwithverylongname.txt");
+
+	reading_help("grep");
+	
+	reading_help("ls");
 	
 	
-	
-	size = file_size((uint8_t*)"frame1.txt");
-	printf("frame1.txt:\n");
-	if (read_file_bytes_by_name((uint8_t*)"frame1.txt", data, size) != -1)
-	{
-		print_buf(data, size);
-	}
-
-
-	printf("\n\n");
-
-	while (1)
-	{
-		
-		if (terminal_read(1, read, 1)) break;
-	}
-	/*size = file_size((uint8_t*)"fish");
-	printf("fish:\n");
-	if (read_file_bytes_by_name((uint8_t*)"fish", data, size) != -1)
-	{
-
-		print_buf(data, size);
-	}*/
-
-	printf("\n");
-
-	while (1)
-	{
-		
-		if (terminal_read(1, read, 1)) break;
-	}
-	size = file_size((uint8_t*)"verylargetextwithverylongname.txt");
-	printf("verlargetextwithverylongname.tx(t):\n");
-	if (read_file_bytes_by_name((uint8_t*)"verylargetextwithverylongname.txt", data, size) != -1) print_buf(data, size);
-
-	printf("\n");
-
-	while (1)
-	{
-		
-		if (terminal_read(1, read, 1)) break;
-	}
-
-	size = file_size((uint8_t*)"grep");
-	printf("grep:\n");
-	if (read_file_bytes_by_name((uint8_t*)"grep", data, size) != -1) print_buf(data, size);
-
-	printf("\n");
-
-	while (1)
-	{
-		
-		if (terminal_read(1, read, 1)) break;
-	}
-
-	size = file_size((uint8_t*)"ls");
-	printf("ls:\n");
-	if (read_file_bytes_by_name((uint8_t*)"ls", data, size) != -1) print_buf(data, size);
-
 	printf("\n");
 	return PASS;
 }
+
 
 // test opens_and_closes
 int test_open_close()
