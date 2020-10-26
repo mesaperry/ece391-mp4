@@ -10,6 +10,8 @@
 
 #define INPUT_CUTOFF 0x3E
 
+#define OVERFLOW 32
+
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',']', ' ', ' ',
@@ -47,6 +49,8 @@ void terminal_init(void) {
   table_index = 0;
   current_line = 0;
   wrapped = 0;
+  clear_offset = 0; // Used as the key_buffer offset when clearing the screen
+  overflow_check = 0;
 
   int x;
   for(x = 0; x < MAX_BUFF_LENGTH; x++){
@@ -186,8 +190,11 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   /* Write data to the screen */
   for(x = 0; x < nbytes; x++)
   {
-    putc(buffer[x]);
-    count++;
+    if(buffer[x] != '\0')
+    {
+      putc(buffer[x]);
+      count++;
+    }
   }
 
   /* Close critical section */
@@ -292,7 +299,7 @@ int32_t keyboard_handler(void)
       key_index++;
 
       /* Update cursor                                                                */
-      update_cursor(key_index % NUM_COLS, current_line);
+      update_cursor(key_index % NUM_COLS, get_screen_y());
 
       goto SEND_EOI;
     }
@@ -306,23 +313,22 @@ int32_t keyboard_handler(void)
         key_index++;
 
         /* Update cursor                                                                */
-        update_cursor(key_index % NUM_COLS, current_line);
+        update_cursor((key_index - clear_offset) % NUM_COLS, get_screen_y());
       }
       goto SEND_EOI;
     }
     case BACK:
     {
-      /* If at beginning of terminal, return */
-      if (key_index <= 0) {
-        return 0;
+      if((key_index - clear_offset) != 0)
+      {
+        /* Print backspace */
+        print_backspace();
+
+        /* Update keyboard buffer */
+        key_index--;
+        key_buffer[key_index] = '\0';
       }
 
-      /* Print backspace */
-      print_backspace();
-
-      /* Update keyboard buffer */
-      key_index--;
-      key_buffer[key_index] = '\0';
       goto SEND_EOI;
     }
     case CTRL:
@@ -356,12 +362,19 @@ int32_t keyboard_handler(void)
       putc('\n');
       wrapped = 0;
       key_index = 0;
+      clear_offset = 0;
       current_line++;
       clear_buffer();
 
       /* set enter flag */
       /* Should trigger terminal_write */
       enter_down = 1;
+
+      goto SEND_EOI;
+    }
+    case ENTER_OFF:
+    {
+      enter_down = 0;
 
       goto SEND_EOI;
     }
@@ -401,11 +414,18 @@ int32_t keyboard_handler(void)
         input = KEY_TABLE[table_index];
 
         // Clear screen upon ctrl+L
-        if(ctrl_check && (input == 'l' || input == 'L')){
+        if(ctrl_check && (input == 'l' || input == 'L'))
+        {
           /* Re-set screen and buffer */
           clear();
-          clear_buffer();
-          key_index = 0;
+          if(key_index != 0)
+          {
+            clear_offset = key_index;
+          }
+          else
+          {
+            clear_buffer();
+          }
 
           /* Update cursor */
           update_cursor(0, 0);
@@ -413,10 +433,14 @@ int32_t keyboard_handler(void)
           set_screen_x(0);
           set_screen_y(0);
 
+          current_line = 0;
+
           /* End interrupt */
           send_eoi(1);
           return 0;
         }
+
+        set_screen_x((key_index - clear_offset) % NUM_COLS);
 
         if(key_index < MAX_BUFF_LENGTH)
         {
@@ -429,13 +453,21 @@ int32_t keyboard_handler(void)
           /* Update index in keyboard buffer */
           key_index++;
         }
+        else if(overflow_check < OVERFLOW)
+        {
+          /* Print letter to screen */
+          putc(input);
+
+          overflow_check++;
+          set_screen_x(get_screen_x() + 1);
+        }
 
         /* Get current screen_x and screen_y */
-        temp_x = get_screen_x();
+        temp_x = key_index - clear_offset;
         temp_y = get_screen_y() + 1;
 
         /* Update cursor  */
-        if(key_index == 80 && !wrapped)
+        if(temp_x == 80 && !wrapped)
         {
           /* Check if screen_Y has reached end of screen */
           if(temp_y == NUM_ROWS)
@@ -456,7 +488,7 @@ int32_t keyboard_handler(void)
         else if(key_index < MAX_BUFF_LENGTH)
         {
           /* Update cursor until, buffer is full */
-          update_cursor(key_index % NUM_COLS, current_line);
+          update_cursor((key_index - clear_offset) % NUM_COLS, get_screen_y());
         }
       }
     }

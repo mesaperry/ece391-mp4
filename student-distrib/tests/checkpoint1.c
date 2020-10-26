@@ -172,7 +172,7 @@ void test_all_checkpoint1()
 {
     TEST_OUTPUT("idt_test", idt_test());
     TEST_OUTPUT("page_test", page_test());
-    TEST_OUTPUT("keyboard", keyboard_test());
+    // TEST_OUTPUT("keyboard", keyboard_test());
 
     /* What does this do? */
     // TEST_OUTPUT("IDT without paging", idt_woP());

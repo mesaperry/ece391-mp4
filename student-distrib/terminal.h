@@ -13,6 +13,7 @@
 #define BACK_OFF 0x8E
 #define TAB 0x0F
 #define ENTER 0x1C
+#define ENTER_OFF 0x9C
 #define SPACE 0x39
 #define CAPS_LOCK 0x3A
 
@@ -37,9 +38,11 @@ uint8_t ctrl_check;
 uint8_t capslock_check;
 uint8_t alt_check;
 uint8_t enter_down;
+uint8_t overflow_check;
 
 uint8_t current_line;
 uint8_t wrapped;
+uint8_t clear_offset; // Used as the key_buffer offset when clearing the screen
 
 uint32_t table_index;
 uint32_t key_index;
