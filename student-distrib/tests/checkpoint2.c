@@ -359,7 +359,7 @@ int rtc_rate_test()
 		}
 	}
 
-	return PASS
+	return PASS;
 }
 
 void test_all_checkpoint2()
