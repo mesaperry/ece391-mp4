@@ -64,7 +64,7 @@ void rtc_handler() {
 /* rtc_read
  *
  * DESCTIPTION: Waits for interrupt
- * 
+ *
  * INPUT/OUTPUT: Always returns 0
  * SIDE EFFECTS: Makes thread wait
  */
@@ -77,7 +77,7 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
 /* rtc_write
  *
  * DESCTIPTION: Sets RTC clock interrupt rate in Hz
- * 
+ *
  * INPUT/OUTPUT: Inputs rate, outputs 0 on success or -1 on failure
  * SIDE EFFECTS: Adjusts clock rate
  */
@@ -93,17 +93,17 @@ int32_t rtc_write( int32_t fd,
     }
 
     frequency = *((int32_t*)buf);
-    
+
     /* verify frequency is no greater than 1024 Hz */
     if (frequency > 1024) {
         return -1;
     }
-    
+
     /* verify frequency is not 1 Hz */
     if (frequency == 1) {
         return -1;
     }
-    
+
     /* verify input is 0 or a power of 2 */
     if ((frequency & (frequency - 1)) != 0) {
         return -1;
