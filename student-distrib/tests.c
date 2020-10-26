@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "terminal.h"
 #include "filesys.h"
+#include "string.h"
 
 #include "rtc.h"
 
@@ -182,10 +183,12 @@ int force_page_exception_2()
 int print_all_filesys()
 {
 	TEST_HEADER;
-	char* name;
-	while ((name = directory_read()) != NULL) {
-		printf(name);
+	uint8_t* name[FNAME_MAX_LEN + 1];
+	directory_read(name);
+	while (name != NULL) {
+		printf("%s", name);
 		printf("\n");
+		directory_read(name);
 	}
 	return PASS;
 }
@@ -210,11 +213,11 @@ int filesys_corner_cases()
 {
 	TEST_HEADER;
 	dentry_t dentry;
-	if (read_dentry_by_name("nonexistent.file", &dentry) != -1) {
+	if (read_dentry_by_name((uint8_t*)"nonexistent.file", &dentry) != -1) {
 		printf("Did not return failure on reading nonexistent file name\n");
 		return FAIL;
 	}
-	if (read_dentry_by_name("frame0.txt", &dentry) != 0) {
+	if (read_dentry_by_name((uint8_t*)"frame0.txt", &dentry) != 0) {
 		printf("Did not return success on reading existing file name\n");
 		return FAIL;
 	}
@@ -228,6 +231,58 @@ int filesys_corner_cases()
 	}
 	if (read_dentry_by_index(0, &dentry) != 0) {
 		printf("Did not return success on reading existing dentry index\n");
+		return FAIL;
+	}
+	return PASS;
+}
+
+/* Retuns 0 if file read correctly, -1 if failed */
+int read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length)
+{
+	dentry_t dentry;
+	if (read_dentry_by_name(fname, &dentry) < 0) return -1;
+	if (read_data(dentry.inode_index, 0, buf, length) < 0) return -1;
+	return 0;
+}
+
+/* Returns -1 if not executable, 0 if executable */
+int verify_executable(char* exe)
+{
+	uint8_t data[11];
+	data[10] = '\0';
+	if (read_file_bytes_by_name((uint8_t*)exe, data, 10) < 0) return -1;
+	uint8_t buf[4];
+	substring(data, buf, 1, 4);
+	if (string_equal(buf, (uint8_t*)"ELF") == 0) return -1;
+	return 0;
+}
+
+int test_read_file_bytes_by_name()
+{
+	TEST_HEADER;
+	uint8_t data[11];
+	data[10] = '\0';
+	if (read_file_bytes_by_name((uint8_t*)"frame0.txt", data, 10) < 0) return FAIL;
+	if (!string_equal(data, (uint8_t*)"/\\/\\/\\/\\/\\")) {
+		printf("did not read fram0.txt correctly\n");
+		printf("data: %s\n", data);
+		printf("file: /\\/\\/\\/\\/\\\n");
+		return FAIL;
+	}
+	if (verify_executable("ls") < 0) {
+		printf("ls not executable\n");
+		return FAIL;
+	}
+	if (verify_executable("grep") < 0) {
+		printf("grep not executable\n");
+		return FAIL;
+	}
+	if (verify_executable("frame0.txt") == 0) {
+		printf("frame is executable\n");
+		return FAIL;
+	}
+	if (verify_executable("pieter") == 0) {
+		printf("pieter exists and is executable\n");
 		return FAIL;
 	}
 	return PASS;
@@ -255,4 +310,5 @@ void launch_tests(){
 	// TEST_OUTPUT("print all filesys", print_all_filesys());
 	// TEST_OUTPUT("read filesys inode", read_data_filesys());
 	// TEST_OUTPUT("filesys corner cases", filesys_corner_cases());
+	// TEST_OUTPUT("test read file bytes by name", test_read_file_bytes_by_name());
 }

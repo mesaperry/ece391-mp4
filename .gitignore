@@ -110,12 +110,9 @@ student-distrib/Makefile.dep
 *.out
 *.app
 
-<<<<<<< HEAD
 # Image files
 student-distrib/mp3.img
 
-=======
->>>>>>> filesystem
 # 391 specific
 *.qcow
 source/
