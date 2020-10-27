@@ -107,6 +107,14 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   /* Initialize local variables */
   uint32_t x, count, index, last;
 
+  /* Initialize temp buffer */
+  int8_t buffer[MAX_BUFF_LENGTH];
+
+  for(x = 0; x < MAX_BUFF_LENGTH; x++)
+  {
+    buffer[x] = '\0';
+  }
+
   /* Loop until enter is pressed */
   enter_down = 0;
   while(!enter_down);
@@ -120,9 +128,6 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
 
   /* Prep byte counter */
   count = 0;
-
-  /* Initialize buffer */
-  int8_t* buffer = (int8_t *)buf;
 
   /* Start critical read section */
   cli();
@@ -151,11 +156,19 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
     buffer[index] = '\n'; /* Append newline to last space in buffer if overflow */
   }
 
+  /* Store temp buffer in buf */
+  strncpy(buf, buffer, MAX_BUFF_LENGTH);
+
   /* Clear buffer */
   clear_buffer();
 
   /* Close critical section */
   sti();
+
+  for(x = 0; x < count; x++)
+  {
+    buffer[x] = '0';
+  }
 
   /* Return the number of bytes written */
   return count;
@@ -175,14 +188,22 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
 {
   int x, count;
 
+  /* Initialize temp buffer */
+  int8_t buffer[MAX_BUFF_LENGTH];
+
+  for(x = 0; x < count; x++)
+  {
+    buffer[x] = '\0';
+  }
+
   /* Return failure if buf is empty, or no/negative bytes to be written */
   if(buf == NULL || nbytes <= 0)
   {
     return -1;
   }
 
-  /* Initialize buffer */
-  int8_t* buffer = (int8_t *)buf;
+  /* Store temp buffer in buf */
+  strncpy(buffer, buf, MAX_BUFF_LENGTH);
 
   /* Open critical section */
   cli();
@@ -364,7 +385,6 @@ int32_t keyboard_handler(void)
       key_index = 0;
       clear_offset = 0;
       current_line++;
-      clear_buffer();
 
       /* set enter flag */
       /* Should trigger terminal_write */

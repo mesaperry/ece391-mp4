@@ -85,7 +85,13 @@ void print_backspace(){
     /* Update cursor */
     update_cursor(screen_x, screen_y);
   }
-  else {
+  else if(get_key_index() == 128) {
+    screen_x -= 2;
+    /* Update cursor */
+    update_cursor(screen_x, screen_y);
+  }
+  else
+  {
     screen_x--;
     /* Update cursor */
     update_cursor(screen_x, screen_y);
@@ -591,7 +597,7 @@ int8_t* strcpy(int8_t* dest, const int8_t* src) {
     return dest;
 }
 
-/* int8_t* strcpy(int8_t* dest, const int8_t* src, uint32_t n)
+/* int8_t* strncpy(int8_t* dest, const int8_t* src, uint32_t n)
  * Inputs:      int8_t* dest = destination string of copy
  *         const int8_t* src = source string of copy
  *                uint32_t n = number of bytes to copy
