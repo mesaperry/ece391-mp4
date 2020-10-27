@@ -211,6 +211,13 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   /* Write data to the screen */
   for(x = 0; x < nbytes; x++)
   {
+    if(x == 80)
+    {
+      set_screen_x(0);
+      set_screen_y(get_screen_y() + 1);
+      update_cursor(get_screen_x(), get_screen_y());
+    }
+
     if(buffer[x] != '\0')
     {
       putc(buffer[x]);
@@ -472,14 +479,6 @@ int32_t keyboard_handler(void)
 
           /* Update index in keyboard buffer */
           key_index++;
-        }
-        else if(overflow_check < OVERFLOW)
-        {
-          /* Print letter to screen */
-          putc(input);
-
-          overflow_check++;
-          set_screen_x(get_screen_x() + 1);
         }
 
         /* Get current screen_x and screen_y */
