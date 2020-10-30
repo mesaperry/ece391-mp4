@@ -19,7 +19,11 @@ syscall_jumptable:
 
 
 sys_call:
-    pushal
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
     pushfl
 # pushing args onto stack
     pushl %edx            # Arg 3
@@ -49,7 +53,15 @@ done:
     popl %ecx
     popl %edx
     popfl       
-    popal
+    popl %edi
+    popl %esi
+    popl %edx
+    popl %ecx
+    popl %ebx
+    
+    
+    
+    
     iret
 
 
