@@ -1,6 +1,5 @@
 #define ASM     1
 
-
 # linkage to IDT
 .globl sys_call
 .extern sys_call
@@ -12,9 +11,6 @@
 syscall_jumptable:
     .long 0x0, halt, execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
 
-
-
-
 sys_call:
     pushl %ebx
     pushl %ecx
@@ -25,7 +21,7 @@ sys_call:
 # pushing args onto stack
     pushl %edx            # Arg 3
     pushl %ecx            # Arg 2
-    pushl %ebx            # Arg 1 
+    pushl %ebx            # Arg 1
 # check for valid syscall number
     cmpl $1, %eax
     jb  invalid_syscall
@@ -49,7 +45,7 @@ done:
     popl %ebx                   # restore stack
     popl %ecx
     popl %edx
-    popfl       
+    popfl
     popl %edi
     popl %esi
     popl %edx
@@ -66,7 +62,4 @@ raddr:
 getIP:
     movl    (%esp), %eax            # read return address
     ret
-
-
-
 
