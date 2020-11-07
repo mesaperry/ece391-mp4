@@ -25,6 +25,7 @@ extern void irq12();
 extern void irq13();
 extern void irq14();
 extern void irq15();
+extern void sys_call();
 
 void keyboard_intr();
 void rtc_intr();
@@ -35,7 +36,6 @@ void setup_idt_interrupts();
 void provisional_interrupt();
 void provisional_exception();
 
-void sys_call();
 void excpt0_handler();
 void excpt1_handler();
 void excpt2_handler();
@@ -494,8 +494,9 @@ void excpt31_handler()
     printf("EXCEPTION31: Reserved for Intel");
     while(1);
 }
-
+/*
 void sys_call(){
     printf("A system call was made\n");
     while(1);
 }
+*/

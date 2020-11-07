@@ -7,9 +7,6 @@
 
 
 
-
-
-
 # jumptable for system calls
     # needs the null for the 0th element
 syscall_jumptable:

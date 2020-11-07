@@ -48,14 +48,6 @@ rtc_intr:
     sti
     iret
 
-sys_call:
-    pushal
-    pushfl
- #   call gen_sys_call
-    popfl
-    popal
-    iret
-
 # irq interrupt handler linkage for pic
 
 irq0:
