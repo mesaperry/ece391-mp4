@@ -103,7 +103,7 @@ int idt_woP(){
  */
 void term_write_test(){
 	uint32_t nbytes = 4;
-	uint8_t test_buffer[nbytes];
+	int8_t test_buffer[nbytes];
 	test_buffer[0] = 'a';
 	test_buffer[1] = 'b';
 	test_buffer[2] = 'c';
@@ -127,11 +127,11 @@ void term_write_test(){
  * Files: terminal.h/c
  */
 int keyboard_test(){
-	int x = 0;
+	int x = 128;
 	uint8_t buffer[MAX_BUFF_LENGTH];
 	while(1){
-		x = terminal_read(1, buffer, x);
-		terminal_write(1, buffer, x);
+		x = terminal_read(1, buffer, 128);
+		terminal_write(1, buffer, 128);
 	}
 	return 1;
 }
@@ -170,9 +170,9 @@ int force_page_exception_2()
 
 void test_all_checkpoint1()
 {
-    TEST_OUTPUT("idt_test", idt_test());
-    TEST_OUTPUT("page_test", page_test());
-    // TEST_OUTPUT("keyboard", keyboard_test());
+    // TEST_OUTPUT("idt_test", idt_test());
+    // TEST_OUTPUT("page_test", page_test());
+    TEST_OUTPUT("keyboard", keyboard_test());
 
     /* What does this do? */
     // TEST_OUTPUT("IDT without paging", idt_woP());

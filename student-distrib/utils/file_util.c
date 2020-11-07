@@ -21,7 +21,7 @@ void print_file_info(uint8_t* fname)
 
     uint32_t file_name_length = string_length(fname);
     for (i = 0; i < FNAME_MAX_LEN - file_name_length; i++) printf(" ");
-    printf(fname);
+    printf((int8_t*)fname);
 
     printf(" file type: ");
     printf("%d", dentry.file_type);
