@@ -32,15 +32,15 @@ sys_call:
     cmpl $10, %eax
     ja  invalid_syscall
 # ??? syscall_jumptable call
-    call *syscall_jumptable(, %eax, 4)
-
-
-
-
-
-
-
-
+    call    *syscall_jumptable(, %eax, 4)
+    cmpl    $0xFFFFF001, %eax             # -1 to -4095 errors
+    jb      done                          # No errors
+    xorl    %edx, %edx 
+    subl    %eax, %edx                    # negate the error number
+    pushl   %edx
+    call    __errno_location              # get ptr to errno
+    popl    %ecx                          # put error into ecx
+    movl    %ecx, (%eax)                  # move number into errno
 
 # place holder
 invalid_syscall:
@@ -56,13 +56,16 @@ done:
     popl %ecx
     popl %ebx
     
-    
-    
-    
     iret
 
-
-
+__errno_location:
+    call    getIP                   # eax <- raddr
+raddr:
+    addl    $errno - raddr, %eax    # adjust return value
+    ret
+getIP:
+    movl    (%esp), %eax            # read return address
+    ret
 
 
 
