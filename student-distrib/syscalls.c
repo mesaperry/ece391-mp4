@@ -38,6 +38,18 @@ fops_t dir_funcs =
 	.close = dir_close
 };
 
+int32_t halt(uint8_t status)
+{
+	// TODO
+	return -1;
+}
+
+int32_t execute (const uint8_t* command)
+{
+	// TODO
+	return -1;
+}
+
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);
 * DESCRIPTION: calls the read function for given file
@@ -100,5 +112,17 @@ int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 	//
     // /* Return a call to the specified function */
     // return (curr)->file_array[fd].fops->write(fd, buf, nbytes);
+	return -1;
+}
+
+int32_t open (const uint8_t* filename)
+{
+	// TODO
+	return -1;
+}
+
+int32_t close(int32_t fd)
+{
+	// TODO
 	return -1;
 }
