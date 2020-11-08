@@ -7,9 +7,13 @@
 #include "terminal.h"
 #include "lib.h"
 
-#define MIN_FD 2
-#define MAX_FD 7
-#define FILE_ARRAY_LEN 8
+#define MIN_FD 					2
+#define MAX_FD 					7
+#define FILE_ARRAY_LEN 	8
+#define MAX_DEVICES 		6
+
+#define MB_8 						0x800000
+#define KB_8            0x2000
 
 uint32_t process_count;
 
@@ -53,7 +57,7 @@ typedef struct pcb {
 } pcb_t;
 
 pcb_t* get_PCB();
-pcb_t* Find_PCB(int p_id);
+pcb_t* find_PCB(int p_id);
 
 int32_t halt (uint8_t status);
 int32_t execute (const uint8_t* command);
