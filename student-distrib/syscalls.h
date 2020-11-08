@@ -7,11 +7,13 @@
 // #include "terminal.h"
 // #include "lib.h"
 
-// #define MIN_FD 2
-// #define MAX_FD 7
-// #define FILE_ARRAY_LEN 8
+#define MIN_FD 					2
+#define MAX_FD 					7
+#define FILE_ARRAY_LEN 	8
+#define MAX_DEVICES 		6
 
-// #define VIDEO 0xB8000
+#define MB_8 						0x800000
+#define KB_8            0x2000
 
 // uint32_t process_count;
 
@@ -54,8 +56,8 @@
 //     uint32_t edx;
 // } pcb_t;
 
-// pcb_t* get_PCB();
-// pcb_t* Find_PCB(int p_id);
+pcb_t* get_PCB();
+pcb_t* find_PCB(int p_id);
 
 // int32_t halt (uint8_t status);
 // int32_t execute (const uint8_t* command);
@@ -70,14 +72,18 @@
 // /* Loads an executable file into correct location in memory */
 // int32_t load(dentry_t* d, uint8_t* mem);
 
-// /* Assembly to return ESP register */
-// #define get_esp(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%esp, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
+/* Update process count */
+int32_t add_process();
+int32_t delete_process();
+
+/* Assembly to return ESP register */
+#define get_esp(x)          \
+do {                        \
+    asm volatile (          \
+        "movl %%esp, %0"    \
+        : "=rm" (x)         \
+    );                      \
+} while(0)
 
 // /* Assembly to return EBP register */
 // #define get_ebp(x)          \
