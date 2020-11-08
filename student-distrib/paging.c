@@ -75,6 +75,7 @@ void init_paging()
     pde_4mb.ptr       = KERNEL_MEMORY_ADDR >> DIR_ENTRY_PAGE_OFFSET;
     page_dir[1] = pde_4mb.val; /* given to 1 index b/c that is found with    */
                                /* the desired memory access address 0x400000 */
+    // map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1);
 
     /* init video memory (and page directory entry for lowest 4 MB)*/
     pde_pte.present   = 1;
@@ -89,6 +90,7 @@ void init_paging()
     /*   but just to be technically correct.                */
     pte_4kb.ptr = 0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET);
     page_table[0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET)] = pte_4kb.val;
+    // map_v_p(VIDEO, VIDEO, 0);
 
     /* we now init paging related registers, after we used physical */
     /* memory directly                                              */
@@ -135,37 +137,76 @@ disable_paging()
     );
 }
 
-/* trnsl_v_to_p
- * DESCRIPTION: Translate virtual memory address
-                to physical memory address
- * INPUTS: virtual memory address
+/* map_v_p
+ * DESCRIPTION: Maps a virtual memory address location to a physical
+ *                memory address location. If the physical address is
+ *                0, then it unmaps the virtual address
+ * INPUT: virtual_addr  -- virtual memory address
+ *        physical_addr -- physical memory address, or 0 if unmapping
+ *        kb_or_mb      -- whether it is an 8kb (0) or 4mb (1) page
  * OUTPUTS: none
- * RETURNS: physical memory address,
- * SIDE EFFECTS: none
+ * RETURNS: -1 if fail, 0 if success
+ * SIDE EFFECTS: updates page directory/tables
  */
-// uint32_t trnsl_v_to_p(uint32_t p)
-// {
-    /* unnecessary */
-    // if (!p) return -1;  /* null check */
-    //
-    // /* get pointer to page directory entry */
-    // uint32_t page_directory_entry_ptr = (uint32_t)&page_dir[0] + (p >> DIR_ENTRY_PAGE_OFFSET);
-    // /* check entry is present */
-    // if (!(*(pde_t*)page_directory_entry_ptr).present) return -1;
-    //
-    // /* check if entry is 4mb or 4kb */
-    // if ((*(pde_t*)page_directory_entry_ptr).page_size) {
-    //     /* its a 4kb entry */
-    //     uint32_t page_table_entry_ptr = (*(uint32_t*)page_directory_entry_ptr)
-    //             + ((p << (32 - DIR_ENTRY_PAGE_OFFSET))
-    //                 >> TABLE_ENTRY_PAGE_OFFSET);
-    //     return (*(uint32_t*)page_table_entry_ptr)           /* page_ptr    */
-    //             + ((p << (32 - TABLE_ENTRY_PAGE_OFFSET)) /* plus offset */
-    //                   >> (32 - TABLE_ENTRY_PAGE_OFFSET));
-    // } else {
-    //     /* its a 4mb entry */
-    //     return (*(uint32_t*)page_directory_entry_ptr)
-    //             + ((p << (32 - DIR_ENTRY_PAGE_OFFSET))
-    //                   >> (32 - DIR_ENTRY_PAGE_OFFSET));
-    // }
-// }
+uint32_t
+map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
+{
+    /* Validate kb or mb option input */
+    if (kb_or_mb != 0 && kb_or_mb != 1) return -1;
+
+    /* Addresses cannot be 0 */
+    if ((virtual_addr) == 0) return -1;
+
+    /* Addresses must align correctly */
+    if (kb_or_mb == 0) {
+        if (((virtual_addr | physical_addr) & 0xFFF) != 0) return -1;
+    } else {
+        if (((virtual_addr | physical_addr) & 0x3FFF) != 0) return -1;
+    }
+
+    /* Memory address too large */
+    // TODO implement
+
+    /* If 8kb page, only allocation in the bottom 4mb is supported */
+    if (kb_or_mb == 0 && virtual_addr >= 0x40000) return -1;
+
+    pde_pte_t* pde_pte;
+    pte_4kb_t* pde_4kb;
+    pde_4mb_t* pde_4mb;       /* for 4mb page directory entry */
+
+    if (kb_or_mb == 0) {
+        /* Get page dir entry (Should always be 0 index of page_dir) */
+        /*   ...2 because 2^2 bytes per entry                        */
+        pde_pte = (pde_pte_t*)&page_dir[(virtual_addr >> DIR_ENTRY_PAGE_OFFSET)];
+
+        pde_pte->page_size = 0;
+        pde_pte->present = 1;    // Should always be present, but just to be sure
+
+        /* Get page table entry */
+        pde_4kb = (pte_4kb_t*)((uint32_t)(pde_pte->ptr << TABLE_ENTRY_PAGE_OFFSET)
+                                + (virtual_addr & ((0x1 << DIR_ENTRY_PAGE_OFFSET) - 1)));
+
+        /* map or unmap */
+        if (physical_addr == 0) {
+            pde_4kb->present = 0;
+        } else {
+            pde_4kb->present = 1;
+            pde_4kb->ptr = physical_addr >> TABLE_ENTRY_PAGE_OFFSET;
+        }
+    } else {
+        /* Get page dir entry                 */
+        /*   ...2 because 2^2 bytes per entry */
+        pde_4mb = (pde_4mb_t*)&page_dir[(virtual_addr >> DIR_ENTRY_PAGE_OFFSET)];
+
+        pde_4mb->page_size = 1;
+
+        /* map or unmap */
+        if (physical_addr == 0) {
+            pde_4mb->present = 0;
+        } else {
+            pde_4mb->present = 1;
+            pde_4mb->ptr = physical_addr >> DIR_ENTRY_PAGE_OFFSET;
+        }
+    }
+    return 0;
+}
