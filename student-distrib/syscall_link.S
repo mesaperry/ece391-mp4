@@ -62,4 +62,6 @@ raddr:
 getIP:
     movl    (%esp), %eax            # read return address
     ret
+errno:
+    .long 0x0
 
