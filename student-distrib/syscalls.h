@@ -11,8 +11,6 @@
 #define MAX_FD 7
 #define FILE_ARRAY_LEN 8
 
-#define VIDEO 0xB8000
-
 uint32_t process_count;
 
 /* File operations struct */
@@ -69,6 +67,10 @@ inode_t* get_inode_ptr(uint32_t inode);
 
 /* Loads an executable file into correct location in memory */
 int32_t load(dentry_t* d, uint8_t* mem);
+
+/* Update process count */
+int32_t add_process();
+int32_t delete_process();
 
 /* Assembly to return ESP register */
 #define get_esp(x)          \

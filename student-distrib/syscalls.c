@@ -39,6 +39,38 @@ fops_t dir_funcs =
 };
 
 /*
+* add_process()
+* DESCRIPTION: Adds a new process and returns its id if there's room
+* INPUTS: None
+* OUTPUT: returns process id on success, -1 on failure
+*/
+int32_t add_process(){
+    uint32_t i;
+    for(i = 1; i < MAX_DEVICES + 1; i++){
+        if(procs[i] == 0){
+            procs[i] = 1;
+            return i;
+        }
+    }
+    return -1;
+}
+
+/*
+* delete_process(int32_t pid)
+* DESCRIPTION: Removes a specified process
+* INPUTS: pid
+* OUTPUT: returns 0 on success, -1 on failure
+*/
+int32_t delete_process(int32_t p_id){
+    if(p_id < 0 || p_id >= MAX_DEVICES){
+        return -1;
+    }
+    procs[p_id] = 0;
+    return 0;
+}
+
+
+/*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);
 * DESCRIPTION: calls the read function for given file
 * INPUTS: fd - file descriptor
@@ -80,7 +112,8 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 */
 int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 {
-    pcb_t* curr = get_PCB();
+		/* Get current process control block from esp */
+    //pcb_t* curr = get_PCB();
 
     /* Check for valid fd */
     /* fd = 0 is read only */
