@@ -38,6 +38,10 @@ fops_t dir_funcs =
 	.close = dir_close
 };
 
+boot_block_t* boot_blk;
+int pid = 1;
+static int32_t procs[MAX_DEVICES + 1] = {0};
+
 /*
 * add_process()
 * DESCRIPTION: Adds a new process and returns its id if there's room
