@@ -35,7 +35,7 @@ fops_t fsys_funcs =
 
 fops_t dir_funcs =
 {
-	.read = directory_read,
+	.read = dir_read,
 	.write = dir_write,
 	.open = dir_open,
 	.close = dir_close
