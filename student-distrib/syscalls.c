@@ -222,7 +222,7 @@ int32_t execute (const uint8_t* command)
 {
 	pcb_t* pcb;
 	int32_t command_length, process_id, i, output;
-	uint32_t virtual_addr, physical_addr;
+	uint32_t virtual_stack_addr, physical_addr;
 	uint32_t kernel_mode_stack_address;
 	dentry_t dentry;
 	fd_t stdin;
@@ -250,7 +250,7 @@ int32_t execute (const uint8_t* command)
 
 	/* Need to double check the values i the below formulas */
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
-	virtual_addr = (uint32_t)USER_PROCESS_STACK;
+	virtual_stack_addr = (uint32_t)USER_PROCESS_STACK;
 	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1);
 
 	/* User Level program loading:                               */
@@ -265,8 +265,8 @@ int32_t execute (const uint8_t* command)
 	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
 	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
 
-	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_addr);
-	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_addr);
+	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
+	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
 	/* END SHOW USER SPACE DATA */
 
 	/* Create next PCB */
@@ -320,7 +320,7 @@ int32_t execute (const uint8_t* command)
 		movb	%%bl, %0				\n\
 		"
 		: "=rm"(output)
-		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_addr)
+		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
 		: "cc", "memory"
 	);
 
