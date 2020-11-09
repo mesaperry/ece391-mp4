@@ -7,6 +7,7 @@
 
 #include "utils/arg_util.h"
 #include "utils/file_util.h"
+#include "utils/char_util.h"
 #include "filesys.h"
 
 uint32_t process_count = 0;
@@ -302,7 +303,7 @@ int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 
     /* Check for valid fd */
     /* fd = 0 is read only */
-    if(buf == NULL || fd < 0 || fd > MAX_FD || fd == 0)
+    if(fd < 0 || fd > MAX_FD || fd == 0)
     {
         return -1;
     }
@@ -383,6 +384,13 @@ int32_t open(const uint8_t* filename)
         fd_ptr->pos = 	0;
         fd_ptr->flags = 1;
         fd_ptr->fops = &fsys_funcs;
+				if(copy_string(filename, fd_ptr->file_name) == -1)
+				{
+					for(index = 0; index < FNAME_MAX_LEN; index++)
+					{
+						fd_ptr->file_name[index] = (uint8_t)"\0";
+					}
+				}
     }
     else
 		{

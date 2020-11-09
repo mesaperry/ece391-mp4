@@ -34,8 +34,12 @@ void read_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
 	uint32_t i;
-	uint8_t buffer[FNAME_MAX_LEN];
-	uint32_t bytes_read = read(fd, buffer, FNAME_MAX_LEN);
+
+  pcb_t* process = get_current_PCB();
+  int32_t nbytes = (int32_t) file_size(process->file_array[(uint32_t)fd].file_name);
+
+	uint8_t buffer[nbytes];
+	uint32_t bytes_read = read(fd, buffer, nbytes);
 	if (bytes_read == -1 || bytes_read == 0) {
 		printf("FAIL: No files found\n");
 	} else {
@@ -58,8 +62,8 @@ void read_syscall_test(int32_t fd) {
 int write_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
-	uint8_t buffer[FNAME_MAX_LEN];
-	uint32_t bytes_read = write(fd, buffer, FNAME_MAX_LEN);
+	uint8_t buffer[FNAME_MAX_LEN * 2];
+	uint32_t bytes_read = write(fd, buffer, FNAME_MAX_LEN * 2);
 	if (bytes_read == -1) {
 		return PASS;
 	} else {
@@ -79,7 +83,9 @@ int write_syscall_test(int32_t fd) {
 int32_t open_syscall_test() {
 	TEST_HEADER;
 
-	int32_t fd = open((uint8_t*)("frame0.txt"));
+  printf("File: verylargetextwithverylongname.txt");
+  printf("\n");
+	int32_t fd = open((uint8_t*) "verylargetextwithverylongname.txt");
 	if (fd == -1) {
 		printf("FAIL: File not found\n");
 	} else {
@@ -116,9 +122,11 @@ void test_all_checkpoint3()
     // TEST_OUTPUT("testing idt syscall", test_linkage());
     clear();
     int32_t f = open_syscall_test();
-    printf("\nfd: %d\n\n", f);
+    printf("fd: %d\n\n", f);
     read_syscall_test(f);
+    printf("\n");
     TEST_OUTPUT("Write syscall", write_syscall_test(f));
+    printf("\n");
     TEST_OUTPUT("Close syscall", close_syscall_test(f));
     return;
 }
