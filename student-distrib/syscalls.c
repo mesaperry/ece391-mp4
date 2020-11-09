@@ -32,13 +32,12 @@ fops_t fsys_funcs =
 
 fops_t dir_funcs =
 {
-	.read = dir_read,
+	.read = directory_read,
 	.write = dir_write,
 	.open = dir_open,
 	.close = dir_close
 };
 
-int p_id = 1;
 static int32_t procs[MAX_DEVICES + 1] = {0};
 
 /*
@@ -69,7 +68,7 @@ int32_t add_process(){
 */
 int32_t delete_process(int32_t pid){
 	/* Validate the input pid */
-    if(p_id < 1 || pid > MAX_DEVICES){
+    if(pid < 1 || pid > MAX_DEVICES){
         return -1;
     }
 		/* Free space for process pid */
@@ -87,16 +86,15 @@ int32_t halt (uint8_t status)
 	/* Initialize variables */
 	pcb_t* pcb_parent_ptr;
 	pcb_t* pcb_child_ptr;
-	uint32_t esp;
-	uint32_t ebp;
+	// uint32_t esp;
+	// uint32_t ebp;
 	uint32_t i;
 
 	/* Restore parent data */
-	pcb_child_ptr = find_PCB(p_id);
-	pcb_parent_ptr = find_PCB(p_id - 1);
+	pcb_child_ptr = get_current_PCB();
+	pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
 
 	delete_process(pcb_child_ptr->p_id);
-	process_count--;
 	p_id--;
 
 	/* Close all the files in the pcb */
@@ -159,7 +157,7 @@ int32_t execute (const uint8_t* command)
 int32_t read(int32_t fd, void* buf, int32_t nbytes)
 {
     /* Get current process control block*/
-    pcb_t* curr = find_PCB(p_id);
+    pcb_t* curr = get_current_PCB();
 
     /* Check for valid fd */
     /* fd = 1 is write only */
@@ -176,7 +174,6 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 
     /* Return a call to the specified function */
     return (curr)->file_array[fd].fops->read(fd, buf, nbytes);
-	return -1;
 }
 
 /*
@@ -191,7 +188,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 {
 		/* Get current process control block*/
-  	pcb_t* curr = find_PCB(p_id);
+  	pcb_t* curr = get_current_PCB();
 
     /* Check for valid fd */
     /* fd = 0 is read only */
@@ -228,7 +225,7 @@ int32_t open(const uint8_t* filename)
 		uint32_t index;
 
 		/* Get current PCB */
-		pcb_t* pcb = find_PCB(p_id);
+		pcb_t* pcb = get_current_PCB();
 
     for(index = 2; index < FILE_ARRAY_LEN; index++)
 		{
@@ -272,7 +269,7 @@ int32_t open(const uint8_t* filename)
     }
     else if(dentry.file_type == 2) // Regular File
 		{
-        fd_ptr->inode = dentry.inode_num;
+        //fd_ptr->inode = dentry.inode_num;
         fd_ptr->pos = 	0;
         fd_ptr->flags = 1;
         fd_ptr->fops = &fsys_funcs;
@@ -298,7 +295,7 @@ int32_t open(const uint8_t* filename)
 int32_t close(int32_t fd)
 {
 		/* Get PCB of current process block */
-    pcb_t* curr = find_PCB(p_id);
+    pcb_t* curr = get_current_PCB();
 
     /* Check if descriptor is valid and file is in use */
     if(fd < MIN_FD || fd > MAX_FD || curr->file_array[fd].flags == 0)
@@ -333,12 +330,12 @@ pcb_t* find_PCB(int p_id) {
 }
 
 /*
-* get_PCB()
+* get_current_PCB()
 * DESCRIPTION: gets the current PCB
 * INPUTS: None
 * OUTPUT: Returns the current PCB
 */
-pcb_t* get_PCB() {
+pcb_t* get_current_PCB() {
     uint32_t esp;
     asm volatile (              \
         "movl %%esp, %0"        \
