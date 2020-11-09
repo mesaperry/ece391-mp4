@@ -118,6 +118,24 @@ read_dentry_by_index (uint32_t index, dentry_t* dentry)
     return 0;
 }
 
+/* read_file_bytes_by_name
+ * DESCRIPTION: Read bytes from a file name
+ * INPUTS: fname  -- the file name
+ *         buf    -- the location to store bytes
+ *         length -- the number of bytes to store
+ * OUTPUTS: none
+ * RETURNS: -1 if failure, 0 if success
+ * SIDE EFFECTS: none
+ */
+int32_t
+read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length)
+{
+	dentry_t dentry;
+	if (read_dentry_by_name(fname, &dentry) < 0) return -1;
+	if (read_data(dentry.inode_index, 0, buf, length) < 0) return -1;
+	return 0;
+}
+
 /*
  * read_data
  * DESCRIPTION: copies data from inode in filesys.img to buffer
@@ -194,14 +212,14 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
  * INPUTS: buffer in which to put the data
  * OUTPUTS: none
  * RETURNS: 0 if success, -1 if cannot read data.
- *         
+ *
  * SIDE EFFECTS:
  */
 int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
 {
     pcb_t* process = get_PCB();
     fd_t* file = &process->file_array[(uint32_t)fd];
-    
+
     uint32_t size;
     size = file_size(fd);
     if (num_bytes > size)
@@ -211,10 +229,10 @@ int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
 
     int32_t data;
     data = read_data(file->inode, file->pos, buf, num_bytes);
-    
+
     file->pos = file->pos + data;
     if (file->pos >= size) file->pos = 0;
-    
+
     return data;
 }
 
@@ -244,7 +262,7 @@ int32_t file_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
  */
 int32_t file_open(uint8_t * fd)
 {
-    
+
     return 0;
 }
 
@@ -301,6 +319,6 @@ int32_t dir_open(uint8_t * fd)
  */
 int32_t dir_close(uint8_t * fd)
 {
-    
+
     return 0;
 }

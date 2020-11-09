@@ -32,7 +32,7 @@ int32_t string_equal(const uint8_t* s1, const uint8_t* s2)
 {
     if ((s1 == NULL) || (s2 == NULL)) return -1;
 
-    int i;
+    int32_t i;
     for (i = 0; (s1[i] != '\0') && (s2[i] != '\0'); i++) {
         if (s1[i] != s2[i]) return 0;
     }
@@ -58,11 +58,32 @@ int32_t substring(const uint8_t* s, uint8_t* buf, uint32_t start, uint32_t end)
     int32_t len = string_length(s);
     if ((start < 0) || (end < start) || (end > len)) return -1;
 
-    int i;
+    int32_t i;
     for (i = start; i < end; i++) {
         buf[i - start] = s[i];
     }
     buf[end - start] = '\0';
+    return 0;
+}
+
+/* copy_string
+ * DESCRIPTION: Copies a string into another
+ * INPUT: source -- original string, which doesn't change
+ *        dest   -- the destination string location
+ * OUTPUT: none
+ * RETURNS: -1 if failure, 0 if success
+ * SIDE EFFECTS: none
+ */
+int32_t copy_string(const uint8_t* source, uint8_t* dest)
+{
+    if ((source == NULL) || (dest == NULL)) return -1;
+    int32_t len = string_length(source);
+
+    int32_t i;
+    for (i = 0; i < len; i++) {
+        dest[i] = source[i];
+    }
+    dest[len] = '\0';
     return 0;
 }
 
@@ -71,7 +92,7 @@ int32_t substring(const uint8_t* s, uint8_t* buf, uint32_t start, uint32_t end)
  * INPUT: buf   -- an array of chars
  *        bytes -- the number of bytes to print
  * OUTPUT: none
- * RETURNS: none 
+ * RETURNS: none
  * SIDE EFFECTS: none
  */
 void print_buf(uint8_t* buf, uint32_t bytes)

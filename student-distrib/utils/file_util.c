@@ -41,3 +41,21 @@ void print_file_info(uint8_t* fname)
     printf("%d", file_size(fname));
     printf("\n");
 }
+
+/* is_executable
+ * DESCRIPTION: Check if a file name is executable
+ * INPUTS: exe -- the name of a file
+ * OUTPUTS: none
+ * RETURNS: 1 if executable, 0 if not executable
+ * SIDE EFFECTS: none
+ */
+uint32_t is_executable(uint8_t* exe)
+{
+	uint8_t data[5];
+	data[4] = '\0';
+	if (read_file_bytes_by_name(exe, data, 4) < 0) return -1;
+	uint8_t buf[4];
+	substring(data, buf, 1, 4);
+	if (string_equal(buf, (uint8_t*)"ELF") == 0) return -1;
+	return 0;
+}

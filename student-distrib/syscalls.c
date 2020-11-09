@@ -4,6 +4,8 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "terminal.h"
+#include "utils/arg_util.h"
+#include "utils/file_util.h"
 
 /* File operation structs */
 fops_t terminal_funcs =
@@ -40,6 +42,8 @@ fops_t dir_funcs =
 
 int p_id = 1;
 static int32_t procs[MAX_DEVICES + 1] = {0};
+
+uint8_t command_arguments[MAX_BUFF_LENGTH];
 
 /*
 * add_process()
@@ -124,25 +128,60 @@ int32_t halt (uint8_t status)
 int32_t execute (const uint8_t* command)
 {
 	/* Get first word (command) */
+	int32_t command_length = get_argument_length(command, 0);
+	if (command_length < 0) return 0;  // Error getting first word
+
+	uint8_t executable[command_length + 1];
+	executable[command_length] = '\0';  // Make it a string by adding EOS
+	if (get_argument(command, 0, executable) < 0) return 0;  // Error copying argument
 
 	/* Check that command is an executable */
+	if (!is_executable(executable)) return -1;
 
-	/* Save extra parameters to globa variable, stripped of leading spaces */
+	/* Save extra parameters to global variable, stripped of leading spaces */
+	get_next_arguments(command, command_arguments);
 
 	/* Paging: load user level program loaded in page starting at 128MB */
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
 
-	// map_v_p(128MB + ..., 8MB + ..., 1)
+	int32_t process_id = add_process();
+	if (process_id < 0) return -1;  // add process failed
 
-	/* process id starts at 0?? */
+	uint32_t virtual_addr = 0x800000 + process_id*0x40000;
+	uint32_t physical_addr = 0x40000 + process_id*0x40000
+	map_v_p(virtual_addr, physical_addr, 1)
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
+	dentry_t dentry;
+	read_dentry_by_name(executable, &dentry);
+	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, dentry.inode_index.length);
 
 	/* Create PCB */
+	pcb_t pcb;
 
-	/* Context Switch */
+	// asm volatile ("                 \n\
+	// // TODO initialize these values:             \n\
+	// 	// fd_t file_array[FILE_ARRAY_LEN];      \n\
+	// 	// 	int8_t arg_buffer[MAX_BUFF_LENGTH];  \n\
+	// 	// int32_t p_id; \n\
+	// 	// uint32_t esp; \n\
+	// 	// uint32_t ebp; \n\
+	// 	// uint32_t esi; \n\
+	// 	// uint32_t edi; \n\
+	// 	// uint32_t eax; \n\
+	// 	// uint32_t ebx; \n\
+	// 	// uint32_t ecx; \n\
+	// 	// uint32_t edx; \n\
+    //                              \n\
+	// /* Context Switch */         \n\
+	// // TODO!!
+	// 		"
+	// 		:
+	// 		:
+	// 		:
+	// );
 
 	return -1;
 }

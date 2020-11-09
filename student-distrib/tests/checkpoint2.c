@@ -92,45 +92,6 @@ int filesys_corner_cases()
 }
 
 
-/* read_file_bytes_by_name
- *
- * Helper function to check if bytes from a file were read correctly
- * Inputs: None
- * Outputs: 0 on success, -1 on failure
- * Side Effects: None
-
- */
-/* Retuns 0 if file read correctly, -1 if failed */
-int read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length)
-{
-	dentry_t dentry;
-	if (read_dentry_by_name(fname, &dentry) < 0) return -1;
-	if (read_data(dentry.inode_index, 0, buf, length) < 0) return -1;
-	return 0;
-}
-
-
-
-/* verify_executable
- *
- * Helper function that checks if a file has the start of the exe files
- * Inputs: None
- * Outputs: 0 on success, -1 on failure
- * Side Effects: None
- */
-/* Returns -1 if not executable, 0 if executable */
-int verify_executable(char* exe)
-{
-	uint8_t data[11];
-	data[10] = '\0';
-	if (read_file_bytes_by_name((uint8_t*)exe, data, 10) < 0) return -1;
-	uint8_t buf[4];
-	substring(data, buf, 1, 4);
-	if (string_equal(buf, (uint8_t*)"ELF") == 0) return -1;
-	return 0;
-}
-
-
 /* test_read_file_bytes_by_name
  *
  * reads the begining of files and makes sure that each file is appropriate type

@@ -39,8 +39,8 @@ int32_t get_argument_count(const uint8_t* argument_string)
  */
 int32_t get_argument_length(const uint8_t* argument_string, uint32_t index)
 {
-    uint32_t arg_count = get_argument_count(argument_string);
-    if ((arg_count < 0) || (index >= arg_count)) return -1;
+    int32_t arg_count = get_argument_count(argument_string);
+    if ((arg_count <= 0) || (index >= arg_count)) return -1;
 
     uint32_t i;
     uint32_t in_arg = 0;
@@ -74,8 +74,8 @@ int32_t get_argument_length(const uint8_t* argument_string, uint32_t index)
  */
 int32_t get_argument(const uint8_t* argument_string, uint32_t index, uint8_t* buf)
 {
-    uint32_t arg_count = get_argument_count(argument_string);
-    if ((arg_count < 0) || (index >= arg_count)) return -1;
+    int32_t arg_count = get_argument_count(argument_string);
+    if ((arg_count <= 0) || (index >= arg_count)) return -1;
 
     uint32_t i;
     uint32_t j = 0; /* index inside buffer */
@@ -100,6 +100,29 @@ int32_t get_argument(const uint8_t* argument_string, uint32_t index, uint8_t* bu
     }
     return j;
 }
+
+/* get_next_arguments
+ * DESCRIPTION: Gets the arguments of the argument string after the first word
+ * INPUTS: argument_string -- a string of arguments
+ *         buf             -- a buffer in which to place the chars
+ * OUTPUT: none
+ * RETURNS: number of bytes copied if success, -1 if fail
+ * SIDE EFFECTS: none
+ */
+int32_t get_next_arguments(const uint8_t* argument_string, uint8_t* buf)
+{
+    if (get_argument_length(argument_string, 0) <= 0) return -1; // no first
+
+    uint32_t i = 0;
+    uint32_t j = 0;
+    while (argument_string[i++] == ' ');
+    while (argument_string[i++] != ' ');
+    while (argument_string[i++] == ' ');
+
+    while (argument_string[i] != '\0') buf[j++] = argument_string[i++];
+    buf[j] = (uint8_t)'\0';
+}
+
 
 /* Returns 0 if fail, 1 if pass */
 uint32_t test_arg_util() {

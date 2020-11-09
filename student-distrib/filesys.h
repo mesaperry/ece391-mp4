@@ -54,11 +54,13 @@ void init_filesys (uint32_t fs_addr);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 /* Puts dentry_t data into pointer location based on index */
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
+/* Read the byte from a file based on file name*/
+int32_t read_file_bytes_by_name(uint8_t* fname, uint8_t* buf, uint32_t length);
 /* Puts byte data from file into buffer based on inode and offset */
 int32_t read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length);
 /* Returns the next file name in the filesys */
 uint32_t directory_read(uint8_t buf[FNAME_MAX_LEN + 1]);
-/* returnrs file size */ 
+/* returnrs file size */
 uint32_t file_size(uint8_t* fname);
 
 // file operations
