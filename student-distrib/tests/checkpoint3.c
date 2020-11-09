@@ -107,7 +107,12 @@ int close_syscall_test(int32_t fd) {
 	}
 }
 
-
+int execute_syscall_test(int32_t fd)
+{
+    TEST_HEADER;
+    int32_t out = execute("ls");
+    return PASS;
+}
 
 
 void test_all_checkpoint3()
@@ -121,5 +126,6 @@ void test_all_checkpoint3()
     TEST_OUTPUT("Write syscall", write_syscall_test(f));
     printf("\n");
     TEST_OUTPUT("Close syscall", close_syscall_test(f));
+    TEST_OUTPUT("Exectue syscall", execute_syscall_test(f));
     return;
 }
