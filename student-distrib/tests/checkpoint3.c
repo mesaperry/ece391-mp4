@@ -1,5 +1,5 @@
 #include "../tests.h"
-#include "checkpoint2.h"
+// #include "checkpoint2.h"
 #include "../types.h"
 #include "../terminal.h"
 #include "../lib.h"
@@ -34,8 +34,8 @@ void read_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
 	uint32_t i;
-	uint8_t buffer[MAX_FILE_NAME_SIZE];
-	uint32_t bytes_read = read(fd, buffer, MAX_FILE_NAME_SIZE);
+	uint8_t buffer[FNAME_MAX_LEN];
+	uint32_t bytes_read = read(fd, buffer, FNAME_MAX_LEN);
 	if (bytes_read == -1 || bytes_read == 0) {
 		printf("FAIL: No files found\n");
 	} else {
@@ -58,8 +58,8 @@ void read_syscall_test(int32_t fd) {
 int write_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
-	uint8_t buffer[MAX_FILE_NAME_SIZE];
-	uint32_t bytes_read = write(fd, buffer, MAX_FILE_NAME_SIZE);
+	uint8_t buffer[FNAME_MAX_LEN];
+	uint32_t bytes_read = write(fd, buffer, FNAME_MAX_LEN);
 	if (bytes_read == -1) {
 		return PASS;
 	} else {
@@ -113,11 +113,11 @@ int close_syscall_test(int32_t fd) {
 
 void test_all_checkpoint3()
 {
-    TEST_OUTPUT("testing idt syscall", test_linkage());
-    // int32_t f = open_syscall_test();
-    // printf("\nfd: %d\n\n", f);
-    // read_syscall_test(f);
-    // TEST_OUTPUT("Write syscall", write_syscall_test(f));
-    // TEST_OUTPUT("Close syscall", close_syscall_test(f));
+    // TEST_OUTPUT("testing idt syscall", test_linkage());
+    int32_t f = open_syscall_test();
+    printf("\nfd: %d\n\n", f);
+    read_syscall_test(f);
+    TEST_OUTPUT("Write syscall", write_syscall_test(f));
+    TEST_OUTPUT("Close syscall", close_syscall_test(f));
     return;
 }

@@ -167,7 +167,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    // launch_tests();
+    test_all_checkpoint3();
 #endif
     /* Execute the first program ("shell") ... */
 
