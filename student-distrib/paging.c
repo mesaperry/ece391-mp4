@@ -72,10 +72,10 @@ void init_paging()
     /* init kernel page */
     pde_4mb.present   = 1;
     pde_4mb.page_size = 1;
-    pde_4mb.ptr       = KERNEL_MEMORY_ADDR >> DIR_ENTRY_PAGE_OFFSET;
-    page_dir[1] = pde_4mb.val; /* given to 1 index b/c that is found with    */
-                               /* the desired memory access address 0x400000 */
-    //map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1);
+    // pde_4mb.ptr       = KERNEL_MEMORY_ADDR >> DIR_ENTRY_PAGE_OFFSET;
+    // page_dir[1] = pde_4mb.val; /* given to 1 index b/c that is found with    */
+    //                            /* the desired memory access address 0x400000 */
+    map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1);
 
     /* init video memory (and page directory entry for lowest 4 MB)*/
     pde_pte.present   = 1;
@@ -88,9 +88,9 @@ void init_paging()
     /* use only the bottom 20 bits of shifted video addr    */
     /*   Shouldn't need to because video addr is small,     */
     /*   but just to be technically correct.                */
-    pte_4kb.ptr = 0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET);
-    page_table[0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET)] = pte_4kb.val;
-    //map_v_p(VIDEO, VIDEO, 0);
+    // pte_4kb.ptr = 0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET);
+    // page_table[0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET)] = pte_4kb.val;
+    map_v_p(VIDEO, VIDEO, 0);
 
     /* we now init paging related registers, after we used physical */
     /* memory directly                                              */
@@ -185,7 +185,7 @@ map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
         pde_table = (uint32_t*)(pde_pte->ptr << TABLE_ENTRY_PAGE_OFFSET);
 
         /* Get page table entry */
-        pte_4kb = &pde_table[(virtual_addr >> TABLE_ENTRY_PAGE_OFFSET) & MASK_10_BIT];
+        pte_4kb = (pte_4kb_t*)&pde_table[(virtual_addr >> TABLE_ENTRY_PAGE_OFFSET) & MASK_10_BIT];
         // pte_4kb = &page_table[0xFFFFF & (virtual_addr >> TABLE_ENTRY_PAGE_OFFSET)];
 
         /* map or unmap */
