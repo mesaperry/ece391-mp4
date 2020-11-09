@@ -62,25 +62,25 @@ int32_t read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t 
 /* Returns the next file name in the filesys */
 uint32_t put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1]);
 /* reads directory given */
-int32_t dir_read(int32_t fd, uint8_t* buf, int32_t nbytes);
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
 /* returnrs file size */
 uint32_t file_size(uint8_t* fname);
 
 // file operations
 /* placeholders for file operations for syscalls and explicit tests are made in test.c for cp2 */
-int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes);
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
 /*  */
-int32_t file_write(int32_t fd, uint8_t* buf, int32_t num_bytes);
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes);
 /*  */
-int32_t file_open(uint8_t * fd);
+int32_t file_open(const uint8_t* filename);
 /*  */
 int32_t file_close(int32_t fd);
 
 // dir operations
 /*  */
-int32_t dir_write(int32_t fd, uint8_t* buf, int32_t num_bytes);
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes);
 /*  */
-int32_t dir_open(uint8_t * fd);
+int32_t dir_open(const uint8_t* filename);
 /*  */
 int32_t dir_close(int32_t fd);
 

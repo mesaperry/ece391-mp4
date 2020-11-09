@@ -114,7 +114,6 @@ int close_syscall_test(int32_t fd) {
 void test_all_checkpoint3()
 {
     // TEST_OUTPUT("testing idt syscall", test_linkage());
-    printf("test");
     clear();
     int32_t f = open_syscall_test();
     printf("\nfd: %d\n\n", f);

@@ -79,7 +79,7 @@ int32_t delete_process(int32_t pid){
     if(pid < 0 || pid >= MAX_DEVICES){
         return -1;
     }
-		
+
 		/* Free space for process pid */
     procs[pid] = 0;
     return 0;
@@ -235,17 +235,6 @@ int32_t execute (const uint8_t* command)
  {
 	 pcb->arg_buffer[i] = command_arguments[i];
  }
-
-	/* Set register values of pcb */
-	/* Not sure if this is right  way to get registers yet */
-	// get_esp(pcb->esp);
-	// get_ebp(pcb->ebp);
-	// get_esi(pcb->esi);
-	// get_edi(pcb->edi);
-	// get_eax(pcb->eax);
-	// get_ebx(pcb->ebx);
-	// get_ecx(pcb->ecx);
-	// get_edx(pcb->edx);
 
 	/* Context Switch */
 	asm volatile("          \n\

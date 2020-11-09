@@ -1,5 +1,4 @@
 #define ASM     1
-#include "syscall_test.h"
 
 # linkage to IDT
 .globl sys_call
