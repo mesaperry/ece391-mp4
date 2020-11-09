@@ -11,6 +11,7 @@
 
 #define TABLE_ENTRY_PAGE_OFFSET 12 /* byte offset required to get table entry */
 #define DIR_ENTRY_PAGE_OFFSET 22   /* byte offset required to get dir entry */
+#define MASK_10_BIT 0x3FF          /* mask for getting just the bottom 10 bits */
 
 /* Initialize paging in kernel */
 void init_paging();

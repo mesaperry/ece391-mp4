@@ -189,8 +189,8 @@ int32_t execute (const uint8_t* command)
 	if (process_id < 0) return -1;  // add process failed
 
 	/* Need to double check the values i the below formulas */
-	virtual_addr = MB_8 + process_id * MB_4;
-	physical_addr = 0x40000 + process_id * MB_4;
+	virtual_addr = USER_PROCESS_START_VIRTUAL + process_id * USER_PROCESS_SIZE;
+	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
 
 	/* need to double check below mapping */
 	//map_v_p(virtual_addr, physical_addr, 1);

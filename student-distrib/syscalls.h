@@ -13,8 +13,13 @@
 #define MAX_DEVICES 		6
 
 #define MB_8 						0x800000
+#define MB_128          0x8000000
 #define MB_4            0x400000
-#define KB_8            0x8000
+#define KB_8            0x2000
+
+#define USER_PROCESS_START_PHYSICAL   MB_8
+#define USER_PROCESS_START_VIRTUAL    MB_128
+#define USER_PROCESS_SIZE             MB_4
 
 #define ESP_MASK        0xFFFFE000
 #define PCB_SIZE				0x2000 /* 8 kB pages */
