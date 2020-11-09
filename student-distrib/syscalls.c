@@ -4,6 +4,9 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "terminal.h"
+#include "filesys.h"
+
+uint32_t process_count = 0;
 
 /* File operation structs */
 fops_t terminal_funcs =
@@ -38,7 +41,7 @@ fops_t dir_funcs =
 	.close = dir_close
 };
 
-static int32_t procs[MAX_DEVICES + 1] = {0};
+static int32_t procs[MAX_DEVICES] = {0};
 
 /*
 * add_process()
@@ -50,7 +53,7 @@ int32_t add_process(){
     uint32_t i;
 
 		/* Loop through available indices */
-    for(i = 1; i < MAX_DEVICES + 1; i++){
+    for(i = 0; i < MAX_DEVICES; i++){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
@@ -68,7 +71,7 @@ int32_t add_process(){
 */
 int32_t delete_process(int32_t pid){
 	/* Validate the input pid */
-    if(pid < 1 || pid > MAX_DEVICES){
+    if(pid < 0 || pid >= MAX_DEVICES){
         return -1;
     }
 		/* Free space for process pid */
@@ -84,21 +87,26 @@ int32_t delete_process(int32_t pid){
 int32_t halt (uint8_t status)
 {
 	/* Initialize variables */
-	pcb_t* pcb_parent_ptr;
+	pcb_t* pcb_parent_ptr = NULL;
 	pcb_t* pcb_child_ptr;
-	// uint32_t esp;
-	// uint32_t ebp;
+	uint32_t esp;
+	uint32_t ebp;
 	uint32_t i;
 
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
-	pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
+
+	/* */
+	if(pcb_child_ptr->p_id > 0)
+	{
+		pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
+	}
 
 	delete_process(pcb_child_ptr->p_id);
-	p_id--;
+	process_count--;
 
 	/* Close all the files in the pcb */
-	for (i = 0; i < FILE_ARRAY_LEN; i++)
+	for(i = 0; i < FILE_ARRAY_LEN; i++)
 	{
 		if (pcb_child_ptr->file_array[i].flags == 1)
 		{
@@ -108,15 +116,36 @@ int32_t halt (uint8_t status)
 		pcb_child_ptr->file_array[i].flags = 0;
 	}
 
-	/* Update the esp and ebp registers */
+	/* Re-map memory */
 
 	/* Restore parent paging */
-
-	/* Clear */
+	if(pcb_child_ptr->p_id > 0)
+	{
+		/* Set stack pointer to previous PCB's location */
+		esp = pcb_parent_ptr->esp;
+	}
+	else
+	{
+		/* Set stack pointer to top of kernel */
+		esp = KERNEL_MEMORY_ADDR;
+	}
 
 	/* Write parent's process info into TSS */
+	tss.esp0 = esp;
 
 	/* Jump to execute return */
+	/* halt_ret_label jumps to assembly in execute */
+	/*asm volatile("              \n\
+			movl    %1, %%esp       \n\
+			movl    %2, %%ebp       \n\
+			movb    %0, %%bl        \n\
+			jmp     halt_ret_label  \n\
+			"
+			:
+			: "r" (status), "r" (esp), "r" (ebp)
+			: "cc", "memory"
+	);*/
+	return 0;
 }
 
 int32_t execute (const uint8_t* command)
@@ -269,7 +298,7 @@ int32_t open(const uint8_t* filename)
     }
     else if(dentry.file_type == 2) // Regular File
 		{
-        //fd_ptr->inode = dentry.inode_num;
+        fd_ptr->inode = dentry.inode_index;
         fd_ptr->pos = 	0;
         fd_ptr->flags = 1;
         fd_ptr->fops = &fsys_funcs;
@@ -324,9 +353,9 @@ int32_t close(int32_t fd)
 * INPUTS: p_id
 * OUTPUT: Returns the PCB
 */
-pcb_t* find_PCB(int p_id) {
+pcb_t* find_PCB(int pid) {
 	 	/* Return PCB location in kernel stack, using p_id offset */
-    return (pcb_t*)(MB_8 - (KB_8 * (p_id + 1)));
+    return (pcb_t*)(MB_8 - (KB_8 * (pid + 1)));
 }
 
 /*

@@ -17,8 +17,6 @@
 
 #define ESP_MASK        0xFFFFE000
 
-uint32_t p_id = 1;
-
 /* File operations struct */
 typedef struct {
 	int32_t (*read) (int32_t fd, void* buf, int32_t nbytes);
