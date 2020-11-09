@@ -68,9 +68,6 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t open (const uint8_t* filename);
 int32_t close (int32_t fd);
 
-/* get pointer to inode */
-inode_t* get_inode_ptr(uint32_t inode);
-
 /* Loads an executable file into correct location in memory */
 int32_t load(dentry_t* d, uint8_t* mem);
 
