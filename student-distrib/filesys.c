@@ -160,7 +160,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
 }
 
 /*
- * directory_read
+ * put_next_dir_name
  * DESCRIPTION: Reads the next file in the filesys_img
  * INPUTS: buffer in which to put the name
  * OUTPUTS: none
@@ -169,7 +169,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
  * SIDE EFFECTS: increments dr_index
  */
 uint32_t
-directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
+put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1])
 {
     dentry_t dentry;
     int i; /* character read index */
@@ -188,6 +188,28 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
     return 1;
 }
 
+
+/* @TODO:
+ * make filesystems great again
+ * *** filesystem no longer flat
+ * dir_read
+ * DESCRIPTION: Reads the given file in the filesys_img
+ * INPUTS: fd       -   file descriptor
+ *         buf      -   buffer to read filename to 
+ *         nbytes   -   number of bytes to read irelevant
+ * OUTPUTS: number of bytes read
+ * RETURNS: 1 if success, 0 if end of directory reached.
+ *          Should never fail.
+ * SIDE EFFECTS: 
+ */
+dir_read(int32_t fd, uint8_t* buf, int32_t nbytes)
+{
+    return 0; // Flat
+    // get pcb and file from fd
+    // 
+}
+
+
 /*
  * file_read
  * DESCRIPTION: Reads the next file in the filesys_img
@@ -197,10 +219,10 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
  *         
  * SIDE EFFECTS:
  */
-int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
 {
-    pcb_t* process = get_PCB();
-    fd_t* file = &process->file_array[(uint32_t)fd];
+    pcb_t* process = get_current_PCB();
+    fd_t* file = &process->file_array[fd];
     
     uint32_t size;
     size = file_size(fd);
@@ -228,7 +250,7 @@ int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
  * RETURNS: -1 always fails read-only
  * SIDE EFFECTS: you can't do that
  */
-int32_t file_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+int32_t file_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
 {
     return -1;
 }
@@ -257,7 +279,7 @@ int32_t file_open(uint8_t * fd)
  * RETURNS: 0 if success, -1 if file is not open or does not exisit
  * SIDE EFFECTS:
  */
-int32_t file_close(uint8_t * fd)
+int32_t file_close(int32_t fd)
 {
     return 0;
 }
@@ -272,7 +294,7 @@ int32_t file_close(uint8_t * fd)
  * RETURNS: -1 should always fail
  * SIDE EFFECTS:
  */
-int32_t dir_write(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+int32_t dir_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
 {
     return -1;
 }
@@ -299,7 +321,7 @@ int32_t dir_open(uint8_t * fd)
  * RETURNS: 0 if success, -1 if directroy does not exist, returns 0 right now since 1 dir
  * SIDE EFFECTS:
  */
-int32_t dir_close(uint8_t * fd)
+int32_t dir_close(int32_t fd)
 {
     
     return 0;
