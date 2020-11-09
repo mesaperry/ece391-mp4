@@ -341,7 +341,7 @@ int32_t open(const uint8_t* filename)
     for(index = 2; index < FILE_ARRAY_LEN; index++)
 		{
 				/* Find an unused file in file_array */
-        if(pcb->file_array[index].flags == 0 && fd < 2)
+        if(pcb->file_array[index].flags == 0)
 				{
             fd = index;
             break;
