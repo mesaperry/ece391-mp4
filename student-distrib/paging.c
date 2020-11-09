@@ -192,6 +192,7 @@ map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
         /* map or unmap */
         if (physical_addr == 0) {
             pde_4kb->present = 0;
+            flush_tlb();
         } else {
             pde_4kb->present = 1;
             pde_4kb->ptr = physical_addr >> TABLE_ENTRY_PAGE_OFFSET;
@@ -206,10 +207,29 @@ map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
         /* map or unmap */
         if (physical_addr == 0) {
             pde_4mb->present = 0;
+            flush_tlb();
         } else {
             pde_4mb->present = 1;
             pde_4mb->ptr = physical_addr >> DIR_ENTRY_PAGE_OFFSET;
         }
     }
     return 0;
+}
+
+/* flush_tlb
+ *
+ * DESCRIPTION: Flushest the TLB
+ * INPUT/OUTPUT: none
+ * SIDE EFFECTS: flushes the TLB
+ */
+void flush_tlb()
+{
+    asm volatile ("                 \n\
+        movl %%cr3, %%eax           \n\
+        movl %%eax, %%cr3           \n\
+        "
+        : /* no outputs */
+        : /* no inputs */
+        : "eax"
+    );
 }

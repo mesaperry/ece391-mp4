@@ -222,7 +222,7 @@ int32_t execute (const uint8_t* command)
 	pcb->p_id = process_id;
 
 	/* Parse out arguments from command and store in arg_buffer */
-	pcb->arg_buffer = NULL;
+	// pcb->arg_buffer = NULL;
 
 	/* Set register values of pcb */
 	/* Not sure if this is right yet */
@@ -238,10 +238,10 @@ int32_t execute (const uint8_t* command)
 
 
 	// asm volatile ("                 \n\
-	// // TODO initialize these values:             \n\
+	//TODO initialize these values:             \n\
     //                              \n\
-	// /* Context Switch */         \n\
-	// // TODO!!
+	//  Context Switch        \n\
+	// TODO!!
 	// 		"
 	// 		:
 	// 		:
