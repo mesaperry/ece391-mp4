@@ -33,7 +33,7 @@ sys_call:
     call    *syscall_jumptable(, %eax, 4)
     cmpl    $0xFFFFF001, %eax             # -1 to -4095 errors
     jb      done                          # No errors
-    xorl    %edx, %edx 
+    xorl    %edx, %edx
     subl    %eax, %edx                    # negate the error number
     pushl   %edx
     call    __errno_location              # get ptr to errno
@@ -53,7 +53,7 @@ done:
     popl %edx
     popl %ecx
     popl %ebx
-    
+
     iret
 
 __errno_location:
