@@ -95,7 +95,6 @@ int32_t halt (uint8_t status)
 	pcb_t* pcb_parent_ptr = NULL;
 	pcb_t* pcb_child_ptr;
 	uint32_t esp;
-	uint32_t ebp;
 	uint32_t i;
 
 	/* Restore parent data */
@@ -122,6 +121,13 @@ int32_t halt (uint8_t status)
 	}
 
 	/* Re-map memory */
+	// map(virtual_addr, 0, 1); // Un-map 4 MB page
+
+	/* If there are still active PCBs, map virtual address to parent pointers p_id */
+	// if(pcb_parent_ptr != NULL)
+	// {
+	// 	map(virtual_addr, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4));
+	// }
 
 	/* Restore parent paging */
 	if(pcb_child_ptr->p_id > 0)
@@ -157,7 +163,7 @@ int32_t execute (const uint8_t* command)
 {
 	int8_t output;
 	pcb_t* pcb;
-	int32_t command_length, process_id, i;
+	int32_t command_length, process_id, i, output;
 	uint32_t virtual_addr, physical_addr;
 	dentry_t dentry;
 	fd_t stdin;
@@ -183,8 +189,10 @@ int32_t execute (const uint8_t* command)
 	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
 
-	virtual_addr = 0x800000 + process_id*0x40000;
-	physical_addr = 0x40000 + process_id*0x40000;
+	/* Need to double check the values i the below formulas */
+	virtual_addr = MB_8 + process_id * MB_4;
+	physical_addr = 0x40000 + process_id * MB_4;
+
 	/* need to double check below mapping */
 	//map_v_p(virtual_addr, physical_addr, 1);
 
@@ -223,17 +231,19 @@ int32_t execute (const uint8_t* command)
 	pcb->p_id = process_id;
 
 	/* Parse out arguments from command and store in arg_buffer */
+	// Might not need to worry about until next checkpoint
+	// pcb->arg_buffer = NULL;
 
 	/* Set register values of pcb */
-	/* Not sure if this is right yet */
+	/* Not sure if this is right  way to get registers yet */
 	// get_esp(pcb->esp);
-	// get_esp(pcb->ebp);
-	// get_esp(pcb->esi);
-	// get_esp(pcb->edi);
-	// get_esp(pcb->eax);
-	// get_esp(pcb->ebx);
-	// get_esp(pcb->ecx);
-	// get_esp(pcb->edx);
+	// get_ebp(pcb->ebp);
+	// get_esi(pcb->esi);
+	// get_edi(pcb->edi);
+	// get_eax(pcb->eax);
+	// get_ebx(pcb->ebx);
+	// get_ecx(pcb->ecx);
+	// get_edx(pcb->edx);
 
 	/* Context Switch */
 	asm volatile("                        	\n\

@@ -13,6 +13,7 @@
 #define MAX_DEVICES 		6
 
 #define MB_8 						0x800000
+#define MB_4            0x400000
 #define KB_8            0x8000
 
 #define ESP_MASK        0xFFFFE000
@@ -68,9 +69,6 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t open (const uint8_t* filename);
 int32_t close (int32_t fd);
 
-/* get pointer to inode */
-inode_t* get_inode_ptr(uint32_t inode);
-
 /* Loads an executable file into correct location in memory */
 int32_t load(dentry_t* d, uint8_t* mem);
 
@@ -79,7 +77,7 @@ int32_t add_process();
 int32_t delete_process();
 
 /* Assembly to return ESP register */
-// #define get_esp(x)          \
+// define get_esp(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%esp, %0"    \
@@ -87,7 +85,7 @@ int32_t delete_process();
 //     );                      \
 // } while(0)
 //
-// #define get_ebp(x)          \
+// define get_ebp(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%ebp, %0"    \
@@ -103,7 +101,7 @@ int32_t delete_process();
 //     );                      \
 // } while(0)
 //
-// #define get_edi(x)          \
+// define get_edi(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%edi, %0"    \
@@ -111,7 +109,7 @@ int32_t delete_process();
 //     );                      \
 // } while(0)
 //
-// #define get_eax(x)          \
+// define get_eax(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%eax, %0"    \
@@ -119,7 +117,7 @@ int32_t delete_process();
 //     );                      \
 // } while(0)
 //
-// #define get_ebx(x)          \
+// define get_ebx(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%ebx, %0"    \
@@ -127,7 +125,7 @@ int32_t delete_process();
 //     );                      \
 // } while(0)
 //
-// #define get_ecx(x)          \
+// define get_ecx(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%ecx, %0"    \
@@ -135,7 +133,7 @@ int32_t delete_process();
 //     );                      \
 // } while(0)
 //
-// #define get_edx(x)          \
+// define get_edx(x)          \
 // do {                        \
 //     asm volatile (          \
 //         "movl %%edx, %0"    \

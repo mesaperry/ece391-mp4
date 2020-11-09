@@ -121,6 +121,8 @@ int32_t get_next_arguments(const uint8_t* argument_string, uint8_t* buf)
 
     while (argument_string[i] != '\0') buf[j++] = argument_string[i++];
     buf[j] = (uint8_t)'\0';
+
+    return j;
 }
 
 

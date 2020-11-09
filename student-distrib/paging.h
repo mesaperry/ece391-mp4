@@ -20,5 +20,5 @@ void enable_paging();
 void disable_paging();
 /* Maps virtual memory to physical memory */
 uint32_t map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb);
-
+void flush_tlb();
 #endif
