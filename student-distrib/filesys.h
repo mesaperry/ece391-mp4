@@ -58,9 +58,9 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length);
 
 /* Returns the next file name in the filesys */
-uint32_t put_next_dir_name(int32_t fd, uint8_t buf[FNAME_MAX_LEN + 1], int32_t nbytes);
+uint32_t put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1]);
 /* reads directory given */
-uint32_t dir_read(int32_t fd, uint8_t* buf, int32_t nbytes);
+int32_t dir_read(int32_t fd, uint8_t* buf, int32_t nbytes);
 /* returnrs file size */ 
 uint32_t file_size(uint8_t* fname);
 

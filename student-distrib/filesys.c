@@ -202,6 +202,7 @@ put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1])
  *          Should never fail.
  * SIDE EFFECTS: 
  */
+int32_t 
 dir_read(int32_t fd, uint8_t* buf, int32_t nbytes)
 {
     return 0; // Flat
@@ -224,18 +225,18 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
     pcb_t* process = get_current_PCB();
     fd_t* file = &process->file_array[(uint32_t)fd];
 
-    uint32_t size;
-    size = file_size(fd);
-    if (num_bytes > size)
-    {
-        return -1;
-    }
+    // uint32_t size;
+    // size = file_size(fd);
+    // if (num_bytes > size)
+    // {
+    //     return -1;
+    // }
 
     int32_t data;
     data = read_data(file->inode, file->pos, buf, num_bytes);
 
     file->pos = file->pos + data;
-    if (file->pos >= size) file->pos = 0;
+    // if (file->pos >= size) file->pos = 0;
 
     return data;
 }
