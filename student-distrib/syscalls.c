@@ -98,6 +98,7 @@ int32_t halt (uint8_t status)
 	pcb_t* pcb_child_ptr;
 	uint32_t esp;
 	uint32_t i;
+	uint32_t virtual_addr;
 
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
@@ -122,8 +123,9 @@ int32_t halt (uint8_t status)
 		pcb_child_ptr->file_array[i].flags = 0;
 	}
 
-	/* Re-map memory */
-	// map(virtual_addr, 0, 1); // Un-map 4 MB page
+	/* Unmap 4MB page */
+	virtual_addr = USER_PROCESS_START_VIRTUAL + pcb_child_ptr->p_id * USER_PROCESS_SIZE;
+	map_v_p(virtual_addr, 0, 1);
 
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
 	// if(pcb_parent_ptr != NULL)
@@ -194,8 +196,7 @@ int32_t execute (const uint8_t* command)
 	virtual_addr = USER_PROCESS_START_VIRTUAL + process_id * USER_PROCESS_SIZE;
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
 
-	/* need to double check below mapping */
-	//map_v_p(virtual_addr, physical_addr, 1);
+	map_v_p(virtual_addr, physical_addr, 1);
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */

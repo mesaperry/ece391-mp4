@@ -10,6 +10,7 @@
 #include "../rtc.h"
 #include "../idt.h"
 #include "../syscalls.h"
+#include "../paging.h"
 
 /* Checkpoint 3 Tests */
 
@@ -194,7 +195,7 @@ int test_page_mapping() {
     printf("PASS if page fault...\n");
     printf("Didn't page fault! Instead, found %s", *((char*)virt));
     return FAIL;
-
+}
 
 /*	System call test (execute)
 *
@@ -208,7 +209,7 @@ int test_page_mapping() {
 int execute_syscall_test(int32_t fd)
 {
     TEST_HEADER;
-    if (execute("ls") == -1) return FAIL;
+    if (execute(dechar("ls")) == -1) return FAIL;
     return PASS;
 }
 
@@ -216,7 +217,7 @@ int execute_syscall_test(int32_t fd)
 int linkage_test(int32_t fd)
 {
 	TEST_HEADER;
-	uint8_t * filename = "frame0.txt";
+	uint8_t* filename = dechar("frame0.txt");
 	asm volatile ("  \n\
 		movl $5, %%eax \n\
 		movl %1, %%ebx \n\
@@ -245,5 +246,8 @@ void test_all_checkpoint3()
     TEST_OUTPUT("Exectue syscall", execute_syscall_test(f));
     printf("\n");
 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
+    printf("\n");
+    /* This ends with a page fault, so keep this last */
+    TEST_OUTPUT("test page mapping", test_page_mapping());
 	return;
 }

@@ -53,9 +53,9 @@ uint32_t is_executable(uint8_t* exe)
 {
 	uint8_t data[5];
 	data[4] = '\0';
-	if (read_file_bytes_by_name(exe, data, 4) < 0) return -1;
+	if (read_file_bytes_by_name(exe, data, 4) < 0) return 0;
 	uint8_t buf[4];
 	substring(data, buf, 1, 4);
-	if (string_equal(buf, (uint8_t*)"ELF") == 0) return -1;
-	return 0;
+	if (string_equal(buf, (uint8_t*)"ELF") == 0) return 0;
+	return 1;
 }

@@ -87,6 +87,17 @@ int32_t copy_string(const uint8_t* source, uint8_t* dest)
     return 0;
 }
 
+/* dechar
+ * DESCRIPTION: type casts a string to an uint8_t array
+ * INPUTS: s -- array of chars
+ * OUTPUT: none
+ * RETURNS: type casted pointer
+ * SIDE EFFECTS: none
+ */
+uint8_t* dechar(const char* s) {
+    return (uint8_t*)s;
+}
+
 /* print_buf
  * DESCRIPTION: Prints a buffer, char by char
  * INPUT: buf   -- an array of chars
