@@ -257,13 +257,13 @@ int32_t execute (const uint8_t* command)
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
 	read_dentry_by_name(executable, &dentry);
-	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL, file_size(executable));
+	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL + 0x48000, file_size(executable));
 
 	/* SHOW USER SPACE DATA */
 	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
 	printf("\n");
-	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET));
-	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET));
+	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
+	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
 
 	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_addr);
 	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_addr);
@@ -320,7 +320,7 @@ int32_t execute (const uint8_t* command)
 		movb	%%bl, %0				\n\
 		"
 		: "=rm"(output)
-		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET)), "r"(virtual_addr)
+		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_addr)
 		: "cc", "memory"
 	);
 
