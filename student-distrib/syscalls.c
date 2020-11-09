@@ -155,8 +155,15 @@ int32_t halt (uint8_t status)
 
 int32_t execute (const uint8_t* command)
 {
+	pcb_t* pcb;
+	int32_t command_length, process_id, i;
+	uint32_t virtual_addr, physical_addr;
+	dentry_t dentry;
+	fd_t stdin;
+	fd_t stdout;
+
 	/* Get first word (command) */
-	int32_t command_length = get_argument_length(command, 0);
+	command_length = get_argument_length(command, 0);
 	if (command_length < 0) return 0;  // Error getting first word
 
 	uint8_t executable[command_length + 1];
@@ -172,22 +179,62 @@ int32_t execute (const uint8_t* command)
 	/* Paging: load user level program loaded in page starting at 128MB */
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
 
-	int32_t process_id = add_process();
+	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
 
-	uint32_t virtual_addr = 0x800000 + process_id*0x40000;
-	uint32_t physical_addr = 0x40000 + process_id*0x40000;
-	map_v_p(virtual_addr, physical_addr, 1);
+	virtual_addr = 0x800000 + process_id*0x40000;
+	physical_addr = 0x40000 + process_id*0x40000;
+	/* need to double check below mapping */
+	//map_v_p(virtual_addr, physical_addr, 1);
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
-	dentry_t dentry;
 	read_dentry_by_name(executable, &dentry);
 	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, file_size(executable));
 
-	/* Create PCB */
-	pcb_t pcb;
+	/* Create next PCB */
+	pcb = (pcb_t*) (KERNEL_MEMORY_ADDR - (process_id + 1) * PCB_SIZE);
+
+	/* Set fd = 0 and fd = 1 in file_array */
+	stdin.fops = &terminal_funcs;
+	stdin.inode = NULL;
+	stdin.pos = 0;
+	stdin.flags = 1;
+	pcb->file_array[0] = stdin;
+
+	stdout.fops = &terminal_funcs;
+	stdout.inode = NULL;
+	stdout.pos = 0;
+	stdout.flags = 1;
+	pcb->file_array[1] = stdout;
+
+	/* Initialize remaining file array */
+	for(i = 2; i < FILE_ARRAY_LEN; i++)
+	{
+			pcb->file_array[i].fops = NULL;
+			pcb->file_array[i].inode = NULL;
+			pcb->file_array[i].pos = 0;
+			pcb->file_array[i].flags = 0;
+	}
+
+	/* Update PCB values */
+	pcb->p_id = process_id;
+
+	/* Parse out arguments from command and store in arg_buffer */
+
+	/* Set register values of pcb */
+	/* Not sure if this is right yet */
+	// get_esp(pcb->esp);
+	// get_esp(pcb->ebp);
+	// get_esp(pcb->esi);
+	// get_esp(pcb->edi);
+	// get_esp(pcb->eax);
+	// get_esp(pcb->ebx);
+	// get_esp(pcb->ecx);
+	// get_esp(pcb->edx);
+
+
 
 	// asm volatile ("                 \n\
 	// // TODO initialize these values:             \n\

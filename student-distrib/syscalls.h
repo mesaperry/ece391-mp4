@@ -16,6 +16,7 @@
 #define KB_8            0x8000
 
 #define ESP_MASK        0xFFFFE000
+#define PCB_SIZE				0x2000 /* 8 kB pages */
 
 /* File operations struct */
 typedef struct {
@@ -78,12 +79,68 @@ int32_t add_process();
 int32_t delete_process();
 
 /* Assembly to return ESP register */
-#define get_esp(x)          \
-do {                        \
-    asm volatile (          \
-        "movl %%esp, %0"    \
-        : "=rm" (x)         \
-    );                      \
-} while(0)
+// #define get_esp(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%esp, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_ebp(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%ebp, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_esi(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%esi, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_edi(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%edi, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_eax(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%eax, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_ebx(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%ebx, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_ecx(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%ecx, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
+//
+// #define get_edx(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%edx, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
 
 #endif /* _SYS_CALLS_H */
