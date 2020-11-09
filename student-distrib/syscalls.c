@@ -205,7 +205,7 @@ int32_t execute (const uint8_t* command)
 	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, file_size(executable));
 
 	/* Create next PCB */
-	pcb = (pcb_t*) (KERNEL_MEMORY_ADDR - (process_id + 1) * PCB_SIZE);
+	pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
 
 	/* Set fd = 0 and fd = 1 in file_array */
 	stdin.fops = &terminal_funcs;
@@ -223,20 +223,20 @@ int32_t execute (const uint8_t* command)
 	/* Initialize remaining file array */
 	for(i = 2; i < FILE_ARRAY_LEN; i++)
 	{
-			pcb->file_array[i].fops = NULL;
-			pcb->file_array[i].inode = NULL;
-			pcb->file_array[i].pos = 0;
-			pcb->file_array[i].flags = 0;
+		pcb->file_array[i].fops = NULL;
+		pcb->file_array[i].inode = NULL;
+		pcb->file_array[i].pos = 0;
+		pcb->file_array[i].flags = 0;
 	}
 
 	/* Update PCB values */
 	pcb->p_id = process_id;
 
 	/* Parse out arguments from command and store in arg_buffer */
- for(i = 0; i < MAX_BUFF_LENGTH; i++)
- {
+	for(i = 0; i < MAX_BUFF_LENGTH; i++)
+	{
 	 pcb->arg_buffer[i] = command_arguments[i];
- }
+	}
 
 	/* Context Switch */
 	asm volatile("          \n\
