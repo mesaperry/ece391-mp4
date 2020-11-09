@@ -6,7 +6,10 @@ int32_t string_length(const uint8_t* s)
     if (s == NULL) return -1;
 
     int32_t count = 0;
-    while (s[count] != '\0') count++;
+    while (s[count] != '\0') {
+        count++;
+        if (count > 1000000) return -1;
+    }
     return count;
 }
 
