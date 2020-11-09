@@ -197,7 +197,7 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
  *         
  * SIDE EFFECTS:
  */
-/*int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
+int32_t file_read(uint8_t * fd, uint8_t* buf, int32_t num_bytes)
 {
     pcb_t* process = get_PCB();
     fd_t* file = &process->file_array[(uint32_t)fd];
@@ -216,7 +216,7 @@ directory_read(uint8_t buf[FNAME_MAX_LEN + 1])
     if (file->pos >= size) file->pos = 0;
     
     return data;
-}*/
+}
 
 /*
  * file_write
