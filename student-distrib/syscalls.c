@@ -388,7 +388,7 @@ int32_t open(const uint8_t* filename)
 				{
 					for(index = 0; index < FNAME_MAX_LEN; index++)
 					{
-						fd_ptr->file_name[index] = (uint8_t)"\0";
+						fd_ptr->file_name[index] = (uint8_t)'\0';
 					}
 				}
     }
