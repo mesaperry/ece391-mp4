@@ -86,6 +86,17 @@ int32_t delete_process(int32_t pid){
     return 0;
 }
 
+/* Helper function to restore current registers into a pid */
+void restore_registers(int32_t pid)
+{
+	asm volatile ("                                \
+		"
+		: /* No outputs */
+		: /* Input all registers from pcb */
+		:
+	);
+}
+
 /*
 * int32_t halt(int32_t fd);
 * DESCRIPTION: clean-up process
@@ -134,15 +145,17 @@ int32_t halt (uint8_t status)
 	// }
 
 	/* Restore parent paging */
-	if(pcb_child_ptr->p_id > 0)
+	if(pcb_parent_ptr != NULL)
 	{
 		/* Set stack pointer to previous PCB's location */
 		esp = pcb_parent_ptr->esp;
+		restore_registers(pcb_parent_ptr->p_id);
 	}
 	else
 	{
 		/* Set stack pointer to top of kernel */
 		esp = KERNEL_MEMORY_ADDR;
+		// Don't care what registers are?
 	}
 
 	/* Write parent's process info into TSS */
@@ -161,6 +174,17 @@ int32_t halt (uint8_t status)
 		: "cc", "memory"
 	);
 	return 0;
+}
+
+/* Helper function to save registers from a pid */
+void save_registers(int32_t pid)
+{
+	asm volatile ("                             \
+		"
+		: /* Output all registers into pcb */
+		: /* No inputs */
+		:
+	);
 }
 
 int32_t execute (const uint8_t* command)
@@ -238,6 +262,7 @@ int32_t execute (const uint8_t* command)
 	 pcb->arg_buffer[i] = command_arguments[i];
 	}
 
+	if (process_id > 0) save_registers(process_id - 1);
 	/* Context Switch */
 	asm volatile("          \n\
 		pushl	%P1							\n\
