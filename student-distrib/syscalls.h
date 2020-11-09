@@ -44,7 +44,7 @@ typedef struct {
 /* Process control block struct */
 typedef struct pcb {
 	fd_t file_array[FILE_ARRAY_LEN];
-  int8_t arg_buffer[MAX_BUFF_LENGTH];
+  uint8_t arg_buffer[MAX_BUFF_LENGTH];
 	int32_t p_id;
   uint32_t esp;
   uint32_t ebp;

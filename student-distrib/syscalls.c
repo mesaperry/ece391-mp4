@@ -230,8 +230,10 @@ int32_t execute (const uint8_t* command)
 	pcb->p_id = process_id;
 
 	/* Parse out arguments from command and store in arg_buffer */
-	// Might not need to worry about until next checkpoint
-	// pcb->arg_buffer = NULL;
+ for(i = 0; i < MAX_BUFF_LENGTH; i++)
+ {
+	 pcb->arg_buffer[i] = command_arguments[i];
+ }
 
 	/* Set register values of pcb */
 	/* Not sure if this is right  way to get registers yet */
@@ -259,7 +261,7 @@ int32_t execute (const uint8_t* command)
 		: "p"(USER_DS), "p"(USER_CS), "r"(virtual_addr), "r"(pcb->esp)
 		: "cc", "memory"
 	);
-	
+
 	return output;
 }
 
