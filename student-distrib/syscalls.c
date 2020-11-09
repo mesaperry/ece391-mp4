@@ -139,22 +139,23 @@ int32_t halt (uint8_t status)
 	tss.esp0 = esp;
 
 	/* Jump to execute return */
-	/* halt_ret_label jumps to assembly in execute */
-	/*asm volatile("              \n\
-			movl    %1, %%esp       \n\
-			movl    %2, %%ebp       \n\
-			movb    %0, %%bl        \n\
-			jmp     halt_ret_label  \n\
-			"
-			:
-			: "r" (status), "r" (esp), "r" (ebp)
-			: "cc", "memory"
-	);*/
+	/* exec_ret jumps to assembly in execute */
+	asm volatile("                  	   	\n\
+        movl    %1, %%esp					\n\
+        movl    %2, %%ebp					\n\
+        movb    %0, %%bl					\n\
+		jmp		exec_ret					\n\
+		"
+		:
+		: "r"(status), "r"(esp), "r"(ebp)
+		: "cc", "memory"
+	);
 	return 0;
 }
 
 int32_t execute (const uint8_t* command)
 {
+	int8_t output;
 	pcb_t* pcb;
 	int32_t command_length, process_id, i;
 	uint32_t virtual_addr, physical_addr;
@@ -234,31 +235,23 @@ int32_t execute (const uint8_t* command)
 	// get_esp(pcb->ecx);
 	// get_esp(pcb->edx);
 
-
-
-	// asm volatile ("                 \n\
-	// // TODO initialize these values:             \n\
-	// 	// fd_t file_array[FILE_ARRAY_LEN];      \n\
-	// 	// 	int8_t arg_buffer[MAX_BUFF_LENGTH];  \n\
-	// 	// int32_t p_id; \n\
-	// 	// uint32_t esp; \n\
-	// 	// uint32_t ebp; \n\
-	// 	// uint32_t esi; \n\
-	// 	// uint32_t edi; \n\
-	// 	// uint32_t eax; \n\
-	// 	// uint32_t ebx; \n\
-	// 	// uint32_t ecx; \n\
-	// 	// uint32_t edx; \n\
-    //                              \n\
-	// /* Context Switch */         \n\
-	// // TODO!!
-	// 		"
-	// 		:
-	// 		:
-	// 		:
-	// );
-
-	return -1;
+	/* Context Switch */
+	asm volatile("                        	\n\
+		pushl	%P1							\n\
+		pushl	%4							\n\
+		pushf								\n\
+		pushl	%P2							\n\
+		pushl	%3							\n\
+		iret								\n\
+		exec_ret:							\n\
+		movb	%%bl, %0					\n\
+		"
+		: "=rm"(output)
+		: "p"(USER_DS), "p"(USER_CS), "r"(virtual_addr), "r"(pcb->esp)
+		: "cc", "memory"
+	);
+	
+	return output;
 }
 
 /*
