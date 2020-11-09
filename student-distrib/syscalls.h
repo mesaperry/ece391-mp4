@@ -44,12 +44,13 @@ typedef struct {
     uint32_t inode;
     uint32_t pos;
     uint32_t flags;
+		uint8_t file_name[FNAME_MAX_LEN];
 } fd_t;
 
 /* Process control block struct */
 typedef struct pcb {
 	fd_t file_array[FILE_ARRAY_LEN];
-  int8_t arg_buffer[MAX_BUFF_LENGTH];
+  uint8_t arg_buffer[MAX_BUFF_LENGTH];
 	int32_t p_id;
   uint32_t esp;
   uint32_t ebp;
@@ -80,70 +81,5 @@ int32_t load(dentry_t* d, uint8_t* mem);
 /* Update process count */
 int32_t add_process();
 int32_t delete_process();
-
-/* Assembly to return ESP register */
-// define get_esp(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%esp, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// define get_ebp(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%ebp, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// #define get_esi(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%esi, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// define get_edi(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%edi, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// define get_eax(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%eax, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// define get_ebx(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%ebx, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// define get_ecx(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%ecx, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
-//
-// define get_edx(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%edx, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
 
 #endif /* _SYS_CALLS_H */

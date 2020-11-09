@@ -113,19 +113,19 @@ int test_read_file_bytes_by_name()
 		printf("file: /\\/\\/\\/\\/\\\n");
 		return FAIL;
 	}
-	if (is_executable("ls") < 0) {
+	if (is_executable((uint8_t*)"ls") < 0) {
 		printf("ls not executable\n");
 		return FAIL;
 	}
-	if (is_executable("grep") < 0) {
+	if (is_executable((uint8_t*)"grep") < 0) {
 		printf("grep not executable\n");
 		return FAIL;
 	}
-	if (is_executable("frame0.txt") == 0) {
+	if (is_executable((uint8_t*)"frame0.txt") == 0) {
 		printf("frame is executable\n");
 		return FAIL;
 	}
-	if (is_executable("pieter") == 0) {
+	if (is_executable((uint8_t*)"pieter") == 0) {
 		printf("pieter exists and is executable\n");
 		return FAIL;
 	}
@@ -226,13 +226,13 @@ int test_open_close()
 		return FAIL;
 	}
 
-	if (file_close((uint8_t*)"frame0.txt") == -1)
+	if (file_close((int32_t)"frame0.txt") == -1)
 	{
 		printf("cannot close file\n");
 		return FAIL;
 	}
 
-	if (dir_close((uint8_t*)"") == -1)
+	if (dir_close((int32_t)"") == -1)
 	{
 		printf("literally how did you mess this up?");
 		return FAIL;
@@ -255,14 +255,14 @@ int test_write()
 	TEST_HEADER;
 	uint8_t buf[100];
 	buf[99] = '\0';
-	if (file_write((uint8_t*)"frame0.txt", buf, 20) != -1)
+	if (file_write((int32_t)"frame0.txt", buf, 20) != -1)
 	{
 		printf("ERROR: shudnt be able to write\n");
 		return FAIL;
 	}
 	printf("Cannot write Read-Only\n");
 
-	if (dir_write((uint8_t*)"", buf, 20) != -1)
+	if (dir_write((int32_t)"", buf, 20) != -1)
 	{
 		printf("ERROR: shudnt be able to write\n");
 		return FAIL;

@@ -52,6 +52,18 @@ uint32_t file_size(uint8_t* fname)
 }
 
 
+/* returns bytes read */
+uint32_t file_size_by_fd(int32_t fd)
+{
+    pcb_t* process = get_current_PCB();
+    fd_t* file = &process->file_array[(uint32_t)fd];
+
+    inode_t* i = (inode_t*) file->inode;
+    return i->length;
+
+}
+
+
 /*
  * read_dentry_by_name
  * DESCRIPTION: copies matching dentry data into location of pointer
@@ -221,7 +233,7 @@ put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1])
  * SIDE EFFECTS:
  */
 int32_t
-dir_read(int32_t fd, uint8_t* buf, int32_t nbytes)
+dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
     return 0; // Flat
     // get pcb and file from fd
@@ -238,7 +250,7 @@ dir_read(int32_t fd, uint8_t* buf, int32_t nbytes)
  *
  * SIDE EFFECTS:
  */
-int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes)
 {
     pcb_t* process = get_current_PCB();
     fd_t* file = &process->file_array[(uint32_t)fd];
@@ -251,7 +263,7 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
     // }
 
     int32_t data;
-    data = read_data(file->inode, file->pos, buf, num_bytes);
+    data = read_data(file->inode, file->pos, buf, nbytes);
 
     file->pos = file->pos + data;
     // if (file->pos >= size) file->pos = 0;
@@ -264,12 +276,12 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
  * DESCRIPTION: writes to given file
  * INPUTS:  fd           - File Descriptor
  *          buf          - buffer in which to put the data
- *          num_bytes    - Number of bytes to be written
+ *          n            - Number of bytes to be written
  * OUTPUTS: none
  * RETURNS: -1 always fails read-only
  * SIDE EFFECTS: you can't do that
  */
-int32_t file_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes)
 {
     return -1;
 }
@@ -283,7 +295,7 @@ int32_t file_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
  * RETURNS: 0 if success, -1 if file does not exist
  * SIDE EFFECTS:
  */
-int32_t file_open(uint8_t * fd)
+int32_t file_open(const uint8_t* filename)
 {
 
     return 0;
@@ -308,12 +320,12 @@ int32_t file_close(int32_t fd)
  * DESCRIPTION: writes directory, always fails read-only
  * INPUTS:  fd        - File Descriptor
  *          buf       - buffer in which to put the data
- *          num_bytes - number of bytes to write
+ *          nbytes - number of bytes to write
  * OUTPUTS: none
  * RETURNS: -1 should always fail
  * SIDE EFFECTS:
  */
-int32_t dir_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
 {
     return -1;
 }
@@ -326,7 +338,7 @@ int32_t dir_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
  * RETURNS: 0 if success, shud never fail
  * SIDE EFFECTS: No dir open
  */
-int32_t dir_open(uint8_t * fd)
+int32_t dir_open(const uint8_t* filename)
 {
     return 0;
 }

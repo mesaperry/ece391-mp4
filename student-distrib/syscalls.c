@@ -7,6 +7,7 @@
 
 #include "utils/arg_util.h"
 #include "utils/file_util.h"
+#include "utils/char_util.h"
 #include "filesys.h"
 
 uint32_t process_count = 0;
@@ -79,6 +80,7 @@ int32_t delete_process(int32_t pid){
     if(pid < 0 || pid >= MAX_DEVICES){
         return -1;
     }
+
 		/* Free space for process pid */
     procs[pid] = 0;
     return 0;
@@ -126,7 +128,7 @@ int32_t halt (uint8_t status)
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
 	// if(pcb_parent_ptr != NULL)
 	// {
-	// 	map(virtual_addr, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4));
+	// 		map(virtual_addr, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4));
 	// }
 
 	/* Restore parent paging */
@@ -146,11 +148,11 @@ int32_t halt (uint8_t status)
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
-	asm volatile("                  	   	\n\
-        movl    %1, %%esp					\n\
-        movl    %2, %%ebp					\n\
-        movb    %0, %%bl					\n\
-		jmp		exec_ret					\n\
+	asm volatile("             	\n\
+    movl    %1, %%esp					\n\
+    movl    %2, %%ebp					\n\
+    movb    %0, %%bl					\n\
+		jmp		exec_ret						\n\
 		"
 		:
 		: "r"(status), "r"(esp), "r"(pcb_parent_ptr->ebp)
@@ -230,36 +232,27 @@ int32_t execute (const uint8_t* command)
 	pcb->p_id = process_id;
 
 	/* Parse out arguments from command and store in arg_buffer */
-	// Might not need to worry about until next checkpoint
-	// pcb->arg_buffer = NULL;
-
-	/* Set register values of pcb */
-	/* Not sure if this is right  way to get registers yet */
-	// get_esp(pcb->esp);
-	// get_ebp(pcb->ebp);
-	// get_esi(pcb->esi);
-	// get_edi(pcb->edi);
-	// get_eax(pcb->eax);
-	// get_ebx(pcb->ebx);
-	// get_ecx(pcb->ecx);
-	// get_edx(pcb->edx);
+ for(i = 0; i < MAX_BUFF_LENGTH; i++)
+ {
+	 pcb->arg_buffer[i] = command_arguments[i];
+ }
 
 	/* Context Switch */
-	asm volatile("                        	\n\
+	asm volatile("          \n\
 		pushl	%P1							\n\
 		pushl	%4							\n\
-		pushf								\n\
+		pushf									\n\
 		pushl	%P2							\n\
 		pushl	%3							\n\
-		iret								\n\
+		iret									\n\
 		exec_ret:							\n\
-		movb	%%bl, %0					\n\
+		movb	%%bl, %0				\n\
 		"
 		: "=rm"(output)
 		: "p"(USER_DS), "p"(USER_CS), "r"(virtual_addr), "r"(pcb->esp)
 		: "cc", "memory"
 	);
-	
+
 	return output;
 }
 
@@ -310,7 +303,7 @@ int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 
     /* Check for valid fd */
     /* fd = 0 is read only */
-    if(buf == NULL || fd < 0 || fd > MAX_FD || fd == 0)
+    if(fd < 0 || fd > MAX_FD || fd == 0)
     {
         return -1;
     }
@@ -391,6 +384,13 @@ int32_t open(const uint8_t* filename)
         fd_ptr->pos = 	0;
         fd_ptr->flags = 1;
         fd_ptr->fops = &fsys_funcs;
+				if(copy_string(filename, fd_ptr->file_name) == -1)
+				{
+					for(index = 0; index < FNAME_MAX_LEN; index++)
+					{
+						fd_ptr->file_name[index] = (uint8_t)'\0';
+					}
+				}
     }
     else
 		{

@@ -13,14 +13,6 @@
 
 /* Checkpoint 3 Tests */
 
-int test_linkage()
-{
-    TEST_HEADER;
-    // asm("movl $1, %%eax");
-    // asm("int $0x80");
-    return PASS;
-}
-
 /* System call test (read)
  *
  * Prints out the name of the file in the directory
@@ -28,14 +20,19 @@ int test_linkage()
  * Outputs: filename
  * Side Effects: None
  * Coverage: read
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 void read_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
 	uint32_t i;
-	uint8_t buffer[FNAME_MAX_LEN];
-	uint32_t bytes_read = read(fd, buffer, FNAME_MAX_LEN);
+
+  pcb_t* process = get_current_PCB();
+  int32_t nbytes = (int32_t) file_size(process->file_array[(uint32_t)fd].file_name);
+
+	uint8_t buffer[nbytes];
+	uint32_t bytes_read = read(fd, buffer, nbytes);
+
 	if (bytes_read == -1 || bytes_read == 0) {
 		printf("FAIL: No files found\n");
 	} else {
@@ -53,13 +50,13 @@ void read_syscall_test(int32_t fd) {
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: write
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 int write_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
-	uint8_t buffer[FNAME_MAX_LEN];
-	uint32_t bytes_read = write(fd, buffer, FNAME_MAX_LEN);
+	uint8_t buffer[FNAME_MAX_LEN * 2];
+	uint32_t bytes_read = write(fd, buffer, FNAME_MAX_LEN * 2);
 	if (bytes_read == -1) {
 		return PASS;
 	} else {
@@ -74,12 +71,14 @@ int write_syscall_test(int32_t fd) {
  * Outputs: fd
  * Side Effects: None
  * Coverage: open
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 int32_t open_syscall_test() {
 	TEST_HEADER;
 
-	int32_t fd = open((uint8_t*)("frame0.txt"));
+  printf("File: frame0.txt");
+  printf("\n");
+	int32_t fd = open((uint8_t*) "frame0.txt");
 	if (fd == -1) {
 		printf("FAIL: File not found\n");
 	} else {
@@ -95,7 +94,7 @@ int32_t open_syscall_test() {
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: close
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 int close_syscall_test(int32_t fd) {
 	TEST_HEADER;
@@ -195,19 +194,56 @@ int test_page_mapping() {
     printf("PASS if page fault...\n");
     printf("Didn't page fault! Instead, found %s", *((char*)virt));
     return FAIL;
+
+
+/*	System call test (execute)
+*
+*	Executes executable
+* 	Inputs : fd	- passed from other tests
+* 	Outputs : PASS/FAIL
+* 	Side Effects: executes file
+*	Coverage: execute/halt
+* 	Files: syscalls.h/c
+*/
+int execute_syscall_test(int32_t fd)
+{
+    TEST_HEADER;
+    if (execute("ls") == -1) return FAIL;
+    return PASS;
 }
 
+
+int linkage_test(int32_t fd)
+{
+	TEST_HEADER;
+	uint8_t * filename = "frame0.txt";
+	asm volatile ("  \n\
+		movl $5, %%eax \n\
+		movl %1, %%ebx \n\
+		int $0x80		\n\
+		"
+		: "=a" (fd)
+		: "m" (filename)
+	);
+	if (fd < 0) return FAIL;
+	printf("file: %s was found\n", filename);
+	return PASS;
+}
 
 
 void test_all_checkpoint3()
 {
-    // TEST_OUTPUT("testing idt syscall", test_linkage());
-    printf("test");
     clear();
     int32_t f = open_syscall_test();
-    printf("\nfd: %d\n\n", f);
+    printf("fd: %d\n\n", f);
     read_syscall_test(f);
+    printf("\n");
     TEST_OUTPUT("Write syscall", write_syscall_test(f));
+    printf("\n");
     TEST_OUTPUT("Close syscall", close_syscall_test(f));
-    return;
+	printf("\n");
+    TEST_OUTPUT("Exectue syscall", execute_syscall_test(f));
+    printf("\n");
+	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
+	return;
 }
