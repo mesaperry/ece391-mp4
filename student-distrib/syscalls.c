@@ -153,7 +153,7 @@ int32_t halt (uint8_t status)
 		jmp		exec_ret					\n\
 		"
 		:
-		: "r"(status), "r"(esp), "r"(ebp)
+		: "r"(status), "r"(esp), "r"(pcb_parent_ptr->ebp)
 		: "cc", "memory"
 	);
 	return 0;
@@ -161,7 +161,6 @@ int32_t halt (uint8_t status)
 
 int32_t execute (const uint8_t* command)
 {
-	int8_t output;
 	pcb_t* pcb;
 	int32_t command_length, process_id, i, output;
 	uint32_t virtual_addr, physical_addr;
