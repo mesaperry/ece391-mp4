@@ -79,6 +79,7 @@ int32_t delete_process(int32_t pid){
     if(pid < 0 || pid >= MAX_DEVICES){
         return -1;
     }
+		
 		/* Free space for process pid */
     procs[pid] = 0;
     return 0;
@@ -126,7 +127,7 @@ int32_t halt (uint8_t status)
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
 	// if(pcb_parent_ptr != NULL)
 	// {
-	// 	map(virtual_addr, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4));
+	// 		map(virtual_addr, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4));
 	// }
 
 	/* Restore parent paging */
@@ -146,11 +147,11 @@ int32_t halt (uint8_t status)
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
-	asm volatile("                  	   	\n\
-        movl    %1, %%esp					\n\
-        movl    %2, %%ebp					\n\
-        movb    %0, %%bl					\n\
-		jmp		exec_ret					\n\
+	asm volatile("             	\n\
+    movl    %1, %%esp					\n\
+    movl    %2, %%ebp					\n\
+    movb    %0, %%bl					\n\
+		jmp		exec_ret						\n\
 		"
 		:
 		: "r"(status), "r"(esp), "r"(pcb_parent_ptr->ebp)
@@ -247,15 +248,15 @@ int32_t execute (const uint8_t* command)
 	// get_edx(pcb->edx);
 
 	/* Context Switch */
-	asm volatile("                        	\n\
+	asm volatile("          \n\
 		pushl	%P1							\n\
 		pushl	%4							\n\
-		pushf								\n\
+		pushf									\n\
 		pushl	%P2							\n\
 		pushl	%3							\n\
-		iret								\n\
+		iret									\n\
 		exec_ret:							\n\
-		movb	%%bl, %0					\n\
+		movb	%%bl, %0				\n\
 		"
 		: "=rm"(output)
 		: "p"(USER_DS), "p"(USER_CS), "r"(virtual_addr), "r"(pcb->esp)
