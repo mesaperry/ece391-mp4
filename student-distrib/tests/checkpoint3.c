@@ -13,14 +13,6 @@
 
 /* Checkpoint 3 Tests */
 
-int test_linkage()
-{
-    TEST_HEADER;
-    // asm("movl $1, %%eax");
-    // asm("int $0x80");
-    return PASS;
-}
-
 /* System call test (read)
  *
  * Prints out the name of the file in the directory
@@ -34,8 +26,9 @@ void read_syscall_test(int32_t fd) {
 	TEST_HEADER;
 
 	uint32_t i;
-	uint8_t buffer[FNAME_MAX_LEN];
-	uint32_t bytes_read = read(fd, buffer, FNAME_MAX_LEN);
+	uint32_t size = file_size("frame0.txt"); //file_size_by_fd(fd);
+    uint8_t buffer[size];
+	uint32_t bytes_read = read(fd, buffer, size);
 	if (bytes_read == -1 || bytes_read == 0) {
 		printf("FAIL: No files found\n");
 	} else {

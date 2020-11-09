@@ -65,6 +65,8 @@ uint32_t put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1]);
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
 /* returnrs file size */
 uint32_t file_size(uint8_t* fname);
+/* returns file size by fd */
+uint32_t file_size_by_fd(int32_t fd);
 
 // file operations
 /* placeholders for file operations for syscalls and explicit tests are made in test.c for cp2 */
