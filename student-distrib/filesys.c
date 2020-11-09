@@ -52,6 +52,18 @@ uint32_t file_size(uint8_t* fname)
 }
 
 
+/* returns bytes read */
+uint32_t file_size_by_fd(int32_t fd)
+{
+    pcb_t* process = get_current_PCB();
+    fd_t* file = &process->file_array[(uint32_t)fd];
+
+    inode_t* i = (inode_t*) file->inode;
+    return i->length;
+
+}
+
+
 /*
  * read_dentry_by_name
  * DESCRIPTION: copies matching dentry data into location of pointer

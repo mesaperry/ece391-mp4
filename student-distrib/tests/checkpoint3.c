@@ -13,14 +13,6 @@
 
 /* Checkpoint 3 Tests */
 
-int test_linkage()
-{
-    TEST_HEADER;
-    // asm("movl $1, %%eax");
-    // asm("int $0x80");
-    return PASS;
-}
-
 /* System call test (read)
  *
  * Prints out the name of the file in the directory
@@ -40,6 +32,7 @@ void read_syscall_test(int32_t fd) {
 
 	uint8_t buffer[nbytes];
 	uint32_t bytes_read = read(fd, buffer, nbytes);
+
 	if (bytes_read == -1 || bytes_read == 0) {
 		printf("FAIL: No files found\n");
 	} else {
@@ -83,9 +76,9 @@ int write_syscall_test(int32_t fd) {
 int32_t open_syscall_test() {
 	TEST_HEADER;
 
-  printf("File: verylargetextwithverylongname.txt");
+  printf("File: frame0.txt");
   printf("\n");
-	int32_t fd = open((uint8_t*) "verylargetextwithverylongname.txt");
+	int32_t fd = open((uint8_t*) "frame0.txt");
 	if (fd == -1) {
 		printf("FAIL: File not found\n");
 	} else {
