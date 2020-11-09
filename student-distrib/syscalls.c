@@ -66,7 +66,7 @@ int32_t add_process(){
 * OUTPUT: returns 0 on success, -1 on failure
 */
 int32_t delete_process(int32_t p_id){
-    if(p_id < 0 || p_id >= MAX_DEVICES){
+    if(p_id < 1 || p_id > MAX_DEVICES){
         return -1;
     }
     procs[p_id] = 0;
@@ -86,7 +86,7 @@ int32_t delete_process(int32_t p_id){
 int32_t read(int32_t fd, void* buf, int32_t nbytes)
 {
     /* Get current process control block from esp */
-    pcb_t* curr = get_PCB();
+    pcb_t* curr = get_PCB(); // Double-checking whether to use get_PCB or find_PCB here
 
     /* Check for valid fd */
     /* fd = 1 is write only */
@@ -117,7 +117,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 {
 		/* Get current process control block from esp */
-    //pcb_t* curr = get_PCB();
+    //pcb_t* curr = get_PCB(); // Double-checking whether to use get_PCB or find_PCB here
 
     /* Check for valid fd */
     /* fd = 0 is read only */
@@ -176,7 +176,7 @@ int32_t open(const uint8_t* filename)
     fd_ptr = &(pcb->file_array[fd]);
 
 		/* Get dentry based on filename */
-    if (read_dentry_by_name(filename, &dentry) == -1)
+    if(read_dentry_by_name(filename, &dentry) == -1)
 		{
         return -1;
     }
@@ -196,7 +196,7 @@ int32_t open(const uint8_t* filename)
         fd_ptr->flags = 1;
         fd_ptr->fops = &dir_funcs;
     }
-    else if(dentry.file_type == 2)// Regular File
+    else if(dentry.file_type == 2) // Regular File
 		{
         fd_ptr->inode = dentry.inode_num;
         fd_ptr->pos = 0;
@@ -233,7 +233,7 @@ int32_t close(int32_t fd)
     }
 
     /* Return fail if close function is unsuccessful */
-    if ((curr)->file_array[fd].fops->close(fd) != 0)
+    if((curr)->file_array[fd].fops->close(fd) != 0)
 		{
         return -1;
     }
@@ -248,11 +248,26 @@ int32_t close(int32_t fd)
 }
 
 /*
-* Find_PCB()
+* find_PCB()
 * DESCRIPTION: Finds the PCB of the given p_id
 * INPUTS: p_id
 * OUTPUT: Returns the PCB
 */
 pcb_t* find_PCB(int p_id) {
     return (pcb_t*)(MB_8 - KB_8 * (p_id + 1));
+}
+
+/*
+* get_PCB()
+* DESCRIPTION: gets the current PCB
+* INPUTS: None
+* OUTPUT: Returns the current PCB
+*/
+pcb_t* get_PCB() {
+    uint32_t esp;
+    asm volatile (              \
+        "movl %%esp, %0"        \
+        : "=rm" (esp)           \
+    );
+    return (pcb_t*)(esp & ESP_MASK);
 }
