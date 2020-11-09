@@ -125,7 +125,7 @@ int32_t halt (uint8_t status)
 	uint32_t esp;
 	uint32_t ebp;
 	uint32_t i;
-	uint32_t virtual_addr;
+	uint32_t physical_addr;
 
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
@@ -150,15 +150,13 @@ int32_t halt (uint8_t status)
 		pcb_child_ptr->file_array[i].flags = 0;
 	}
 
-	/* Unmap 4MB page */
-	virtual_addr = USER_PROCESS_START_VIRTUAL + pcb_child_ptr->p_id * USER_PROCESS_SIZE;
-	map_v_p(virtual_addr, 0, 1);
-
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
-	// if(pcb_parent_ptr != NULL)
-	// {
-	// 		map(virtual_addr, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4));
-	// }
+	if(pcb_parent_ptr != NULL) {
+		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
+		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1);
+	} else {
+		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1); // unmap
+	}
 
 	/* Restore parent paging */
 	if(pcb_parent_ptr != NULL)
@@ -226,7 +224,6 @@ int32_t execute (const uint8_t* command)
 	int32_t command_length, process_id, i, output;
 	uint32_t virtual_addr, physical_addr;
 	uint32_t kernel_mode_stack_address;
-	uint32_t user_mode_stack_address;
 	dentry_t dentry;
 	fd_t stdin;
 	fd_t stdout;
@@ -252,23 +249,29 @@ int32_t execute (const uint8_t* command)
 	if (process_id < 0) return -1;  // add process failed
 
 	/* Need to double check the values i the below formulas */
-	virtual_addr = USER_PROCESS_START_VIRTUAL + process_id * USER_PROCESS_SIZE;
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
-	user_mode_stack_address = USER_PROCESS_START_PHYSICAL + (process_id + 1) * USER_PROCESS_SIZE - 4;
-	map_v_p(virtual_addr, physical_addr, 1);
+	virtual_addr = (uint32_t)USER_PROCESS_STACK;
+	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1);
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
 	read_dentry_by_name(executable, &dentry);
-	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, file_size(executable));
-	print_buf((uint8_t*)virtual_addr, 20);
+	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL, file_size(executable));
+
+	/* SHOW USER SPACE DATA */
+	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
 	printf("\n");
-	printf("Virtual memory executable location: %x\n", (uint32_t*)(virtual_addr + ELF_OFFSET));
-	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(virtual_addr + ELF_OFFSET));
+	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET));
+	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET));
+
+	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_addr);
+	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_addr);
+	/* END SHOW USER SPACE DATA */
+
 	/* Create next PCB */
 	pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
-	kernel_mode_stack_address = KERNEL_MEMORY_ADDR + MB_4 - (process_id) * PCB_SIZE;
+	kernel_mode_stack_address = KERNEL_MEMORY_ADDR + MB_4 - (process_id) * PCB_SIZE - 4;
 
 	/* Set fd = 0 and fd = 1 in file_array */
 	stdin.fops = &terminal_funcs;
@@ -317,7 +320,7 @@ int32_t execute (const uint8_t* command)
 		movb	%%bl, %0				\n\
 		"
 		: "=rm"(output)
-		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(virtual_addr + ELF_OFFSET)), "r"(user_mode_stack_address)
+		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET)), "r"(virtual_addr)
 		: "cc", "memory"
 	);
 
