@@ -20,7 +20,7 @@
  * Outputs: filename
  * Side Effects: None
  * Coverage: read
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 void read_syscall_test(int32_t fd) {
 	TEST_HEADER;
@@ -50,7 +50,7 @@ void read_syscall_test(int32_t fd) {
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: write
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 int write_syscall_test(int32_t fd) {
 	TEST_HEADER;
@@ -71,7 +71,7 @@ int write_syscall_test(int32_t fd) {
  * Outputs: fd
  * Side Effects: None
  * Coverage: open
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 int32_t open_syscall_test() {
 	TEST_HEADER;
@@ -94,7 +94,7 @@ int32_t open_syscall_test() {
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: close
- * Files: sys_calls.h/c
+ * Files: syscalls.h/c
  */
 int close_syscall_test(int32_t fd) {
 	TEST_HEADER;
@@ -107,17 +107,43 @@ int close_syscall_test(int32_t fd) {
 	}
 }
 
+/*	System call test (execute)
+*
+*	Executes executable
+* 	Inputs : fd	- passed from other tests
+* 	Outputs : PASS/FAIL
+* 	Side Effects: executes file
+*	Coverage: execute/halt
+* 	Files: syscalls.h/c
+*/
 int execute_syscall_test(int32_t fd)
 {
     TEST_HEADER;
-    int32_t out = execute("ls");
+    if (execute("ls") == -1) return FAIL;
     return PASS;
+}
+
+
+int linkage_test(int32_t fd)
+{
+	TEST_HEADER;
+	uint8_t * filename = "frame0.txt";
+	asm volatile ("  \n\
+		movl $5, %%eax \n\
+		movl %1, %%ebx \n\
+		int $0x80		\n\
+		"
+		: "=a" (fd)
+		: "m" (filename)
+	);
+	if (fd < 0) return FAIL;
+	printf("file: %s was found\n", filename);
+	return PASS;
 }
 
 
 void test_all_checkpoint3()
 {
-    // TEST_OUTPUT("testing idt syscall", test_linkage());
     clear();
     int32_t f = open_syscall_test();
     printf("fd: %d\n\n", f);
@@ -126,6 +152,9 @@ void test_all_checkpoint3()
     TEST_OUTPUT("Write syscall", write_syscall_test(f));
     printf("\n");
     TEST_OUTPUT("Close syscall", close_syscall_test(f));
+	printf("\n");
     TEST_OUTPUT("Exectue syscall", execute_syscall_test(f));
-    return;
+    printf("\n");
+	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
+	return;
 }
