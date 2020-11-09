@@ -1,5 +1,5 @@
-// #ifndef _SYS_CALLS_H
-// #define _SYS_CALLS_H
+#ifndef _SYS_CALLS_H
+#define _SYS_CALLS_H
 
 // #include "filesys.h"
 // #include "types.h"
@@ -42,18 +42,18 @@ typedef struct {
 /* Process control block struct */
 typedef struct pcb {
 	fd_t file_array[FILE_ARRAY_LEN];
-    int8_t arg_buffer[MAX_BUFF_LENGTH];
-	int32_t pid;
+  int8_t arg_buffer[MAX_BUFF_LENGTH];
+	int32_t p_id;
 	struct pcb* last_pcb;
-    uint32_t esp_prev, ebp_prev;
-    uint32_t esp;
-    uint32_t ebp;
-    uint32_t esi;
-    uint32_t edi;
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
+  uint32_t esp_prev, ebp_prev;
+  uint32_t esp;
+  uint32_t ebp;
+  uint32_t esi;
+  uint32_t edi;
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
 } pcb_t;
 
 pcb_t* get_PCB();
@@ -94,4 +94,4 @@ do {                        \
 //     );                      \
 // } while(0)
 
-// #endif /* _SYS_CALLS_H */
+#endif /* _SYS_CALLS_H */

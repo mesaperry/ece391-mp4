@@ -49,7 +49,10 @@ static int32_t procs[MAX_DEVICES + 1] = {0};
 */
 int32_t add_process(){
     uint32_t i;
+
+		/* Loop through available indices */
     for(i = 1; i < MAX_DEVICES + 1; i++){
+			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
             return i;
@@ -64,17 +67,60 @@ int32_t add_process(){
 * INPUTS: pid
 * OUTPUT: returns 0 on success, -1 on failure
 */
-int32_t delete_process(int32_t p_id){
-    if(p_id < 1 || p_id > MAX_DEVICES){
+int32_t delete_process(int32_t pid){
+	/* Validate the input pid */
+    if(p_id < 1 || pid > MAX_DEVICES){
         return -1;
     }
-    procs[p_id] = 0;
+		/* Free space for process pid */
+    procs[pid] = 0;
     return 0;
 }
 
+/*
+* int32_t halt(int32_t fd);
+* DESCRIPTION: clean-up process
+* INPUTS: status
+*/
 int32_t halt (uint8_t status)
 {
+	/* Initialize variables */
+	pcb_t* pcb_parent_ptr;
+	pcb_t* pcb_child_ptr;
+	uint32_t esp;
+	uint32_t ebp;
+	uint32_t i;
 
+	/* Restore parent data */
+	pcb_child_ptr = find_PCB(p_id);
+	pcb_parent_ptr = find_PCB(p_id - 1);
+
+	delete_process(pcb_child_ptr->p_id);
+	process_count--;
+	p_id--;
+
+	/* Close all the files in the pcb */
+	for (i = 0; i < FILE_ARRAY_LEN; i++)
+	{
+		if (pcb_child_ptr->file_array[i].flags == 1)
+		{
+			close(i);
+		}
+		pcb_child_ptr->file_array[i].fops = NULL;
+		pcb_child_ptr->file_array[i].flags = 0;
+	}
+
+	/* Update the esp and ebp registers */
+	esp = pcb_child_ptr->esp_prev;
+	ebp = pcb_child_ptr->ebp_prev;
+
+	/* Restore parent paging */
+
+	/* Clear */
+
+	/* Write parent's process info into TSS */
+
+	/* Jump to execute return */
 }
 
 int32_t execute (const uint8_t* command)
@@ -114,8 +160,8 @@ int32_t execute (const uint8_t* command)
 */
 int32_t read(int32_t fd, void* buf, int32_t nbytes)
 {
-    /* Get current process control block from esp */
-    pcb_t* curr = get_PCB(); // Double-checking whether to use get_PCB or find_PCB here
+    /* Get current process control block*/
+    pcb_t* curr = find_PCB(p_id);
 
     /* Check for valid fd */
     /* fd = 1 is write only */
@@ -145,12 +191,8 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 */
 int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 {
-		/* Get current process control block from esp */
-<<<<<<< HEAD
-    //pcb_t* curr = get_PCB(); // Double-checking whether to use get_PCB or find_PCB here
-=======
-    pcb_t* curr = get_PCB();
->>>>>>> e45f88fe36fbe091d68631f88694d1e93b66ccf3
+		/* Get current process control block*/
+  	pcb_t* curr = find_PCB(p_id);
 
     /* Check for valid fd */
     /* fd = 0 is read only */
@@ -187,7 +229,7 @@ int32_t open(const uint8_t* filename)
 		uint32_t index;
 
 		/* Get current PCB */
-		pcb_t* pcb = get_PCB();
+		pcb_t* pcb = find_PCB(p_id);
 
     for(index = 2; index < FILE_ARRAY_LEN; index++)
 		{
@@ -287,7 +329,8 @@ int32_t close(int32_t fd)
 * OUTPUT: Returns the PCB
 */
 pcb_t* find_PCB(int p_id) {
-    return (pcb_t*)(MB_8 - KB_8 * (p_id + 1));
+	 	/* Return PCB location in kernel stack, using p_id offset */
+    return (pcb_t*)(MB_8 - (KB_8 * (p_id + 1)));
 }
 
 /*
