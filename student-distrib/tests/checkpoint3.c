@@ -218,9 +218,9 @@ int linkage_test(int32_t fd)
 {
 	TEST_HEADER;
 	uint8_t* filename = dechar("frame0.txt");
-	asm volatile ("  \n\
-		movl $5, %%eax \n\
-		movl %1, %%ebx \n\
+	asm volatile ("  	\n\
+		movl $5, %%eax 	\n\
+		movl %1, %%ebx 	\n\
 		int $0x80		\n\
 		"
 		: "=a" (fd)
