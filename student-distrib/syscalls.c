@@ -89,11 +89,26 @@ int32_t delete_process(int32_t pid){
 /* Helper function to restore current registers into a pid */
 void restore_registers(int32_t pid)
 {
-	asm volatile ("                                \
+	pcb_t* pcb = find_PCB(pid);
+	asm volatile ("                                 \
+		movl %0, %%eax                            \n\
+		movl %1, %%ebx                            \n\
+		movl %2, %%ecx                            \n\
+		movl %3, %%edx                            \n\
 		"
-		: /* No outputs */
-		: /* Input all registers from pcb */
-		:
+		: /* no outputs */
+		: "r"(pcb->eax), "r"(pcb->ebx), "r"(pcb->ecx), "r"(pcb->edx)
+		: "cc"
+	);
+	asm volatile ("                                 \
+		movl %0, %%esp                            \n\
+		movl %1, %%ebp                            \n\
+		movl %2, %%esi                            \n\
+		movl %3, %%edi                            \n\
+		"
+		: /* no outputs */
+		: "r"(pcb->esp), "r"(pcb->ebp), "r"(pcb->esi), "r"(pcb->edi)
+		: "cc"
 	);
 }
 
@@ -108,6 +123,7 @@ int32_t halt (uint8_t status)
 	pcb_t* pcb_parent_ptr = NULL;
 	pcb_t* pcb_child_ptr;
 	uint32_t esp;
+	uint32_t ebp;
 	uint32_t i;
 	uint32_t virtual_addr;
 
@@ -149,12 +165,14 @@ int32_t halt (uint8_t status)
 	{
 		/* Set stack pointer to previous PCB's location */
 		esp = pcb_parent_ptr->esp;
+		ebp = pcb_parent_ptr->ebp;
 		restore_registers(pcb_parent_ptr->p_id);
 	}
 	else
 	{
 		/* Set stack pointer to top of kernel */
-		esp = KERNEL_MEMORY_ADDR;
+		esp = pcb_child_ptr->esp;
+		ebp = pcb_child_ptr->ebp;
 		// Don't care what registers are?
 	}
 
@@ -170,7 +188,7 @@ int32_t halt (uint8_t status)
 		jmp		exec_ret						\n\
 		"
 		:
-		: "r"(status), "r"(esp), "r"(pcb_parent_ptr->ebp)
+		: "r"(status), "r"(esp), "r"(ebp)
 		: "cc", "memory"
 	);
 	return 0;
@@ -179,11 +197,26 @@ int32_t halt (uint8_t status)
 /* Helper function to save registers from a pid */
 void save_registers(int32_t pid)
 {
-	asm volatile ("                             \
+	pcb_t* pcb = find_PCB(pid);
+	asm volatile ("                                \
+		movl %%esp, %0                            ;\
+		movl %%ebp, %1                            ;\
+		movl %%esi, %2                            ;\
+		movl %%edi, %3                            ;\
 		"
-		: /* Output all registers into pcb */
-		: /* No inputs */
-		:
+		: "=r"(pcb->esp), "=r"(pcb->ebp), "=r"(pcb->esi), "=r"(pcb->edi)
+		: /* no inputs */
+		: "cc"
+	);
+	asm volatile ("                                \
+		movl %%eax, %0                            ;\
+		movl %%ebx, %1                            ;\
+		movl %%ecx, %2                            ;\
+		movl %%edx, %3                            ;\
+		"
+		: "=r"(pcb->eax), "=r"(pcb->ebx), "=r"(pcb->ecx), "=r"(pcb->edx)
+		: /* no inputs */
+		: "cc"
 	);
 }
 
@@ -192,6 +225,8 @@ int32_t execute (const uint8_t* command)
 	pcb_t* pcb;
 	int32_t command_length, process_id, i, output;
 	uint32_t virtual_addr, physical_addr;
+	uint32_t kernel_mode_stack_address;
+	uint32_t user_mode_stack_address;
 	dentry_t dentry;
 	fd_t stdin;
 	fd_t stdout;
@@ -219,7 +254,7 @@ int32_t execute (const uint8_t* command)
 	/* Need to double check the values i the below formulas */
 	virtual_addr = USER_PROCESS_START_VIRTUAL + process_id * USER_PROCESS_SIZE;
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
-
+	user_mode_stack_address = USER_PROCESS_START_PHYSICAL + (process_id + 1) * USER_PROCESS_SIZE - 4;
 	map_v_p(virtual_addr, physical_addr, 1);
 
 	/* User Level program loading:                               */
@@ -227,9 +262,13 @@ int32_t execute (const uint8_t* command)
 	/*   Find the first instruction's address                    */
 	read_dentry_by_name(executable, &dentry);
 	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, file_size(executable));
-
+	print_buf((uint8_t*)virtual_addr, 20);
+	printf("\n");
+	printf("Virtual memory executable location: %x\n", (uint32_t*)(virtual_addr + ELF_OFFSET));
+	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(virtual_addr + ELF_OFFSET));
 	/* Create next PCB */
 	pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
+	kernel_mode_stack_address = KERNEL_MEMORY_ADDR + MB_4 - (process_id) * PCB_SIZE;
 
 	/* Set fd = 0 and fd = 1 in file_array */
 	stdin.fops = &terminal_funcs;
@@ -262,6 +301,9 @@ int32_t execute (const uint8_t* command)
 	 pcb->arg_buffer[i] = command_arguments[i];
 	}
 
+	tss.esp0 = kernel_mode_stack_address;
+	tss.ss0 = KERNEL_DS;
+
 	if (process_id > 0) save_registers(process_id - 1);
 	/* Context Switch */
 	asm volatile("          \n\
@@ -275,7 +317,7 @@ int32_t execute (const uint8_t* command)
 		movb	%%bl, %0				\n\
 		"
 		: "=rm"(output)
-		: "p"(USER_DS), "p"(USER_CS), "r"(virtual_addr), "r"(pcb->esp)
+		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(virtual_addr + ELF_OFFSET)), "r"(user_mode_stack_address)
 		: "cc", "memory"
 	);
 

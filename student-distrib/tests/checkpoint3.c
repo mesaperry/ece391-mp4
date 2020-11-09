@@ -209,7 +209,7 @@ int test_page_mapping() {
 int execute_syscall_test(int32_t fd)
 {
     TEST_HEADER;
-    if (execute(dechar("ls")) == -1) return FAIL;
+    if (execute(dechar("shell")) == -1) return FAIL;
     return PASS;
 }
 

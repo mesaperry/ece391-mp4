@@ -20,6 +20,7 @@
 #define USER_PROCESS_START_PHYSICAL   MB_8
 #define USER_PROCESS_START_VIRTUAL    MB_128
 #define USER_PROCESS_SIZE             MB_4
+#define ELF_OFFSET 24
 
 #define ESP_MASK        0xFFFFE000
 #define PCB_SIZE				0x2000 /* 8 kB pages */
