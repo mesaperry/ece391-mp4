@@ -188,8 +188,9 @@ int32_t execute (const uint8_t* command)
 	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
 
-	virtual_addr = MB_8 + process_id * 0x40000;
-	physical_addr = 0x40000 + process_id * 0x40000;
+	/* Need to double check the values i the below formulas */
+	virtual_addr = MB_8 + process_id * MB_4;
+	physical_addr = 0x40000 + process_id * MB_4;
 
 	/* need to double check below mapping */
 	//map_v_p(virtual_addr, physical_addr, 1);
@@ -229,10 +230,11 @@ int32_t execute (const uint8_t* command)
 	pcb->p_id = process_id;
 
 	/* Parse out arguments from command and store in arg_buffer */
+	// Might not need to worry about until next checkpoint
 	// pcb->arg_buffer = NULL;
 
 	/* Set register values of pcb */
-	/* Not sure if this is right yet */
+	/* Not sure if this is right  way to get registers yet */
 	// get_esp(pcb->esp);
 	// get_ebp(pcb->ebp);
 	// get_esi(pcb->esi);
