@@ -216,14 +216,14 @@ dir_read(int32_t fd, uint8_t* buf, int32_t nbytes)
  * INPUTS: buffer in which to put the data
  * OUTPUTS: none
  * RETURNS: 0 if success, -1 if cannot read data.
- *         
+ *
  * SIDE EFFECTS:
  */
 int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
 {
     pcb_t* process = get_current_PCB();
-    fd_t* file = &process->file_array[fd];
-    
+    fd_t* file = &process->file_array[(uint32_t)fd];
+
     uint32_t size;
     size = file_size(fd);
     if (num_bytes > size)
@@ -233,10 +233,10 @@ int32_t file_read(int32_t fd, uint8_t* buf, int32_t num_bytes)
 
     int32_t data;
     data = read_data(file->inode, file->pos, buf, num_bytes);
-    
+
     file->pos = file->pos + data;
     if (file->pos >= size) file->pos = 0;
-    
+
     return data;
 }
 
@@ -266,7 +266,7 @@ int32_t file_write(int32_t fd, uint8_t* buf, int32_t num_bytes)
  */
 int32_t file_open(uint8_t * fd)
 {
-    
+
     return 0;
 }
 
@@ -323,6 +323,6 @@ int32_t dir_open(uint8_t * fd)
  */
 int32_t dir_close(int32_t fd)
 {
-    
+
     return 0;
 }

@@ -1,11 +1,11 @@
 #ifndef _SYS_CALLS_H
 #define _SYS_CALLS_H
 
-// #include "filesys.h"
-// #include "types.h"
-// #include "rtc.h"
-// #include "terminal.h"
-// #include "lib.h"
+#include "filesys.h"
+#include "types.h"
+#include "rtc.h"
+#include "terminal.h"
+#include "lib.h"
 
 #define MIN_FD 					2
 #define MAX_FD 					7
@@ -13,9 +13,11 @@
 #define MAX_DEVICES 		6
 
 #define MB_8 						0x800000
-#define KB_8            0x2000
+#define KB_8            0x8000
 
-uint32_t process_count;
+#define ESP_MASK        0xFFFFE000
+
+uint32_t p_id = 1;
 
 /* File operations struct */
 typedef struct {
@@ -54,7 +56,10 @@ typedef struct pcb {
   uint32_t edx;
 } pcb_t;
 
-pcb_t* get_PCB();
+/* Used for read/write/open/close */
+pcb_t* get_current_PCB();
+
+/* Will be used for halt/execute/scheduler */
 pcb_t* find_PCB(int p_id);
 
 int32_t halt (uint8_t status);
@@ -82,14 +87,5 @@ do {                        \
         : "=rm" (x)         \
     );                      \
 } while(0)
-
-// /* Assembly to return EBP register */
-// #define get_ebp(x)          \
-// do {                        \
-//     asm volatile (          \
-//         "movl %%ebp, %0"    \
-//         : "=rm" (x)         \
-//     );                      \
-// } while(0)
 
 #endif /* _SYS_CALLS_H */
