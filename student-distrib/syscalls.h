@@ -1,11 +1,11 @@
-#ifndef _SYS_CALLS_H
-#define _SYS_CALLS_H
+// #ifndef _SYS_CALLS_H
+// #define _SYS_CALLS_H
 
-#include "filesys.h"
-#include "types.h"
-#include "rtc.h"
-#include "terminal.h"
-#include "lib.h"
+// #include "filesys.h"
+// #include "types.h"
+// #include "rtc.h"
+// #include "terminal.h"
+// #include "lib.h"
 
 #define MIN_FD 					2
 #define MAX_FD 					7
@@ -42,7 +42,7 @@ typedef struct {
 /* Process control block struct */
 typedef struct pcb {
 	fd_t file_array[FILE_ARRAY_LEN];
-  int8_t arg_buffer[MAX_BUFFER_LENGTH];
+    int8_t arg_buffer[MAX_BUFF_LENGTH];
 	int32_t pid;
 	struct pcb* last_pcb;
     uint32_t esp_prev, ebp_prev;
@@ -85,13 +85,13 @@ do {                        \
     );                      \
 } while(0)
 
-/* Assembly to return EBP register */
-#define get_ebp(x)          \
-do {                        \
-    asm volatile (          \
-        "movl %%ebp, %0"    \
-        : "=rm" (x)         \
-    );                      \
-} while(0)
+// /* Assembly to return EBP register */
+// #define get_ebp(x)          \
+// do {                        \
+//     asm volatile (          \
+//         "movl %%ebp, %0"    \
+//         : "=rm" (x)         \
+//     );                      \
+// } while(0)
 
-#endif /* _SYS_CALLS_H */
+// #endif /* _SYS_CALLS_H */

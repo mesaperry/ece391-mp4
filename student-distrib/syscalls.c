@@ -32,13 +32,12 @@ fops_t fsys_funcs =
 
 fops_t dir_funcs =
 {
-	.read = dir_read,
+	.read = directory_read,
 	.write = dir_write,
 	.open = dir_open,
 	.close = dir_close
 };
 
-boot_block_t* boot_blk;
 int p_id = 1;
 static int32_t procs[MAX_DEVICES + 1] = {0};
 
@@ -73,6 +72,36 @@ int32_t delete_process(int32_t p_id){
     return 0;
 }
 
+int32_t halt (uint8_t status)
+{
+
+}
+
+int32_t execute (const uint8_t* command)
+{
+	/* Get first word (command) */
+
+	/* Check that command is an executable */
+
+	/* Save extra parameters to globa variable, stripped of leading spaces */
+
+	/* Paging: load user level program loaded in page starting at 128MB */
+	/*           and physical memory starts at 8MB + (pid * 4MB)        */
+
+	// map_v_p(128MB + ..., 8MB + ..., 1)
+
+	/* process id starts at 0?? */
+
+	/* User Level program loading:                               */
+	/*   Copy file contents to correct location                  */
+	/*   Find the first instruction's address                    */
+
+	/* Create PCB */
+
+	/* Context Switch */
+
+	return -1;
+}
 
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);
@@ -117,7 +146,11 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 {
 		/* Get current process control block from esp */
+<<<<<<< HEAD
     //pcb_t* curr = get_PCB(); // Double-checking whether to use get_PCB or find_PCB here
+=======
+    pcb_t* curr = get_PCB();
+>>>>>>> e45f88fe36fbe091d68631f88694d1e93b66ccf3
 
     /* Check for valid fd */
     /* fd = 0 is read only */
@@ -199,7 +232,7 @@ int32_t open(const uint8_t* filename)
     else if(dentry.file_type == 2) // Regular File
 		{
         fd_ptr->inode = dentry.inode_num;
-        fd_ptr->pos = 0;
+        fd_ptr->pos = 	0;
         fd_ptr->flags = 1;
         fd_ptr->fops = &fsys_funcs;
     }
