@@ -176,15 +176,15 @@ int32_t execute (const uint8_t* command)
 	if (process_id < 0) return -1;  // add process failed
 
 	uint32_t virtual_addr = 0x800000 + process_id*0x40000;
-	uint32_t physical_addr = 0x40000 + process_id*0x40000
-	map_v_p(virtual_addr, physical_addr, 1)
+	uint32_t physical_addr = 0x40000 + process_id*0x40000;
+	map_v_p(virtual_addr, physical_addr, 1);
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
 	dentry_t dentry;
 	read_dentry_by_name(executable, &dentry);
-	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, dentry.inode_index.length);
+	read_file_bytes_by_name(executable, (uint8_t*)virtual_addr, file_size(executable));
 
 	/* Create PCB */
 	pcb_t pcb;

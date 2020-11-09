@@ -113,19 +113,19 @@ int test_read_file_bytes_by_name()
 		printf("file: /\\/\\/\\/\\/\\\n");
 		return FAIL;
 	}
-	if (verify_executable("ls") < 0) {
+	if (is_executable("ls") < 0) {
 		printf("ls not executable\n");
 		return FAIL;
 	}
-	if (verify_executable("grep") < 0) {
+	if (is_executable("grep") < 0) {
 		printf("grep not executable\n");
 		return FAIL;
 	}
-	if (verify_executable("frame0.txt") == 0) {
+	if (is_executable("frame0.txt") == 0) {
 		printf("frame is executable\n");
 		return FAIL;
 	}
-	if (verify_executable("pieter") == 0) {
+	if (is_executable("pieter") == 0) {
 		printf("pieter exists and is executable\n");
 		return FAIL;
 	}
