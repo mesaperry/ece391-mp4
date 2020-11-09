@@ -1,15 +1,17 @@
 #define ASM     1
+#include "syscall_test.h"
 
 # linkage to IDT
 .globl sys_call
 .extern sys_call
 
-
+# search for these guys
+.extern halt, execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
 
 # jumptable for system calls
     # needs the null for the 0th element
 syscall_jumptable:
-    .long 0x0, halt, execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
+    .long 0x0 # , halt # , execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
 
 sys_call:
     pushl %ebx
@@ -31,7 +33,7 @@ sys_call:
     call    *syscall_jumptable(, %eax, 4)
     cmpl    $0xFFFFF001, %eax             # -1 to -4095 errors
     jb      done                          # No errors
-    xorl    %edx, %edx 
+    xorl    %edx, %edx
     subl    %eax, %edx                    # negate the error number
     pushl   %edx
     call    __errno_location              # get ptr to errno
@@ -51,7 +53,7 @@ done:
     popl %edx
     popl %ecx
     popl %ebx
-    
+
     iret
 
 __errno_location:
@@ -59,9 +61,10 @@ __errno_location:
 raddr:
     addl    $errno - raddr, %eax    # adjust return value
     ret
+
+
 getIP:
     movl    (%esp), %eax            # read return address
     ret
 errno:
     .long 0x0
-
