@@ -25,7 +25,7 @@ int print_all_filesys()
 {
 	TEST_HEADER;
 	uint8_t name[FNAME_MAX_LEN + 1];
-	while (directory_read(name)) print_file_info(name);
+	while (put_next_dir_name(name)) print_file_info(name);
 	return PASS;
 }
 
