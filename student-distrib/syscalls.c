@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "terminal.h"
+#include "syscalls.S"
 
 #include "utils/arg_util.h"
 #include "utils/file_util.h"
@@ -520,7 +521,8 @@ int32_t close(int32_t fd)
  */
 int32_t getargs (uint8_t* buf, uint32_t nbytes)
 {
-	pcb_t* pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
+	return 0;
+	pcb_t* pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_count + 1) * PCB_SIZE);
 	/* pcb->arg_buffer must have EOS */
 	if ((string_length(pcb->arg_buffer) + 1) > nbytes) return -1;
 	copy_string(pcb->arg_buffer, buf);
@@ -557,33 +559,38 @@ pcb_t* get_current_PCB() {
 
 /* Checkpoint 4 Syscalls */
 /*
-* int32_t getargs (uint8_t* buf, int32_t nbytes);
-* DESCRIPTION: reads programs arguments into user
-* INPUTS: fd - file descriptor
-*         buffer
-*         nbytes - number of bytes
+* int32_t vidmap (uint8_t** screen_start);
+* DESCRIPTION: 
+* INPUTS:  
 * OUTPUT: Return -1 on fail
-*         Return corresponding function
+* SIDE EFFECTS: 
 */
-int32_t getargs (uint8_t* buf, int32_t nbytes)
-{
-
-}
-
-
 int32_t vidmap (uint8_t** screen_start)
 {
-
+	return 0;
 }
 
-
+/*
+* int32_t set_handler (int32_t signum, void* handler_address);
+* DESCRIPTION: Sets a given signal to be handled by given handler
+* INPUTS: signum 		  -	The signal to be handeled
+		  handler_address - The location of the handler for given signal 
+* OUTPUT: Return -1 on fail
+* SIDE EFFECTS: 
+*/
 int32_t set_handler (int32_t signum, void* handler_address)
 {
-
+	return -1;
 }
 
-
+/*
+* int32_t sigreturn (void);
+* DESCRIPTION: 
+* INPUTS:  
+* OUTPUT: Return -1 on fail
+* SIDE EFFECTS: 
+*/
 int32_t sigreturn (void)
 {
-
+	return -1;
 }
