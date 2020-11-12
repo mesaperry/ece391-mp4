@@ -317,19 +317,13 @@ int32_t execute (const uint8_t* command)
 	// push user cs
 	// EIP
 	// iret
-	asm volatile("          \n\
-		movl    %P2, %%ax                       \n\
-		movl    %%ax, %%ds                   \n\
-		pushl	%P1							\n\
-		pushl	%4							\n\
-		pushf								\n\
-		pushl	%P2							\n\
-		iret								\n\
-		exec_ret:							\n\
-		movb	%%bl, %0					\n\
+	asm volatile("                          \n\
+		pushl	%1							\n\
+		pushl	%0							\n\
+		jmp	    jump_userspace   			\n\
 		"
-		: "=rm"(output)
-		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
+		: /* no outputs */
+		: "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
 		: "cc", "memory"
 	);
 
@@ -575,4 +569,3 @@ int32_t sigreturn (void)
 {
 
 }
-
