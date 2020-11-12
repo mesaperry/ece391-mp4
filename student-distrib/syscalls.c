@@ -309,15 +309,16 @@ int32_t execute (const uint8_t* command)
 
 	if (process_id > 0) save_registers(process_id - 1);
 	/* Context Switch */
-	asm volatile("          \n\
+	asm volatile("          				\n\
+		mov 	0x23, %%ds					\n\
 		pushl	%P1							\n\
 		pushl	%4							\n\
-		pushf									\n\
+		pushf								\n\
 		pushl	%P2							\n\
 		pushl	%3							\n\
-		iret									\n\
+		iret								\n\
 		exec_ret:							\n\
-		movb	%%bl, %0				\n\
+		movb	%%bl, %0					\n\
 		"
 		: "=rm"(output)
 		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET)), "r"(virtual_addr)
@@ -532,3 +533,38 @@ pcb_t* get_current_PCB() {
     );
     return (pcb_t*)(esp & ESP_MASK);
 }
+
+
+/* Checkpoint 4 Syscalls */
+/*
+* int32_t getargs (uint8_t* buf, int32_t nbytes);
+* DESCRIPTION: reads programs arguments into user
+* INPUTS: fd - file descriptor
+*         buffer
+*         nbytes - number of bytes
+* OUTPUT: Return -1 on fail
+*         Return corresponding function
+*/
+int32_t getargs (uint8_t* buf, int32_t nbytes)
+{
+
+}
+
+
+int32_t vidmap (uint8_t** screen_start)
+{
+
+}
+
+
+int32_t set_handler (int32_t signum, void* handler_address)
+{
+
+}
+
+
+int32_t sigreturn (void)
+{
+
+}
+

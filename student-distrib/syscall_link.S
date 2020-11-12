@@ -1,4 +1,7 @@
 #define ASM     1
+    # file sys offset
+    # passing in garbage
+    # filesys checks
 
 # linkage to IDT
 .globl sys_call
