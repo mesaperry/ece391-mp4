@@ -153,9 +153,9 @@ int32_t halt (uint8_t status)
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
 	if(pcb_parent_ptr != NULL) {
 		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
-		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1);
+		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1, 1, 1);
 	} else {
-		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1); // unmap
+		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 0); // unmap
 	}
 
 	/* Restore parent paging */
@@ -222,7 +222,7 @@ int32_t execute (const uint8_t* command)
 {
 	pcb_t* pcb;
 	int32_t command_length, process_id, i, output;
-	uint32_t virtual_addr, physical_addr;
+	uint32_t virtual_stack_addr, physical_addr;
 	uint32_t kernel_mode_stack_address;
 	dentry_t dentry;
 	fd_t stdin;
@@ -250,23 +250,28 @@ int32_t execute (const uint8_t* command)
 
 	/* Need to double check the values i the below formulas */
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
-	virtual_addr = (uint32_t)USER_PROCESS_STACK;
-	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1);
+	virtual_stack_addr = (uint32_t)USER_PROCESS_STACK;
+
+	/* Map user location, supervisor protection so we can copy program */
+	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
 	read_dentry_by_name(executable, &dentry);
-	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL, file_size(executable));
+	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET, file_size(executable));
+
+	/* Map user location again, this time with user level protection */
+	// map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* SHOW USER SPACE DATA */
 	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
 	printf("\n");
-	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET));
-	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET));
+	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
+	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
 
-	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_addr);
-	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_addr);
+	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
+	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
 	/* END SHOW USER SPACE DATA */
 
 	/* Create next PCB */
@@ -309,19 +314,22 @@ int32_t execute (const uint8_t* command)
 
 	if (process_id > 0) save_registers(process_id - 1);
 	/* Context Switch */
-	asm volatile("          				\n\
-		mov 	0x23, %%ds					\n\
+	// push user cs
+	// EIP
+	// iret
+	asm volatile("          \n\
+		movl    %P2, %%ax                       \n\
+		movl    %%ax, %%ds                   \n\
 		pushl	%P1							\n\
 		pushl	%4							\n\
 		pushf								\n\
 		pushl	%P2							\n\
-		pushl	%3							\n\
 		iret								\n\
 		exec_ret:							\n\
 		movb	%%bl, %0					\n\
 		"
 		: "=rm"(output)
-		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + ELF_OFFSET)), "r"(virtual_addr)
+		: "p"(USER_DS), "p"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
 		: "cc", "memory"
 	);
 

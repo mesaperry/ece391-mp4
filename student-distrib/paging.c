@@ -19,45 +19,45 @@ void init_paging()
     pte_4kb_t pte_4kb;       /* for init page table               */
 
     /* init pde 4mb to link to 4mb pages */
-    pde_4mb.present       = 0x0;
-    pde_4mb.read_write    = 0x1;
-    pde_4mb.supervisor    = 0x0;
-    pde_4mb.write_through = 0x0;
-    pde_4mb.cache_disable = 0x0;
-    pde_4mb.accessed      = 0x0;
-    pde_4mb.dirty         = 0x0;
-    pde_4mb.page_size     = 0x1; /* Must be 1 because we're doing 4 mb pages */
-    pde_4mb.global        = 0x0; /* TODO not sure about this */
-    pde_4mb.ignored       = 0x1; /* doesn't really matter here */
-    pde_4mb.mem_type      = 0x0; /* TODO not sure about this */
-    pde_4mb.ptr_unused    = 0x0; /* prcsr can't suppport big addrs like this */
-    pde_4mb.reserved      = 0x0; /* doesn't really matter here */
-    pde_4mb.ptr           = 0x0; /* will be changed later */
+    // pde_4mb.present       = 0x0;
+    // pde_4mb.read_write    = 0x1;
+    // pde_4mb.supervisor    = 0x0;
+    // pde_4mb.write_through = 0x0;
+    // pde_4mb.cache_disable = 0x0;
+    // pde_4mb.accessed      = 0x0;
+    // pde_4mb.dirty         = 0x0;
+    // pde_4mb.page_size     = 0x1; /* Must be 1 because we're doing 4 mb pages */
+    // pde_4mb.global        = 0x0; /* TODO not sure about this */
+    // pde_4mb.ignored       = 0x1; /* doesn't really matter here */
+    // pde_4mb.mem_type      = 0x0; /* TODO not sure about this */
+    // pde_4mb.ptr_unused    = 0x0; /* prcsr can't suppport big addrs like this */
+    // pde_4mb.reserved      = 0x0; /* doesn't really matter here */
+    // pde_4mb.ptr           = 0x0; /* will be changed later */
 
     /* init pde table to link to tables */
-    pde_pte.present       = 0x0;
-    pde_pte.read_write    = 0x1;
-    pde_pte.supervisor    = 0x0;
-    pde_pte.write_through = 0x0;
-    pde_pte.cache_disable = 0x0;
-    pde_pte.accessed      = 0x0; /* not accessed yet */
-    pde_pte.ignored0      = 0x0; /* doesn't matter */
-    pde_pte.page_size     = 0x0; /* Must be 0 because we're doing 4kb pages */
-    pde_pte.ignored1      = 0x0; /* doesn't matter */
-    pde_pte.ptr           = 0x0; /* will be changed later */
+    pde_pte.present         = 0x0;
+    pde_pte.read_write      = 0x0;
+    pde_pte.user_supervisor = 0x0;
+    pde_pte.write_through   = 0x0;
+    pde_pte.cache_disable   = 0x0;
+    pde_pte.accessed        = 0x0; /* not accessed yet */
+    pde_pte.ignored0        = 0x0; /* doesn't matter */
+    pde_pte.page_size       = 0x0; /* Must be 0 because we're doing 4kb pages */
+    pde_pte.ignored1        = 0x0; /* doesn't matter */
+    pde_pte.ptr             = 0x0; /* will be changed later */
 
     /* init entry into page directory for 4kb pages */
-    pte_4kb.present       = 0x0;
-    pte_4kb.read_write    = 0x1;
-    pte_4kb.supervisor    = 0x0;
-    pte_4kb.write_through = 0x0;
-    pte_4kb.cache_disable = 0x0;
-    pte_4kb.accessed      = 0x0;
-    pte_4kb.dirty         = 0x0;
-    pte_4kb.reserved      = 0x0; /* doesn't matter */
-    pte_4kb.global        = 0x0; /* TODO check this */
-    pte_4kb.ignored       = 0x0; /* doesn't matter */
-    pte_4kb.ptr           = 0x0; /* will be changed later */
+    pte_4kb.present         = 0x0;
+    pte_4kb.read_write      = 0x0;
+    pte_4kb.user_supervisor = 0x0;
+    pte_4kb.write_through   = 0x0;
+    pte_4kb.cache_disable   = 0x0;
+    pte_4kb.accessed        = 0x0;
+    pte_4kb.dirty           = 0x0;
+    pte_4kb.reserved        = 0x0; /* doesn't matter */
+    pte_4kb.global          = 0x0; /* TODO check this */
+    pte_4kb.ignored         = 0x0; /* doesn't matter */
+    pte_4kb.ptr             = 0x0; /* will be changed later */
 
     /* init page directory (allocated in x86_desc.S) */
     for (i = 0; i < DIR_ENTRIES; i++) {
@@ -70,27 +70,27 @@ void init_paging()
     }
 
     /* init kernel page */
-    pde_4mb.present   = 1;
-    pde_4mb.page_size = 1;
+    // pde_4mb.present   = 1;
+    // pde_4mb.page_size = 1;
     // pde_4mb.ptr       = KERNEL_MEMORY_ADDR >> DIR_ENTRY_PAGE_OFFSET;
     // page_dir[1] = pde_4mb.val; /* given to 1 index b/c that is found with    */
     //                            /* the desired memory access address 0x400000 */
-    map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1);
+    map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1, 1, 0);
 
     /* init video memory (and page directory entry for lowest 4 MB)*/
-    pde_pte.present   = 1;
-    pde_pte.page_size = 0;
+    // pde_pte.present   = 1;
+    // pde_pte.page_size = 0;
     /* point the page directory entry to the 4-KB-page table */
-    pde_pte.ptr       = ((uint32_t)&page_table[0]) >> TABLE_ENTRY_PAGE_OFFSET;
-    page_dir[0]       = pde_pte.val;
-    pte_4kb.present   = 1;
+    // pde_pte.ptr       = ((uint32_t)&page_table[0]) >> TABLE_ENTRY_PAGE_OFFSET;
+    // page_dir[0]       = pde_pte.val;
+    // pte_4kb.present   = 1;
     /* map same virtual memory addr as physical memory addr */
     /* use only the bottom 20 bits of shifted video addr    */
     /*   Shouldn't need to because video addr is small,     */
     /*   but just to be technically correct.                */
     // pte_4kb.ptr = 0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET);
     // page_table[0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET)] = pte_4kb.val;
-    map_v_p(VIDEO, VIDEO, 0);
+    map_v_p(VIDEO, VIDEO, 0, 1, 0);
 
     /* we now init paging related registers, after we used physical */
     /* memory directly                                              */
@@ -149,7 +149,11 @@ disable_paging()
  * SIDE EFFECTS: updates page directory/tables
  */
 uint32_t
-map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
+map_v_p(uint32_t virtual_addr,
+        uint32_t physical_addr,
+        uint32_t kb_or_mb,
+        uint32_t read_write,
+        uint32_t user_supervisor)
 {
     /* Validate kb or mb option input */
     if (kb_or_mb != 0 && kb_or_mb != 1) return -1;
@@ -171,37 +175,45 @@ map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
     if (kb_or_mb == 0 && virtual_addr >= 0x400000) return -1;
 
     pde_pte_t* pde_pte;
-    uint32_t* pde_table;
     pte_4kb_t* pte_4kb;
     pde_4mb_t* pde_4mb;       /* for 4mb page directory entry */
 
     if (kb_or_mb == 0) {
+        /* DISCLAIMER =============================================== */
+        /*   This is only designed to handle kb entries which are in  */
+        /*   the first page directory entry.                          */
+
         /* Get page dir entry (Should always be 0 index of page_dir) */
         /*   ...2 because 2^2 bytes per entry                        */
         pde_pte = (pde_pte_t*)&page_dir[virtual_addr >> DIR_ENTRY_PAGE_OFFSET];
 
-        pde_pte->page_size = 0x0;
-        pde_pte->present =   0x1;  // Should always be present, but just to be sure
-        pde_table = (uint32_t*)(pde_pte->ptr << TABLE_ENTRY_PAGE_OFFSET);
+        pde_pte->page_size       = 0x0;   // should always be 0 anyway
+        pde_pte->present         = 0x1;   // should always be 1 anyway
+        pde_pte->read_write      = 0x1;   // should always be read_write on
+        pde_pte->user_supervisor = 0x1;   // table should be accessible to everyone
+        // always the same pointer
+        pde_pte->ptr             = ((uint32_t)&page_table[0]) >> TABLE_ENTRY_PAGE_OFFSET;
 
         /* Get page table entry */
-        pte_4kb = (pte_4kb_t*)&pde_table[(virtual_addr >> TABLE_ENTRY_PAGE_OFFSET) & MASK_10_BIT];
+        pte_4kb = (pte_4kb_t*)&page_table[(virtual_addr >> TABLE_ENTRY_PAGE_OFFSET) & MASK_10_BIT];
         // pte_4kb = &page_table[0xFFFFF & (virtual_addr >> TABLE_ENTRY_PAGE_OFFSET)];
 
         /* map or unmap */
         if (physical_addr == 0) {
-            pte_4kb->present       = 0x0;
+            pte_4kb->present         = 0x0;
+            pte_4kb->read_write      = read_write;
+            pte_4kb->user_supervisor = user_supervisor;
         } else {
-            pte_4kb->present       = 0x1;
-            pte_4kb->read_write    = 0x1;
-            pte_4kb->supervisor    = 0x0;
-            pte_4kb->write_through = 0x0;
-            pte_4kb->cache_disable = 0x0;
-            pte_4kb->accessed      = 0x0;
-            pte_4kb->dirty         = 0x0;
-            pte_4kb->reserved      = 0x0; /* doesn't matter */
-            pte_4kb->global        = 0x0; /* TODO check this */
-            pte_4kb->ignored       = 0x0; /* doesn't matter */
+            pte_4kb->present         = 0x1;
+            pte_4kb->read_write      = read_write;
+            pte_4kb->user_supervisor = user_supervisor;
+            pte_4kb->write_through   = 0x0;
+            pte_4kb->cache_disable   = 0x0;
+            pte_4kb->accessed        = 0x0;
+            pte_4kb->dirty           = 0x0;
+            pte_4kb->reserved        = 0x0; /* doesn't matter */
+            pte_4kb->global          = 0x0; /* TODO check this */
+            pte_4kb->ignored         = 0x0; /* doesn't matter */
             pte_4kb->ptr = physical_addr >> TABLE_ENTRY_PAGE_OFFSET;
         }
     } else {
@@ -213,21 +225,23 @@ map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb)
 
         /* map or unmap */
         if (physical_addr == 0) {
-            pde_4mb->present       = 0x0;
+            pde_4mb->present         = 0x0;
+            pde_4mb->read_write      = read_write;
+            pde_4mb->user_supervisor = user_supervisor;
         } else {
-            pde_4mb->present       = 0x1;
-            pde_4mb->read_write    = 0x1;
-            pde_4mb->supervisor    = 0x0;
-            pde_4mb->write_through = 0x0;
-            pde_4mb->cache_disable = 0x0;
-            pde_4mb->accessed      = 0x0;
-            pde_4mb->dirty         = 0x0;
-            pde_4mb->page_size     = 0x1; /* Must be 1 because we're doing 4 mb pages */
-            pde_4mb->global        = 0x0; /* TODO not sure about this */
-            pde_4mb->ignored       = 0x1; /* doesn't really matter here */
-            pde_4mb->mem_type      = 0x0; /* TODO not sure about this */
-            pde_4mb->ptr_unused    = 0x0; /* prcsr can't suppport big addrs like this */
-            pde_4mb->reserved      = 0x0; /* doesn't really matter here */
+            pde_4mb->present         = 0x1;
+            pde_4mb->read_write      = read_write;
+            pde_4mb->user_supervisor = user_supervisor;
+            pde_4mb->write_through   = 0x0;
+            pde_4mb->cache_disable   = 0x0;
+            pde_4mb->accessed        = 0x0;
+            pde_4mb->dirty           = 0x0;
+            pde_4mb->page_size       = 0x1; /* Must be 1 because we're doing 4 mb pages */
+            pde_4mb->global          = 0x0; /* TODO not sure about this */
+            pde_4mb->ignored         = 0x1; /* doesn't really matter here */
+            pde_4mb->mem_type        = 0x0; /* TODO not sure about this */
+            pde_4mb->ptr_unused      = 0x0; /* prcsr can't suppport big addrs like this */
+            pde_4mb->reserved        = 0x0; /* doesn't really matter here */
             pde_4mb->ptr = physical_addr >> DIR_ENTRY_PAGE_OFFSET;
         }
     }

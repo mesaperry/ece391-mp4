@@ -123,23 +123,23 @@ int test_page_mapping() {
     uint32_t virt = 0x5000000;
     uint32_t phys = 0x6000000;
 
-    if (map_v_p(0x1234567, virt, 0) != -1) {
+    if (map_v_p(0x1234567, virt, 0, 1, 0) != -1) {
         printf("Page mapping should fail when mapping unaligned pages in virtual memory\n");
         return FAIL;
     }
-    if (map_v_p(virt, 0x123456, 1) != -1) {
+    if (map_v_p(virt, 0x123456, 1, 1, 0) != -1) {
         printf("Page mapping should fail when mapping unaligned pages in virtual memory\n");
         return FAIL;
     }
-    if ((map_v_p(virt, phys, 2) != -1) ||
-        (map_v_p(virt, -1, 1) != -1) ||
-        (map_v_p(-1, virt, 1) != -1)) {
+    if ((map_v_p(virt, phys, 2, 1, 0) != -1) ||
+        (map_v_p(virt, -1, 1, 1, 0) != -1) ||
+        (map_v_p(-1, virt, 1, 1, 0) != -1)) {
         printf("Page mapping should fail with garbage inputs\n");
         return FAIL;
     }
 
     /* 4 MB Pages */
-    if (map_v_p(virt, phys, 1) != 0) {
+    if (map_v_p(virt, phys, 1, 1, 0) != 0) {
         printf("Page mapping %x to %x failed (4MB)\n", virt, phys);
         return FAIL;
     }
@@ -153,23 +153,23 @@ int test_page_mapping() {
     if ((*(char*)phys != 'P') || (*(char*)(phys + MB_4 - 1) != 'S')) {
         printf("Page mapping does not store data in the right physical address (4MB)\n");
         enable_paging();      // enable again for unmapping
-        map_v_p(virt, 0, 1);  // unmap
+        map_v_p(virt, 0, 1, 0, 0);  // unmap
         return FAIL;
     }
     printf("enabling paging\n");
     enable_paging();
-    if (map_v_p(virt, 0, 1) != 0) {
+    if (map_v_p(virt, 0, 1, 1, 0) != 0) {
         printf("Page unmapping %x to %x failed (4MB)\n", virt, phys);
         return FAIL;
     }
 
     /* 8 KB Pages */
-    if (map_v_p(virt, phys, 0) != -1) {
+    if (map_v_p(virt, phys, 0, 1, 0) != -1) {
         printf("Page mapping 4KB %x to %x succeeded above kernel memory start address \n", virt, phys);
         return FAIL;
     }
     virt = 0xA0000;
-    if (map_v_p(virt, phys, 0) != 0) {
+    if (map_v_p(virt, phys, 0, 1, 0) != 0) {
         printf("Page mapping %x to %x failed (4KB)\n", virt, phys);
         return FAIL;
     }
@@ -183,12 +183,12 @@ int test_page_mapping() {
     if ((*(char*)phys != '1') || (*(char*)(phys + KB_8/2 - 1) != '2')) {
         printf("Page mapping does not store data in the right physical address (4KB)\n");
         enable_paging();      // enable again for unmapping
-        map_v_p(virt, 0, 0);  // unmap
+        map_v_p(virt, 0, 0, 0, 0);  // unmap
         return FAIL;
     }
     printf("enabling paging\n");
     enable_paging();
-    if (map_v_p(virt, 0, 0) != 0) {
+    if (map_v_p(virt, 0, 0, 1, 0) != 0) {
         printf("Page unmapping %x to %x failed (4KB)\n", virt, phys);
         return FAIL;
     }
@@ -212,7 +212,7 @@ int execute_syscall_test(int32_t fd)
     if (execute(dechar("shell")) == -1) return FAIL;
 
     if(execute(dechar("testprint")) == -1) return FAIL;
-    
+
     return PASS;
 }
 

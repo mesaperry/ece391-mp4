@@ -198,7 +198,7 @@ typedef union pde_4mb_t {
     struct {
         uint32_t present         : 1;  /* 0     */
         uint32_t read_write      : 1;  /* 1     */
-        uint32_t supervisor      : 1;  /* 2     */
+        uint32_t user_supervisor : 1;  /* 2     */
         uint32_t write_through   : 1;  /* 3     */
         uint32_t cache_disable   : 1;  /* 4     */
         uint32_t accessed        : 1;  /* 5     */
@@ -219,7 +219,7 @@ typedef union pde_pte_t {
     struct {
         uint32_t present         : 1;  /* 0     */
         uint32_t read_write      : 1;  /* 1     */
-        uint32_t supervisor      : 1;  /* 2     */
+        uint32_t user_supervisor : 1;  /* 2     */
         uint32_t write_through   : 1;  /* 3     */
         uint32_t cache_disable   : 1;  /* 4     */
         uint32_t accessed        : 1;  /* 5     */
@@ -236,7 +236,7 @@ typedef union pte_4kb_t {
     struct {
         uint32_t present         : 1;  /* 0     */
         uint32_t read_write      : 1;  /* 1     */
-        uint32_t supervisor      : 1;  /* 2     */
+        uint32_t user_supervisor : 1;  /* 2     */
         uint32_t write_through   : 1;  /* 3     */
         uint32_t cache_disable   : 1;  /* 4     */
         uint32_t accessed        : 1;  /* 5     */
