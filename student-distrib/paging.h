@@ -20,6 +20,9 @@ void enable_paging();
 /* Disable paging in control registers */
 void disable_paging();
 /* Maps virtual memory to physical memory */
-uint32_t map_v_p(uint32_t virtual_addr, uint32_t physical_addr, uint32_t kb_or_mb);
+uint32_t map_v_p(uint32_t virtual_addr, uint32_t physical_addr,
+    uint32_t kb_or_mb,
+    uint32_t read_write,
+    uint32_t user_supervisor);
 void flush_tlb();
 #endif

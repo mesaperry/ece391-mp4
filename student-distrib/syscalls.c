@@ -153,9 +153,9 @@ int32_t halt (uint8_t status)
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
 	if(pcb_parent_ptr != NULL) {
 		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
-		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1);
+		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1, 1, 1);
 	} else {
-		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1); // unmap
+		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 0); // unmap
 	}
 
 	/* Restore parent paging */
@@ -251,13 +251,18 @@ int32_t execute (const uint8_t* command)
 	/* Need to double check the values i the below formulas */
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
 	virtual_stack_addr = (uint32_t)USER_PROCESS_STACK;
-	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1);
+
+	/* Map user location, supervisor protection so we can copy program */
+	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* User Level program loading:                               */
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
 	read_dentry_by_name(executable, &dentry);
-	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL + 0x48000, file_size(executable));
+	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET, file_size(executable));
+
+	/* Map user location again, this time with user level protection */
+	// map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* SHOW USER SPACE DATA */
 	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
@@ -309,7 +314,16 @@ int32_t execute (const uint8_t* command)
 
 	if (process_id > 0) save_registers(process_id - 1);
 	/* Context Switch */
+	// Set DS Register
+	// push user ds
+	// set stack constant
+	// push flags
+	// push user cs
+	// EIP
+	// iret
 	asm volatile("          \n\
+		movl    %P2, %%ax                       \n\
+		movl    %%ax, %%ds                   \n\
 		pushl	%P1							\n\
 		pushl	%4							\n\
 		pushf									\n\
