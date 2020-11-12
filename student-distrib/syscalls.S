@@ -1,7 +1,7 @@
 #define ASM     1
 #include "x86_desc.h"
 .global jump_userspace, exec_ret
-
+.extern jump_userpac
 #define USER_DS 0x002B
 #define USER_CS 0x0023
 
@@ -31,14 +31,25 @@
 #
 
 
+
+# lower addr
+#
+#
+#
+# higher addr
+
 jump_userspace:
     mov   USER_DS, %ds
     pushl USER_DS
-    movl  8(%ebp), (%esp) # virtual_addr
+    movl  8(%ebp), %eax # virtual_addr
+    pushl %eax
     pushf
     pushl USER_CS
-    movl  4(%ebp), (%esp) # eip_location
+    movl  4(%ebp), %eax # eip_location
+    pushl %eax  
     iret
 exec_ret:
     movb %bl, %0
+
+
 
