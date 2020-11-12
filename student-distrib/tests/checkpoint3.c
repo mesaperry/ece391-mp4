@@ -197,7 +197,7 @@ int test_page_mapping() {
     return FAIL;
 }
 
-/*	System call test (execute)
+/*	System call test (execute & getargs)
 *
 *	Executes executable
 * 	Inputs : fd	- passed from other tests
@@ -206,15 +206,22 @@ int test_page_mapping() {
 *	Coverage: execute/halt
 * 	Files: syscalls.h/c
 */
-int execute_syscall_test(int32_t fd)
+int execute_getargs_syscall_test(int32_t fd)
 {
     TEST_HEADER;
     if (execute(dechar("shell")) == -1) return FAIL;
 
-    if(execute(dechar("testprint")) == -1) return FAIL;
+    // if (execute(dechar("testprint")) == -1) return FAIL;
+
+	if (execute(dechar("ls .")) == -1) return FAIL;
+
+	uint8_t arg_buf[1];
+	getargs(arg_buf, 1);
+	if (arg_buf[0] != (uint8_t)'.') return -1;
 
     return PASS;
 }
+
 
 
 int linkage_test(int32_t fd)
@@ -246,7 +253,7 @@ void test_all_checkpoint3()
     printf("\n");
     TEST_OUTPUT("Close syscall", close_syscall_test(f));
 	printf("\n");
-    TEST_OUTPUT("Exectue syscall", execute_syscall_test(f));
+    TEST_OUTPUT("Exectue syscall", execute_getargs_syscall_test(f));
     printf("\n");
 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
     printf("\n");

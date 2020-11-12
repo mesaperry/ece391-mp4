@@ -54,16 +54,16 @@ typedef struct {
 /* Process control block struct */
 typedef struct pcb {
 	fd_t file_array[FILE_ARRAY_LEN];
-  uint8_t arg_buffer[MAX_BUFF_LENGTH];
+ 	uint8_t arg_buffer[MAX_BUFF_LENGTH];
 	int32_t p_id;
-  uint32_t esp;
-  uint32_t ebp;
-  uint32_t esi;
-  uint32_t edi;
-  uint32_t eax;
-  uint32_t ebx;
-  uint32_t ecx;
-  uint32_t edx;
+  	uint32_t esp;
+  	uint32_t ebp;
+  	uint32_t esi;
+  	uint32_t edi;
+  	uint32_t eax;
+  	uint32_t ebx;
+  	uint32_t ecx;
+  	uint32_t edx;
 } pcb_t;
 
 /* Used for read/write/open/close */
@@ -78,6 +78,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes);
 int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t open (const uint8_t* filename);
 int32_t close (int32_t fd);
+int32_t getargs (uint8_t* buf, uint32_t nbytes)
 
 /* Checkpoint 4 syscalls */
 int32_t getargs (uint8_t* buf, int32_t nbytes);

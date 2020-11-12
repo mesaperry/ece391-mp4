@@ -218,7 +218,7 @@ void save_registers(int32_t pid)
 	);
 }
 
-int32_t execute (const uint8_t* command)
+int32_t execute (const uint8_t* all_arguments)
 {
 	pcb_t* pcb;
 	int32_t command_length, process_id, i, output;
@@ -229,18 +229,15 @@ int32_t execute (const uint8_t* command)
 	fd_t stdout;
 
 	/* Get first word (command) */
-	command_length = get_argument_length(command, 0);
+	command_length = get_argument_length(all_arguments, 0);
 	if (command_length < 0) return 0;  // Error getting first word
 
 	uint8_t executable[command_length + 1];
 	executable[command_length] = '\0';  // Make it a string by adding EOS
-	if (get_argument(command, 0, executable) < 0) return 0;  // Error copying argument
+	if (get_argument(all_arguments, 0, executable) < 0) return 0;  // Error copying argument
 
 	/* Check that command is an executable */
 	if (!is_executable(executable)) return -1;
-
-	/* Save extra parameters to global variable, stripped of leading spaces */
-	get_next_arguments(command, command_arguments);
 
 	/* Paging: load user level program loaded in page starting at 128MB */
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
@@ -277,6 +274,9 @@ int32_t execute (const uint8_t* command)
 	/* Create next PCB */
 	pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
 	kernel_mode_stack_address = KERNEL_MEMORY_ADDR + MB_4 - (process_id) * PCB_SIZE - 4;
+
+	/* Save extra parameters to global variable, stripped of leading spaces */
+	get_next_arguments(all_arguments, pcb->arg_buffer);
 
 	/* Set fd = 0 and fd = 1 in file_array */
 	stdin.fops = &terminal_funcs;
@@ -508,6 +508,24 @@ int32_t close(int32_t fd)
 
 		/* Return 0 on success */
     return 0;
+}
+
+/* getargs
+ * DESCRIPTION: Put the command arguments from the user program into a buffer
+ * INPUTS: buf    -- a buffer in which to put the bytes
+ *         nbytes -- number of bytes to copy
+ * OUTPUTS: arguments into buf
+ * RETURNS: -1 if arguments can't fit, 0 if success
+ * SIDE EFFECTS: none
+ */
+int32_t getargs (uint8_t* buf, uint32_t nbytes)
+{
+	pcb_t* pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
+	/* pcb->arg_buffer must have EOS */
+	if ((string_length(pcb->arg_buffer) + 1) > nbytes) return -1;
+	copy_string(pcb->arg_buffer, buf);
+	/* another option... */
+	// copy_buf(pcb->arg_buffer, buf, nbytes);
 }
 
 /*

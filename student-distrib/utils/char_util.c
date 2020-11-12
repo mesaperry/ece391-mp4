@@ -2,7 +2,7 @@
 #include "../lib.h"
 
 /* string_length
- * DESCRIPTION: Give the length of an input string
+ * DESCRIPTION: Give the length of an input string, not including EOS
  * INPUT: s -- string input
  * OUTPUT: none
  * RETURNS: length of string, or -1 if fail
@@ -84,6 +84,17 @@ int32_t copy_string(const uint8_t* source, uint8_t* dest)
         dest[i] = source[i];
     }
     dest[len] = '\0';
+    return 0;
+}
+
+/* Same as copy string, but with an explicit number of bytes instead */
+int32_t copy_buf(const uint8_t* source, uint8_t* dest, uint32_t nbytes)
+{
+    if ((source == NULL) || (dest == NULL)) return -1;
+    int32_t i;
+    for (i = 0; i < nbytes; i++) {
+        dest[i] = source[i];
+    }
     return 0;
 }
 
