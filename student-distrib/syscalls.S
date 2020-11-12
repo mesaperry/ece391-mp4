@@ -1,10 +1,12 @@
 #define ASM     1
 #include "x86_desc.h"
-.global jump_userspace, exec_ret
-.extern jump_userpac
+#include "syscalls.h"
+
 #define USER_DS 0x002B
 #define USER_CS 0x0023
 
+
+.global jump_userspace, exec_ret
 
 ; pushl	%P1							\n\
 ; pushl	%4							\n\
@@ -29,8 +31,6 @@
 #       pushl eip location
 #       jmp jump_userspace
 #
-
-
 
 # lower addr
 #
