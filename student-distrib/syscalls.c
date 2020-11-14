@@ -4,7 +4,7 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "terminal.h"
-#include "syscalls.S"
+//#include "syscalls.S"
 
 #include "utils/arg_util.h"
 #include "utils/file_util.h"
@@ -319,17 +319,20 @@ int32_t execute (const uint8_t* all_arguments)
 	// EIP
 	// iret
 	asm volatile("                          \n\
+		pushl	%2							\n\
 		pushl	%1							\n\
-		pushl	%0							\n\
 		jmp	    jump_userspace   			\n\
+		exec_ret:							\n\
+		movb %%bl, %0						\n\
 		"
-		: /* no outputs */
+		: "=rm"(output)
 		: "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
 		: "cc", "memory"
 	);
 
 	return output;
 }
+/// sepereate iret for debugging asm 
 
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);

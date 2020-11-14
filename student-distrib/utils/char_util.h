@@ -1,4 +1,7 @@
 /* String utils */
+#ifndef _CHAR_UTIL_H
+#define _CHAR_UTIL_H
+
 #include "../types.h"
 
 int32_t string_length(const uint8_t* s);
@@ -14,3 +17,5 @@ int32_t copy_buf(const uint8_t* source, uint8_t* dest, uint32_t nbytes);
 uint8_t* dechar(const char* s);
 /* prints buffer data char by char */
 void print_buf(uint8_t* buf, uint32_t bytes);
+
+#endif /* _CHAR_UTIL_H */

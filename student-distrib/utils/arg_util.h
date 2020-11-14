@@ -1,4 +1,8 @@
 /* Utility functions for parsing arguments */
+/// ADD IFNDEF
+#ifndef _ARG_UTIL_H
+#define _ARG_UTIL_H
+
 #include "../types.h"
 
 /* Get number of arguments in string */
@@ -11,3 +15,5 @@ int32_t get_argument(const uint8_t* argument_string, uint32_t index, uint8_t* bu
 int32_t get_next_arguments(const uint8_t* argument_string, uint8_t* buf);
 
 uint32_t test_arg_util();
+
+#endif /* _ARG_UTIL_H */

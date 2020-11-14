@@ -1,22 +1,29 @@
 #define ASM     1
 
+.text
 
-
-
-
+.globl jump_userspace
+# .extern jump_userspace
 
 jump_userspace:
-    mov   USER_DS, %ds
+    # set up stackframe
+    mov   USER_DS, %ds    
     pushl USER_DS
-    movl  8(%ebp), %eax  
+    movl  12(%ebp), %eax  
     pushl %eax
     pushf
     pushl USER_CS
-    movl  4(%ebp), %eax  
+    movl  8(%ebp), %eax  
     pushl %eax  
     iret
-exec_ret:
-    movb %bl, %0
 
 
 
+
+; func stack ...
+; RA
+; virtual_addr
+; eip
+
+; linker error : cannot find the symbol definition
+; undefined reference to jump_userspace

@@ -1,7 +1,8 @@
 /* rtc.h - real time clock implementation
  * vim:ts=4 noexpandtab
  */
-
+#ifndef _RTC_H
+#define _RTC_H
 #include "types.h"
 
 void rtc_init();
@@ -14,3 +15,5 @@ int32_t rtc_close(int32_t fd);
 
 uint8_t rtc_get_rate();
 int rtc_is_on();
+
+#endif /* _RTC_H */

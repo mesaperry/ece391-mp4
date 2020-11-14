@@ -1,5 +1,6 @@
 #ifndef _SYS_CALLS_H
 #define _SYS_CALLS_H
+extern void jump_userspace(void);
 
 #include "filesys.h"
 #include "types.h"
