@@ -1,5 +1,6 @@
 /* Created by Team 11 */
 #include "syscalls.h"
+
 #include "paging.h"
 #include "lib.h"
 #include "x86_desc.h"
@@ -257,10 +258,16 @@ int32_t execute (const uint8_t* all_arguments)
 	/*   Copy file contents to correct location                  */
 	/*   Find the first instruction's address                    */
 	read_dentry_by_name(executable, &dentry);
-	read_file_bytes_by_name(executable, (uint8_t*)USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET, file_size(executable));
+	read_file_bytes_by_name(executable, (uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET), file_size(executable));
 
-	/* Map user location again, this time with user level protection */
+	/* Map user location again, this time with user )level protection */
 	// map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
+
+
+///
+///  EIP address is incorrect THIS THING BELOW
+///		maybe buffer and flip them around. 
+
 
 	/* SHOW USER SPACE DATA */
 	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
@@ -271,6 +278,7 @@ int32_t execute (const uint8_t* all_arguments)
 	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
 	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
 	/* END SHOW USER SPACE DATA */
+	// make more readable
 
 	/* Create next PCB */
 	pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
@@ -318,16 +326,53 @@ int32_t execute (const uint8_t* all_arguments)
 	// push user cs
 	// EIP
 	// iret
-	asm volatile("                          \n\
-		pushl	%2							\n\
+	// asm volatile("                          \n\
+	// 	pushl	%2							\n\
+	// 	pushl	%1							\n\
+	// 	jmp	    jump_userspace   			\n\
+	// 	exec_ret:							\n\
+	// 	movb %%bl, %0						\n\
+	// 	"
+	// 	: "=rm"(output)
+	// 	: "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
+	// 	: "cc", "memory"
+	// );
+
+
+
+/////
+///// Lower addr
+
+
+///// 128 + 4MB - 4
+///// Higher addr
+////                                           NOTE
+// look at pushfl for renabling interrupts
+
+	asm volatile("          \n\
+		movl    %0, %%eax                       \n\
+		movw    %%ax, %%ds                   \n\
+		pushl	%0							\n\
+		pushl	%3							\n\
+		pushfl									\n\
 		pushl	%1							\n\
-		jmp	    jump_userspace   			\n\
-		exec_ret:							\n\
-		movb %%bl, %0						\n\
+		pushl	%2							\n\
 		"
-		: "=rm"(output)
-		: "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
+		: 
+		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
 		: "cc", "memory"
+	);
+
+	// make sure adddress is within program image
+
+	asm volatile ("	\n\
+		iret									\n\
+		exec_ret:							\n\
+		movb	%%bl, %0				\n\
+	"
+	: "=rm"(output)
+	:
+	: "cc", "memory"
 	);
 
 	return output;
@@ -560,40 +605,40 @@ pcb_t* get_current_PCB() {
 }
 
 
-/* Checkpoint 4 Syscalls */
-/*
-* int32_t vidmap (uint8_t** screen_start);
-* DESCRIPTION: 
-* INPUTS:  
-* OUTPUT: Return -1 on fail
-* SIDE EFFECTS: 
-*/
-int32_t vidmap (uint8_t** screen_start)
-{
-	return 0;
-}
+// /* Checkpoint 4 Syscalls */
+// /*
+// * int32_t vidmap (uint8_t** screen_start);
+// * DESCRIPTION: 
+// * INPUTS:  
+// * OUTPUT: Return -1 on fail
+// * SIDE EFFECTS: 
+// */
+// int32_t vidmap (uint8_t** screen_start)
+// {
+// 	return 0;
+// }
 
-/*
-* int32_t set_handler (int32_t signum, void* handler_address);
-* DESCRIPTION: Sets a given signal to be handled by given handler
-* INPUTS: signum 		  -	The signal to be handeled
-		  handler_address - The location of the handler for given signal 
-* OUTPUT: Return -1 on fail
-* SIDE EFFECTS: 
-*/
-int32_t set_handler (int32_t signum, void* handler_address)
-{
-	return -1;
-}
+// /*
+// * int32_t set_handler (int32_t signum, void* handler_address);
+// * DESCRIPTION: Sets a given signal to be handled by given handler
+// * INPUTS: signum 		  -	The signal to be handeled
+// 		  handler_address - The location of the handler for given signal 
+// * OUTPUT: Return -1 on fail
+// * SIDE EFFECTS: 
+// */
+// int32_t set_handler (int32_t signum, void* handler_address)
+// {
+// 	return -1;
+// }
 
-/*
-* int32_t sigreturn (void);
-* DESCRIPTION: 
-* INPUTS:  
-* OUTPUT: Return -1 on fail
-* SIDE EFFECTS: 
-*/
-int32_t sigreturn (void)
-{
-	return -1;
-}
+// /*
+// * int32_t sigreturn (void);
+// * DESCRIPTION: 
+// * INPUTS:  
+// * OUTPUT: Return -1 on fail
+// * SIDE EFFECTS: 
+// */
+// int32_t sigreturn (void)
+// {
+// 	return -1;
+// }
