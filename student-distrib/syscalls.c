@@ -157,7 +157,7 @@ int32_t halt (uint8_t status)
 		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
 		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1, 1, 1);
 	} else {
-		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 0); // unmap
+		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 1); // unmap
 	}
 
 	/* Restore parent paging */
@@ -371,10 +371,10 @@ int32_t execute (const uint8_t* all_arguments)
 ///// 128 + 4MB - 4
 ///// Higher addr
 ////                                           NOTE
-// look at pushfl for renabling interrupts
-
-	asm volatile("          					\n\
-		mov    $0x2B, %%ax                       \n\
+// look at pushfl for renabling interrupts - bit 9
+	sti();
+	asm volatile("          				\n\
+		mov    $0x2B, %%ax                  \n\
 		mov    %%ax, %%ds                   \n\
 		pushl	%0							\n\
 		pushl	%3							\n\

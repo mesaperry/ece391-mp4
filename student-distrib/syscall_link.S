@@ -16,6 +16,7 @@ syscall_jumptable:
     .long 0x0, halt, execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
 
 sys_call:
+    sti
     pushl %ebx
     pushl %ecx
     pushl %edx
