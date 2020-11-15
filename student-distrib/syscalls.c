@@ -632,13 +632,21 @@ pcb_t* get_current_PCB() {
 // /* Checkpoint 4 Syscalls */
 // /*
 // * int32_t vidmap (uint8_t** screen_start);
-// * DESCRIPTION:
-// * INPUTS:
-// * OUTPUT: Return -1 on fail
-// * SIDE EFFECTS:
+// * DESCRIPTION:  Maps the text-mode video memory into user space at a pre-determined virtual address
+// * INPUTS: screen start - Pointer to start os user video memory
+// * OUTPUT: Return -1 on fail,return virtual address on success
+// * SIDE EFFECTS: Alters the physical memory buffer
 // */
 // int32_t vidmap (uint8_t** screen_start)
 // {
+/* Check if address is valid */
+// if(screen_start == NULL)
+// {
+// 	return -1;
+// }
+
+/* Check if within page boundaries */
+
 // 	return 0;
 // }
 
