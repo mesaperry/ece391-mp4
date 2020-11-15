@@ -267,6 +267,13 @@ int32_t execute (const uint8_t* all_arguments)
 ///
 ///  EIP address is incorrect THIS THING BELOW
 ///		maybe buffer and flip them around. 
+	
+	uint8_t eip_buf[4];
+	for (i = 0; i < 4; i++)
+	{
+  		eip_buf[i] = *(uint8_t*)(USER_PROCESS_START_PHYSICAL + USER_PROCESS_IMAGE_OFFSET) + ELF_OFFSET + 4 - i;
+	}
+	//pass eip_buf into EIP location in asm
 
 
 	/* SHOW USER SPACE DATA */
@@ -359,7 +366,7 @@ int32_t execute (const uint8_t* all_arguments)
 		pushl	%2							\n\
 		"
 		: 
-		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
+		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(eip_buf)), "r"(virtual_stack_addr)
 		: "cc", "memory"
 	);
 
