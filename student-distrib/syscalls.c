@@ -266,12 +266,13 @@ int32_t execute (const uint8_t* all_arguments)
 
 ///
 ///  EIP address is incorrect THIS THING BELOW
-///		maybe buffer and flip them around. 
-	
+///		maybe buffer and flip them around.
+
+	uint32_t* eip_ptr = USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET;
 	uint8_t eip_buf[4];
 	for (i = 0; i < 4; i++)
 	{
-  		eip_buf[i] = *(uint8_t*)(USER_PROCESS_START_PHYSICAL + USER_PROCESS_IMAGE_OFFSET) + ELF_OFFSET + 4 - i;
+  		eip_buf[i] = *(uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET + 3 - i);
 	}
 	//pass eip_buf into EIP location in asm
 
@@ -279,8 +280,11 @@ int32_t execute (const uint8_t* all_arguments)
 	/* SHOW USER SPACE DATA */
 	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
 	printf("\n");
-	printf("Virtual memory executable location: %x\n", (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
-	printf("Virtual memory executable location deref: %x\n", *(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET));
+	printf("Virtual memory EIP ptr without flipping  -without flipping: %x\n", eip_ptr);
+	printf("Virtual memory EIP ptr deref (EIP)       -without flipping: %x\n", *eip_ptr);
+	printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*eip_ptr));
+	printf("Virtual memory EIP backwards                                %x\n", *(uint32_t*)(eip_buf));
+	// printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*(uint32_t*)(eip_buf)));
 
 	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
 	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
@@ -288,8 +292,10 @@ int32_t execute (const uint8_t* all_arguments)
 	// make more readable
 
 	/* Create next PCB */
-	pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_id + 1) * PCB_SIZE);
-	kernel_mode_stack_address = KERNEL_MEMORY_ADDR + MB_4 - (process_id) * PCB_SIZE - 4;
+	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
+	kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
+	printf("kernel_mode_stack_address: %x\n", (uint32_t*)kernel_mode_stack_address);
+	printf("kernel_mode_stack_address deref: %x\n", *(uint32_t*)kernel_mode_stack_address);
 
 	/* Save extra parameters to global variable, stripped of leading spaces */
 	get_next_arguments(all_arguments, pcb->arg_buffer);
@@ -355,7 +361,6 @@ int32_t execute (const uint8_t* all_arguments)
 ///// Higher addr
 ////                                           NOTE
 // look at pushfl for renabling interrupts
-
 	asm volatile("          \n\
 		movl    %0, %%eax                       \n\
 		movw    %%ax, %%ds                   \n\
@@ -364,8 +369,9 @@ int32_t execute (const uint8_t* all_arguments)
 		pushfl									\n\
 		pushl	%1							\n\
 		pushl	%2							\n\
+		iret									\n\
 		"
-		: 
+		:
 		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(eip_buf)), "r"(virtual_stack_addr)
 		: "cc", "memory"
 	);
@@ -373,7 +379,6 @@ int32_t execute (const uint8_t* all_arguments)
 	// make sure adddress is within program image
 
 	asm volatile ("	\n\
-		iret									\n\
 		exec_ret:							\n\
 		movb	%%bl, %0				\n\
 	"
@@ -384,7 +389,7 @@ int32_t execute (const uint8_t* all_arguments)
 
 	return output;
 }
-/// sepereate iret for debugging asm 
+/// sepereate iret for debugging asm
 
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);
@@ -615,10 +620,10 @@ pcb_t* get_current_PCB() {
 // /* Checkpoint 4 Syscalls */
 // /*
 // * int32_t vidmap (uint8_t** screen_start);
-// * DESCRIPTION: 
-// * INPUTS:  
+// * DESCRIPTION:
+// * INPUTS:
 // * OUTPUT: Return -1 on fail
-// * SIDE EFFECTS: 
+// * SIDE EFFECTS:
 // */
 // int32_t vidmap (uint8_t** screen_start)
 // {
@@ -629,9 +634,9 @@ pcb_t* get_current_PCB() {
 // * int32_t set_handler (int32_t signum, void* handler_address);
 // * DESCRIPTION: Sets a given signal to be handled by given handler
 // * INPUTS: signum 		  -	The signal to be handeled
-// 		  handler_address - The location of the handler for given signal 
+// 		  handler_address - The location of the handler for given signal
 // * OUTPUT: Return -1 on fail
-// * SIDE EFFECTS: 
+// * SIDE EFFECTS:
 // */
 // int32_t set_handler (int32_t signum, void* handler_address)
 // {
@@ -640,10 +645,10 @@ pcb_t* get_current_PCB() {
 
 // /*
 // * int32_t sigreturn (void);
-// * DESCRIPTION: 
-// * INPUTS:  
+// * DESCRIPTION:
+// * INPUTS:
 // * OUTPUT: Return -1 on fail
-// * SIDE EFFECTS: 
+// * SIDE EFFECTS:
 // */
 // int32_t sigreturn (void)
 // {

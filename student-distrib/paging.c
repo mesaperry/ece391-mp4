@@ -37,7 +37,7 @@ void init_paging()
     /* init pde table to link to tables */
     pde_pte.present         = 0x0;
     pde_pte.read_write      = 0x0;
-    pde_pte.user_supervisor = 0x0;
+    pde_pte.user_supervisor = 0x1;
     pde_pte.write_through   = 0x0;
     pde_pte.cache_disable   = 0x0;
     pde_pte.accessed        = 0x0; /* not accessed yet */
@@ -49,7 +49,7 @@ void init_paging()
     /* init entry into page directory for 4kb pages */
     pte_4kb.present         = 0x0;
     pte_4kb.read_write      = 0x0;
-    pte_4kb.user_supervisor = 0x0;
+    pte_4kb.user_supervisor = 0x1;
     pte_4kb.write_through   = 0x0;
     pte_4kb.cache_disable   = 0x0;
     pte_4kb.accessed        = 0x0;
@@ -75,7 +75,7 @@ void init_paging()
     // pde_4mb.ptr       = KERNEL_MEMORY_ADDR >> DIR_ENTRY_PAGE_OFFSET;
     // page_dir[1] = pde_4mb.val; /* given to 1 index b/c that is found with    */
     //                            /* the desired memory access address 0x400000 */
-    map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1, 1, 0);
+    map_v_p(KERNEL_MEMORY_ADDR, KERNEL_MEMORY_ADDR, 1, 1, 1);
 
     /* init video memory (and page directory entry for lowest 4 MB)*/
     // pde_pte.present   = 1;
@@ -90,7 +90,7 @@ void init_paging()
     /*   but just to be technically correct.                */
     // pte_4kb.ptr = 0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET);
     // page_table[0xFFFFF & (VIDEO >> TABLE_ENTRY_PAGE_OFFSET)] = pte_4kb.val;
-    map_v_p(VIDEO, VIDEO, 0, 1, 0);
+    map_v_p(VIDEO, VIDEO, 0, 1, 1);
 
     /* we now init paging related registers, after we used physical */
     /* memory directly                                              */

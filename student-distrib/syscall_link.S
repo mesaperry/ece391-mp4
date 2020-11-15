@@ -21,6 +21,8 @@ sys_call:
     pushl %edx
     pushl %esi
     pushl %edi
+    pushl %ebp
+    pushl %esp
     pushfl
 # pushing args onto stack
     pushl %edx            # Arg 3
@@ -33,14 +35,14 @@ sys_call:
     ja  invalid_syscall
 # ??? syscall_jumptable call
     call    *syscall_jumptable(, %eax, 4)
-    cmpl    $0xFFFFF001, %eax             # -1 to -4095 errors
-    jb      done                          # No errors
-    xorl    %edx, %edx
-    subl    %eax, %edx                    # negate the error number
-    pushl   %edx
-    call    __errno_location              # get ptr to errno
-    popl    %ecx                          # put error into ecx
-    movl    %ecx, (%eax)                  # move number into errno
+    # cmpl    $0xFFFFF001, %eax             # -1 to -4095 errors
+    jmp      done                          # No errors
+    # xorl    %edx, %edx
+    # subl    %eax, %edx                    # negate the error number
+    # pushl   %edx
+    # call    __errno_location              # get ptr to errno
+    # popl    %ecx                          # put error into ecx
+    # movl    %ecx, (%eax)                  # move number into errno
 
 # place holder
 invalid_syscall:
@@ -50,6 +52,8 @@ done:
     popl %ecx
     popl %edx
     popfl
+    popl %esp
+    popl %ebp
     popl %edi
     popl %esi
     popl %edx
