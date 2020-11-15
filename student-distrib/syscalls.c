@@ -334,7 +334,20 @@ int32_t execute (const uint8_t* all_arguments)
 	tss.esp0 = kernel_mode_stack_address;
 	tss.ss0 = KERNEL_DS;
 
+	// asm volatile ("
+		
+	
+	
+	// "
+	// :
+	// :
+	// :) 
+	
+	// pcb->esi = ;
+	// pcb->edi = ;
+
 	if (process_id > 0) save_registers(process_id - 1);
+	
 	/* Context Switch */
 	// push user cs
 	// EIP
@@ -351,8 +364,6 @@ int32_t execute (const uint8_t* all_arguments)
 	// 	: "cc", "memory"
 	// );
 
-
-
 /////
 ///// Lower addr
 
@@ -361,21 +372,22 @@ int32_t execute (const uint8_t* all_arguments)
 ///// Higher addr
 ////                                           NOTE
 // look at pushfl for renabling interrupts
-	asm volatile("          \n\
-		movl    %0, %%eax                       \n\
-		movw    %%ax, %%ds                   \n\
+
+	asm volatile("          					\n\
+		mov    $0x2B, %%ax                       \n\
+		mov    %%ax, %%ds                   \n\
 		pushl	%0							\n\
 		pushl	%3							\n\
-		pushfl									\n\
-		pushl	%1							\n\
+		pushfl								\n\
+		pushl	$0x23						\n\
 		pushl	%2							\n\
-		iret									\n\
+		iret								\n\
 		"
 		:
-		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(eip_buf)), "r"(virtual_stack_addr)
+		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(eip_ptr)), "r"(virtual_stack_addr)//, "r"(), "r"()
 		: "cc", "memory"
 	);
-
+// a, b, d ... put var into reg directly
 	// make sure adddress is within program image
 
 	asm volatile ("	\n\

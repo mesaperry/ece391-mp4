@@ -213,7 +213,7 @@ int execute_getargs_syscall_test(int32_t fd)
 
     // if (execute(dechar("testprint")) == -1) return FAIL;
 
-	if (execute(dechar("ls .")) == -1) return FAIL;
+	// if (execute(dechar("ls .")) == -1) return FAIL;
 
 	uint8_t arg_buf[1];
 	// getargs(arg_buf, 1);
@@ -247,17 +247,18 @@ void test_all_checkpoint3()
     clear();
     int32_t f = open_syscall_test();
     printf("fd: %d\n\n", f);
-    read_syscall_test(f);
-    printf("\n");
-    TEST_OUTPUT("Write syscall", write_syscall_test(f));
-    printf("\n");
-    TEST_OUTPUT("Close syscall", close_syscall_test(f));
-	printf("\n");
-    TEST_OUTPUT("Exectue syscall", execute_getargs_syscall_test(f));
-    printf("\n");
-	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
-    printf("\n");
-    /* This ends with a page fault, so keep this last */
-    TEST_OUTPUT("test page mapping", test_page_mapping());
+//     read_syscall_test(f);
+//     printf("\n");
+//     TEST_OUTPUT("Write syscall", write_syscall_test(f));
+//     printf("\n");
+//     TEST_OUTPUT("Close syscall", close_syscall_test(f));
+// 	printf("\n");
+//    // TEST_OUTPUT("Exectue syscall", execute_getargs_syscall_test(f));
+//     printf("\n");
+// 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
+//     printf("\n");
+//     /* This ends with a page fault, so keep this last */
+//     TEST_OUTPUT("test page mapping", test_page_mapping());
+    execute(dechar("shell"));
 	return;
 }
