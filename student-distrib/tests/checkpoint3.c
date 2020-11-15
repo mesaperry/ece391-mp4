@@ -245,8 +245,13 @@ int linkage_test(int32_t fd)
 void test_all_checkpoint3()
 {
     clear();
+<<<<<<< HEAD
     // int32_t f = open_syscall_test();
     // printf("fd: %d\n\n", f);
+=======
+  //  int32_t f = open_syscall_test();
+  //  printf("fd: %d\n\n", f);
+>>>>>>> a4234493ab8f5419c3338d37e9856f90a3dda5b1
 //     read_syscall_test(f);
 //     printf("\n");
 //     TEST_OUTPUT("Write syscall", write_syscall_test(f));

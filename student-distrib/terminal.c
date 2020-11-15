@@ -51,6 +51,7 @@ void terminal_init(void) {
   wrapped = 0;
   clear_offset = 0; // Used as the key_buffer offset when clearing the screen
   overflow_check = 0;
+  shell_check = 0;
 
   int x;
   for(x = 0; x < MAX_BUFF_LENGTH; x++){
@@ -58,7 +59,7 @@ void terminal_init(void) {
   }
 
   /* Set cursor to top-left of screen */
-  update_cursor(0,0);
+  update_cursor(SHELL_OFFSET,0);
 }
 
 /* terminal_open
@@ -109,6 +110,8 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
 
   /* Initialize temp buffer */
   int8_t buffer[MAX_BUFF_LENGTH];
+
+  update_cursor(SHELL_OFFSET, get_screen_y());
 
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
@@ -213,7 +216,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   {
     if(x == 80)
     {
-      set_screen_x(0);
+      set_screen_x(0 + SHELL_OFFSET);
       set_screen_y(get_screen_y() + 1);
       update_cursor(get_screen_x(), get_screen_y());
     }
@@ -327,7 +330,7 @@ int32_t keyboard_handler(void)
       key_index++;
 
       /* Update cursor                                                                */
-      update_cursor(key_index % NUM_COLS, get_screen_y());
+      update_cursor((key_index + SHELL_OFFSET) % NUM_COLS, get_screen_y());
 
       goto SEND_EOI;
     }
@@ -341,7 +344,7 @@ int32_t keyboard_handler(void)
         key_index++;
 
         /* Update cursor                                                                */
-        update_cursor((key_index - clear_offset) % NUM_COLS, get_screen_y());
+        update_cursor((key_index - clear_offset + SHELL_OFFSET) % NUM_COLS, get_screen_y());
       }
       goto SEND_EOI;
     }
@@ -456,8 +459,10 @@ int32_t keyboard_handler(void)
 
           /* Update cursor */
           update_cursor(0, 0);
+          puts("391OS> ");
+          update_cursor(SHELL_OFFSET, 0);
 
-          set_screen_x(0);
+          set_screen_x(SHELL_OFFSET);
           set_screen_y(0);
 
           current_line = 0;
@@ -467,7 +472,7 @@ int32_t keyboard_handler(void)
           return 0;
         }
 
-        set_screen_x((key_index - clear_offset) % NUM_COLS);
+        set_screen_x((key_index - clear_offset + SHELL_OFFSET) % NUM_COLS);
 
         if(key_index < MAX_BUFF_LENGTH)
         {
@@ -482,7 +487,7 @@ int32_t keyboard_handler(void)
         }
 
         /* Get current screen_x and screen_y */
-        temp_x = key_index - clear_offset;
+        temp_x = key_index - clear_offset + SHELL_OFFSET;
         temp_y = get_screen_y() + 1;
 
         /* Update cursor  */
@@ -507,7 +512,7 @@ int32_t keyboard_handler(void)
         else if(key_index < MAX_BUFF_LENGTH)
         {
           /* Update cursor until, buffer is full */
-          update_cursor((key_index - clear_offset) % NUM_COLS, get_screen_y());
+          update_cursor((key_index - clear_offset + SHELL_OFFSET) % NUM_COLS, get_screen_y());
         }
       }
     }

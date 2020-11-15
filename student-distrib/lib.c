@@ -27,6 +27,7 @@ void clear(void) {
     screen_y = 0;
 
     update_cursor(0,0);
+
 }
 
 /* update_cursor
@@ -81,12 +82,13 @@ void print_backspace(){
   }
   else if(screen_x == 0){
     screen_y--;
+    wrapped = 0;
     screen_x = NUM_COLS - 1;
     /* Update cursor */
     update_cursor(screen_x, screen_y);
   }
   else if(get_key_index() == 128) {
-    screen_x -= 2;
+    screen_x -= 1;
     /* Update cursor */
     update_cursor(screen_x, screen_y);
   }

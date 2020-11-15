@@ -278,24 +278,24 @@ int32_t execute (const uint8_t* all_arguments)
 
 
 	/* SHOW USER SPACE DATA */
-	print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
-	printf("\n");
-	printf("Virtual memory EIP ptr without flipping  -without flipping: %x\n", eip_ptr);
-	printf("Virtual memory EIP ptr deref (EIP)       -without flipping: %x\n", *eip_ptr);
-	printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*eip_ptr));
-	printf("Virtual memory EIP backwards                                %x\n", *(uint32_t*)(eip_buf));
+	// print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
+	// printf("\n");
+	// printf("Virtual memory EIP ptr without flipping  -without flipping: %x\n", eip_ptr);
+	// printf("Virtual memory EIP ptr deref (EIP)       -without flipping: %x\n", *eip_ptr);
+	// printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*eip_ptr));
+	// printf("Virtual memory EIP backwards                                %x\n", *(uint32_t*)(eip_buf));
 	// printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*(uint32_t*)(eip_buf)));
 
-	printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
-	printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
+	// printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
+	// printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
 	/* END SHOW USER SPACE DATA */
 	// make more readable
 
 	/* Create next PCB */
 	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
 	kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
-	printf("kernel_mode_stack_address: %x\n", (uint32_t*)kernel_mode_stack_address);
-	printf("kernel_mode_stack_address deref: %x\n", *(uint32_t*)kernel_mode_stack_address);
+	// printf("kernel_mode_stack_address: %x\n", (uint32_t*)kernel_mode_stack_address);
+	// printf("kernel_mode_stack_address deref: %x\n", *(uint32_t*)kernel_mode_stack_address);
 
 	/* Save extra parameters to global variable, stripped of leading spaces */
 	get_next_arguments(all_arguments, pcb->arg_buffer);
@@ -335,19 +335,19 @@ int32_t execute (const uint8_t* all_arguments)
 	tss.ss0 = KERNEL_DS;
 
 	// asm volatile ("
-		
-	
-	
+
+
+
 	// "
 	// :
 	// :
-	// :) 
-	
+	// :)
+
 	// pcb->esi = ;
 	// pcb->edi = ;
 
 	if (process_id > 0) save_registers(process_id - 1);
-	
+
 	/* Context Switch */
 	// push user cs
 	// EIP
@@ -632,13 +632,21 @@ pcb_t* get_current_PCB() {
 // /* Checkpoint 4 Syscalls */
 // /*
 // * int32_t vidmap (uint8_t** screen_start);
-// * DESCRIPTION:
-// * INPUTS:
-// * OUTPUT: Return -1 on fail
-// * SIDE EFFECTS:
+// * DESCRIPTION:  Maps the text-mode video memory into user space at a pre-determined virtual address
+// * INPUTS: screen start - Pointer to start os user video memory
+// * OUTPUT: Return -1 on fail,return virtual address on success
+// * SIDE EFFECTS: Alters the physical memory buffer
 // */
 // int32_t vidmap (uint8_t** screen_start)
 // {
+/* Check if address is valid */
+// if(screen_start == NULL)
+// {
+// 	return -1;
+// }
+
+/* Check if within page boundaries */
+
 // 	return 0;
 // }
 
