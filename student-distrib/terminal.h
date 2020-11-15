@@ -40,6 +40,8 @@ uint8_t alt_check;
 uint8_t enter_down;
 uint8_t overflow_check;
 
+uint8_t shell_check;
+
 uint8_t current_line;
 uint8_t wrapped;
 uint8_t clear_offset; // Used as the key_buffer offset when clearing the screen
