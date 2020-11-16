@@ -69,8 +69,10 @@ void rtc_handler() {
  * SIDE EFFECTS: Makes thread wait
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    sti();
     IR_flag = 0;
     while(!IR_flag); // wait for interrupt
+    cli();
     return 0;
 }
 
@@ -124,7 +126,7 @@ int32_t rtc_write( int32_t fd,
     cli();
     outb((NMI | REG_A), RTC_PORT);
     outb((inb(CMOS_PORT) & RATE_MASK) | rate, CMOS_PORT);
-    sti();
+    // sti();
 
     return 0;
 }
@@ -149,7 +151,7 @@ int32_t rtc_open(const uint8_t* filename) {
     outb(PI | inb(CMOS_PORT), CMOS_PORT);
 
     /* Close critical section */
-    sti();
+    // sti();
 
     /* Set clock rate to default */
     rtc_write(0, &DEF_FREQ, sizeof(DEF_FREQ));
@@ -180,7 +182,7 @@ int32_t rtc_close(int32_t fd) {
     outb((inb(CMOS_PORT) & ~PI), CMOS_PORT);
 
     /* Close critical section */
-    sti();
+    // sti();
 
     return 0;
 }
@@ -198,7 +200,7 @@ uint8_t rtc_get_rate() {
     cli();
     outb((NMI | REG_A), RTC_PORT);
     rate = inb(CMOS_PORT) & ~RATE_MASK;
-    sti();
+    // sti();
 
     return rate;
 }
@@ -216,7 +218,7 @@ int rtc_is_on() {
     cli();
     outb(REG_B | NMI, RTC_PORT);
     is_on = (PI & inb(CMOS_PORT)) != 0;
-    sti();
+    // sti();
 
     return is_on;
 }

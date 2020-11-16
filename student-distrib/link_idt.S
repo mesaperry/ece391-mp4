@@ -29,23 +29,23 @@
 # iret
 
 keyboard_intr:
-    cli
+    
     pushal
     pushfl
     call keyboard_handler
     popfl
     popal
-    sti
+    
     iret
 
 rtc_intr:
-    cli
+    
     pushal
     pushfl
     call rtc_handler
     popfl
     popal
-    sti
+    
     iret
 
 # irq interrupt handler linkage for pic

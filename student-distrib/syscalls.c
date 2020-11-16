@@ -128,6 +128,7 @@ int32_t halt (uint8_t status)
 	uint32_t ebp;
 	uint32_t i;
 	uint32_t physical_addr;
+	
 
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
@@ -166,7 +167,7 @@ int32_t halt (uint8_t status)
 		/* Set stack pointer to previous PCB's location */
 		esp = pcb_parent_ptr->esp;
 		ebp = pcb_parent_ptr->ebp;
-		restore_registers(pcb_parent_ptr->p_id);
+		//restore_registers(pcb_parent_ptr->p_id);
 	}
 	else
 	{
@@ -175,17 +176,18 @@ int32_t halt (uint8_t status)
 		ebp = pcb_child_ptr->ebp;
 		// Don't care what registers are?
 	}
-
+	
+	uint32_t kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
 	/* Write parent's process info into TSS */
-	tss.esp0 = esp;
+	tss.esp0 = kernel_mode_stack_address;
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
 	asm volatile("             	\n\
     movl    %1, %%esp					\n\
     movl    %2, %%ebp					\n\
-    movb    %0, %%bl					\n\
-		jmp		exec_ret						\n\
+    movzbl    %0, %%eax					\n\
+	jmp		exec_ret				\n\
 		"
 		:
 		: "r"(status), "r"(esp), "r"(ebp)
@@ -195,30 +197,21 @@ int32_t halt (uint8_t status)
 }
 
 /* Helper function to save registers from a pid */
-void save_registers(int32_t pid)
-{
-	pcb_t* pcb = find_PCB(pid);
-	asm volatile ("                                \
-		movl %%esp, %0                            ;\
-		movl %%ebp, %1                            ;\
-		movl %%esi, %2                            ;\
-		movl %%edi, %3                            ;\
-		"
-		: "=r"(pcb->esp), "=r"(pcb->ebp), "=r"(pcb->esi), "=r"(pcb->edi)
-		: /* no inputs */
-		: "cc"
-	);
-	asm volatile ("                                \
-		movl %%eax, %0                            ;\
-		movl %%ebx, %1                            ;\
-		movl %%ecx, %2                            ;\
-		movl %%edx, %3                            ;\
-		"
-		: "=r"(pcb->eax), "=r"(pcb->ebx), "=r"(pcb->ecx), "=r"(pcb->edx)
-		: /* no inputs */
-		: "cc"
-	);
-}
+// void save_registers(int32_t pid)
+// {
+// 	pcb_t* pcb = find_PCB(pid);
+
+// 	asm volatile ("                                \
+// 		movl %%eax, %0                            ;\
+// 		movl %%ebx, %1                            ;\
+// 		movl %%ecx, %2                            ;\
+// 		movl %%edx, %3                            ;\
+// 		"
+// 		: "=r"(pcb->eax), "=r"(pcb->ebx), "=r"(pcb->ecx), "=r"(pcb->edx)
+// 		: /* no inputs */
+// 		: "cc"
+// 	);
+// }
 
 int32_t execute (const uint8_t* all_arguments)
 {
@@ -346,7 +339,7 @@ int32_t execute (const uint8_t* all_arguments)
 	// pcb->esi = ;
 	// pcb->edi = ;
 
-	if (process_id > 0) save_registers(process_id - 1);
+	if (process_id > 0) //save_registers(process_id - 1);
 
 	/* Context Switch */
 	// push user cs
@@ -372,13 +365,25 @@ int32_t execute (const uint8_t* all_arguments)
 ///// Higher addr
 ////                                           NOTE
 // look at pushfl for renabling interrupts - bit 9
-	sti();
+	// sti();
+	asm volatile ("                               \n\
+		movl %%esp, %0                            \n\
+		movl %%ebp, %1                            \n\
+		"
+		: "=r"(pcb->esp), "=r"(pcb->ebp)
+		: /* no inputs */
+		: "cc"
+	);
+
 	asm volatile("          				\n\
 		mov    $0x2B, %%ax                  \n\
 		mov    %%ax, %%ds                   \n\
-		pushl	%0							\n\
+		pushl	$0x2B							\n\
 		pushl	%3							\n\
 		pushfl								\n\
+		popl    %%eax 						\n\
+		orl     $0x200, %%eax				\n\
+		pushl   %%eax 						\n\
 		pushl	$0x23						\n\
 		pushl	%2							\n\
 		iret								\n\
@@ -392,13 +397,13 @@ int32_t execute (const uint8_t* all_arguments)
 
 	asm volatile ("	\n\
 		exec_ret:							\n\
-		movb	%%bl, %0				\n\
+		movl %%eax, %0					\n\
 	"
 	: "=rm"(output)
 	:
 	: "cc", "memory"
 	);
-
+	//printf(output);
 	return output;
 }
 /// sepereate iret for debugging asm

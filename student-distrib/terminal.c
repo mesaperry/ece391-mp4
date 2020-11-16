@@ -112,15 +112,18 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   int8_t buffer[MAX_BUFF_LENGTH];
 
   update_cursor(SHELL_OFFSET, get_screen_y());
-
+  
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
     buffer[x] = '\0';
   }
-
+  
   /* Loop until enter is pressed */
+  
   enter_down = 0;
+  sti();
   while(!enter_down);
+  cli();
   enter_down = 0;
 
   /* Fail if no bytes, or negative bytes to be returned */
@@ -133,7 +136,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   count = 0;
 
   /* Start critical read section */
-  cli();
+  // cli();
   /* Load keyboard_buffer into buf, up to MAX_BUFF_LENGTH */
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
@@ -166,7 +169,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   clear_buffer();
 
   /* Close critical section */
-  sti();
+  // sti();
 
   for(x = 0; x < count; x++)
   {
@@ -209,7 +212,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   strncpy(buffer, buf, MAX_BUFF_LENGTH);
 
   /* Open critical section */
-  cli();
+  // cli();
 
   /* Write data to the screen */
   for(x = 0; x < nbytes; x++)
@@ -229,7 +232,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   }
 
   /* Close critical section */
-  sti();
+  // sti();
 
   /* Return number of bytes written */
   return count;
@@ -247,7 +250,7 @@ int32_t clear_buffer()
   int x;
 
   /* Open critical section */
-  cli();
+  // cli();
 
   /* Reset key buffer with NULL values */
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
@@ -258,7 +261,7 @@ int32_t clear_buffer()
   key_index = 0; /* Reset keyboard buffer index */
 
   /* Close critical section */
-  sti();
+  // sti();
 
   /* Return 0 on success */
   return 0;

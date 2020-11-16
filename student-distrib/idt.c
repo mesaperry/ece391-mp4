@@ -79,9 +79,9 @@ void excpt31_handler();
 */
 void provisional_interrupt()
 {
-    cli();
+    // cli();
     printf("provisional interrupt: EMPTY");
-    sti();
+    // sti();
 }
 
 
@@ -165,7 +165,7 @@ void init_idt()
         // if an exception set the correct gate bit and set the provisional entry
         if (irq_n < 32)
         {
-            idt[irq_n].reserved3 = 0x1;
+            idt[irq_n].reserved3 = 0x0;
             SET_IDT_ENTRY(idt[irq_n], provisional_exception);
         }
         else{
