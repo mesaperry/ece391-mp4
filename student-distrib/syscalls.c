@@ -271,6 +271,7 @@ int32_t execute (const uint8_t* all_arguments)
 	stdout.flags = 1;
 	pcb->file_array[1] = stdout;
 
+	
 	/* Initialize remaining file array */
 	for(i = 2; i < FILE_ARRAY_LEN; i++)
 	{

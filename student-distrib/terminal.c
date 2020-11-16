@@ -206,7 +206,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   }
 
   /* Store temp buffer in buf */
-  strncpy(buffer, buf, MAX_BUFF_LENGTH);
+  copy_buf(buf, buffer, nbytes);
 
 
   /* Write data to the screen */
