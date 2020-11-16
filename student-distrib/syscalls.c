@@ -12,8 +12,6 @@
 #include "utils/char_util.h"
 #include "filesys.h"
 
-uint32_t process_count = 0;
-
 /* File operation structs */
 fops_t terminal_funcs =
 {
@@ -50,6 +48,7 @@ fops_t dir_funcs =
 static int32_t procs[MAX_DEVICES] = {0};
 
 uint8_t command_arguments[MAX_BUFF_LENGTH];
+uint8_t vidmap_called = 0;
 
 /*
 * add_process()
@@ -142,7 +141,6 @@ int32_t halt (uint8_t status)
 	}
 
 	delete_process(pcb_child_ptr->p_id);
-	process_count--;
 
 	/* Close all the files in the pcb */
 	for(i = 0; i < FILE_ARRAY_LEN; i++)
@@ -160,6 +158,11 @@ int32_t halt (uint8_t status)
 	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* Unmap if vidmap was called */
+	if(vidmap_called)
+	{
+		/* Unmap 4kb page from user video memory */
+		map_v_p(USER_VIDMAP, 0, 0, 1, 1);
+	}
 
 	/* Restore parent paging */
 	/* Set stack pointer to previous PCB's location */
@@ -190,6 +193,7 @@ int32_t halt (uint8_t status)
 int32_t execute (const uint8_t* all_arguments)
 {
 	pcb_t* pcb;
+	uint8_t all_arguments_copy[MAX_BUFF_LENGTH];
 	int32_t command_length, process_id, i, output;
 	uint32_t virtual_stack_addr, physical_addr;
 	uint32_t kernel_mode_stack_address;
@@ -197,13 +201,15 @@ int32_t execute (const uint8_t* all_arguments)
 	fd_t stdin;
 	fd_t stdout;
 
+	copy_string(all_arguments, all_arguments_copy);
+
 	/* Get first word (command) */
-	command_length = get_argument_length(all_arguments, 0);
+	command_length = get_argument_length(all_arguments_copy, 0);
 	if (command_length < 0) return 0;  // Error getting first word
 
 	uint8_t executable[command_length + 1];
 	executable[command_length] = '\0';  // Make it a string by adding EOS
-	if (get_argument(all_arguments, 0, executable) < 0) return 0;  // Error copying argument
+	if (get_argument(all_arguments_copy, 0, executable) < 0) return 0;  // Error copying argument
 
 	/* Check that command is an executable */
 	if (!is_executable(executable)) return -1;
@@ -252,7 +258,7 @@ int32_t execute (const uint8_t* all_arguments)
 	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
 
 	/* Save extra parameters to global variable, stripped of leading spaces */
-	get_next_arguments(all_arguments, pcb->arg_buffer);
+	get_next_arguments(all_arguments_copy, pcb->arg_buffer);
 
 	/* Set fd = 0 and fd = 1 in file_array */
 	stdin.fops = &terminal_funcs;
@@ -522,8 +528,7 @@ int32_t close(int32_t fd)
  */
 int32_t getargs (uint8_t* buf, uint32_t nbytes)
 {
-	
-	pcb_t* pcb = (pcb_t*)(KERNEL_MEMORY_ADDR + MB_4 - (process_count) * PCB_SIZE);
+	pcb_t* pcb = get_current_PCB();
 	/* pcb->arg_buffer must have EOS */
 	if ((string_length(pcb->arg_buffer) + 1) > nbytes) return -1;
 	copy_string(pcb->arg_buffer, buf);
@@ -576,11 +581,12 @@ int32_t vidmap (uint8_t** screen_start)
 	 }
 
 	/* Check if outside of program boundaries */
-	if(screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) || screen_start >= (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) + MB_4)
+	if(**screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) || **screen_start >= (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) + MB_4)
 	{
 		return -1;
 	}
 
+	vidmap_called = 1;
 
 	/* Map 4kb page from user memory, point it to physical video memory */
 	map_v_p(USER_VIDMAP, VIDEO, 0, 1, 1);

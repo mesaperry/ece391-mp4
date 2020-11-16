@@ -111,7 +111,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   /* Initialize temp buffer */
   int8_t buffer[MAX_BUFF_LENGTH];
 
-  update_cursor(SHELL_OFFSET, get_screen_y());
+  update_cursor(get_screen_x(), get_screen_y());
 
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
@@ -214,7 +214,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   {
     if(x == 80)
     {
-      set_screen_x(0 + SHELL_OFFSET);
+      set_screen_x(0);
       set_screen_y(get_screen_y() + 1);
       update_cursor(get_screen_x(), get_screen_y());
     }
@@ -328,7 +328,7 @@ int32_t keyboard_handler(void)
       key_index++;
 
       /* Update cursor                                                                */
-      update_cursor((key_index + SHELL_OFFSET) % NUM_COLS, get_screen_y());
+      update_cursor(get_screen_x(), get_screen_y());
 
       goto SEND_EOI;
     }
@@ -342,7 +342,7 @@ int32_t keyboard_handler(void)
         key_index++;
 
         /* Update cursor                                                                */
-        update_cursor((key_index - clear_offset + SHELL_OFFSET) % NUM_COLS, get_screen_y());
+        update_cursor(get_screen_x(), get_screen_y());
       }
       goto SEND_EOI;
     }
@@ -460,7 +460,6 @@ int32_t keyboard_handler(void)
           puts("391OS> ");
           update_cursor(SHELL_OFFSET, 0);
 
-          set_screen_x(SHELL_OFFSET);
           set_screen_y(0);
 
           current_line = 0;
@@ -470,7 +469,12 @@ int32_t keyboard_handler(void)
           return 0;
         }
 
-        if(key_index < MAX_BUFF_LENGTH)
+        /* Get current screen_x and screen_y */
+        temp_x = get_screen_x() + 1;
+        temp_y = get_screen_y() + 1;
+
+        /* Update cursor  */
+        if(temp_x == 80 && !wrapped)
         {
           /* Print letter to screen */
           putc(input);
@@ -480,23 +484,17 @@ int32_t keyboard_handler(void)
 
           /* Update index in keyboard buffer */
           key_index++;
-        }
 
-        /* Get current screen_x and screen_y */
-        temp_x = get_screen_x();
-        temp_y = get_screen_y() + 1;
-
-        /* Update cursor  */
-        if(temp_x == 80 && !wrapped)
-        {
           /* Check if screen_Y has reached end of screen */
           if(temp_y == NUM_ROWS)
           {
+
             set_screen_y(temp_y);
             scroll_handle();
           }
           else
           {
+
             wrap_around();
           }
 
@@ -507,8 +505,17 @@ int32_t keyboard_handler(void)
         }
         else if(key_index < MAX_BUFF_LENGTH)
         {
+          /* Print letter to screen */
+          putc(input);
+
+          /* Load keyboard buffer with symbol */
+          key_buffer[key_index] = input;
+
+          /* Update index in keyboard buffer */
+          key_index++;
+
           /* Update cursor until, buffer is full */
-          update_cursor((key_index - clear_offset + SHELL_OFFSET) % NUM_COLS, get_screen_y());
+          update_cursor(get_screen_x(), get_screen_y());
         }
       }
     }
