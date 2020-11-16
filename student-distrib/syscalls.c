@@ -134,9 +134,11 @@ int32_t halt (uint8_t status)
 	pcb_child_ptr = get_current_PCB();
 
 	/* */
-	if(pcb_child_ptr->p_id > 0)
-	{
+	if (pcb_child_ptr->p_id > 0) {
 		pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
+	} else {
+		// TODO EXECUTE SHELL CORRECTLY
+		//execute(dechar('shell'))
 	}
 
 	delete_process(pcb_child_ptr->p_id);
@@ -154,30 +156,17 @@ int32_t halt (uint8_t status)
 	}
 
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
-	if(pcb_parent_ptr != NULL) {
-		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
-		map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
-	} else {
-		// map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 1); // unmap
-	}
+	physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
+	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* Unmap if vidmap was called */
 
 	/* Restore parent paging */
-	if(pcb_parent_ptr != NULL)
-	{
-		/* Set stack pointer to previous PCB's location */
-		/* Kernel_mode_stack address here */
-		esp = pcb_parent_ptr->esp;
-		ebp = pcb_parent_ptr->ebp;
-		//restore_registers(pcb_parent_ptr->p_id);
-	}
-	else
-	{
-		/* Set stack pointer to top of kernel */
-		/* Call Execute */
-		// Don't care what registers are?
-	}
+	/* Set stack pointer to previous PCB's location */
+	/* Kernel_mode_stack address here */
+	esp = pcb_child_ptr->esp;
+	ebp = pcb_child_ptr->ebp;
+	//restore_registers(pcb_parent_ptr->p_id);
 
 	uint32_t kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
 	/* Write parent's process info into TSS */
@@ -187,6 +176,8 @@ int32_t halt (uint8_t status)
 	/* exec_ret jumps to assembly in execute */
 	asm volatile("           		  	\n\
     	movb    %0, %%bl				\n\
+		movl    %1, %%esp               \n\
+		movl    %2, %%ebp               \n\
 		jmp		exec_ret				\n\
 		"
 		:
@@ -195,23 +186,6 @@ int32_t halt (uint8_t status)
 	);
 	return 0;
 }
-
-/* Helper function to save registers from a pid */
-// void save_registers(int32_t pid)
-// {
-// 	pcb_t* pcb = find_PCB(pid);
-
-// 	asm volatile ("                                \
-// 		movl %%eax, %0                            ;\
-// 		movl %%ebx, %1                            ;\
-// 		movl %%ecx, %2                            ;\
-// 		movl %%edx, %3                            ;\
-// 		"
-// 		: "=r"(pcb->eax), "=r"(pcb->ebx), "=r"(pcb->ecx), "=r"(pcb->edx)
-// 		: /* no inputs */
-// 		: "cc"
-// 	);
-// }
 
 int32_t execute (const uint8_t* all_arguments)
 {
@@ -253,14 +227,6 @@ int32_t execute (const uint8_t* all_arguments)
 	read_dentry_by_name(executable, &dentry);
 	read_file_bytes_by_name(executable, (uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET), file_size(executable));
 
-	/* Map user location again, this time with user )level protection */
-	// map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
-
-
-///
-///  EIP address is incorrect THIS THING BELOW
-///		maybe buffer and flip them around.
-
 	uint32_t* eip_ptr = USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET;
 	uint8_t eip_buf[4];
 	for (i = 0; i < 4; i++)
@@ -281,14 +247,9 @@ int32_t execute (const uint8_t* all_arguments)
 
 	// printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
 	// printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
-	/* END SHOW USER SPACE DATA */
-	// make more readable
 
 	/* Create next PCB */
 	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
-	kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
-	// printf("kernel_mode_stack_address: %x\n", (uint32_t*)kernel_mode_stack_address);
-	// printf("kernel_mode_stack_address deref: %x\n", *(uint32_t*)kernel_mode_stack_address);
 
 	/* Save extra parameters to global variable, stripped of leading spaces */
 	get_next_arguments(all_arguments, pcb->arg_buffer);
@@ -324,48 +285,11 @@ int32_t execute (const uint8_t* all_arguments)
 	 pcb->arg_buffer[i] = command_arguments[i];
 	}
 
-	tss.esp0 = kernel_mode_stack_address;
+	tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
 	tss.ss0 = KERNEL_DS;
-
-	// asm volatile ("
-
-
-
-	// "
-	// :
-	// :
-	// :)
-
-	// pcb->esi = ;
-	// pcb->edi = ;
 
 	if (process_id > 0) //save_registers(process_id - 1);
 
-	/* Context Switch */
-	// push user cs
-	// EIP
-	// iret
-	// asm volatile("                          \n\
-	// 	pushl	%2							\n\
-	// 	pushl	%1							\n\
-	// 	jmp	    jump_userspace   			\n\
-	// 	exec_ret:							\n\
-	// 	movb %%bl, %0						\n\
-	// 	"
-	// 	: "=rm"(output)
-	// 	: "r"(*(uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET)), "r"(virtual_stack_addr)
-	// 	: "cc", "memory"
-	// );
-
-/////
-///// Lower addr
-
-
-///// 128 + 4MB - 4
-///// Higher addr
-////                                           NOTE
-// look at pushfl for renabling interrupts - bit 9
-	sti();
 	asm volatile ("                               \n\
 		movl %%esp, %0                            \n\
 		movl %%ebp, %1                            \n\
@@ -392,13 +316,13 @@ int32_t execute (const uint8_t* all_arguments)
 		: "r"(USER_DS), "r"(USER_CS), "r"(*(uint32_t*)(eip_ptr)), "r"(virtual_stack_addr)//, "r"(), "r"()
 		: "cc", "memory"
 	);
-// a, b, d ... put var into reg directly
-	// make sure adddress is within program image
 
 	asm volatile ("	\n\
 		exec_ret:							\n\
 		xorl %%eax, %%eax								\n\
 		mov %%bl, %0					\n\
+		leave      \n\
+		ret        \n\
 	"
 	: "=rm"(output)
 	:
@@ -407,7 +331,6 @@ int32_t execute (const uint8_t* all_arguments)
 	//printf(output);
 	return output;
 }
-/// sepereate iret for debugging asm
 
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);

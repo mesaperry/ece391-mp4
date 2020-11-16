@@ -188,12 +188,13 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
  */
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
 {
-  int x, count;
+  int32_t x, count;
 
   /* Initialize temp buffer */
   int8_t buffer[MAX_BUFF_LENGTH];
 
-  for(x = 0; x < count; x++)
+  count = 0;
+  for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
     buffer[x] = '\0';
   }
