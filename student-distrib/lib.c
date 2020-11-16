@@ -320,7 +320,7 @@ void scroll_handle(void){
 
   /* Shift memory up 1 row */
  for(y = 0; y < NUM_ROWS - 1; y++){
-     for(x = 0; x < NUM_COLS - 1; x++){
+     for(x = 0; x < NUM_COLS; x++){
         *(uint8_t *)(video_mem + ((NUM_COLS * y + x) << 1)) = *(uint8_t *)(video_mem + (((NUM_COLS * (y+1) + x)) << 1));
         *(uint8_t *)(video_mem + ((NUM_COLS * y + x) << 1) + 1) = ATTRIB;
      }
@@ -334,6 +334,7 @@ void scroll_handle(void){
 
   /* Update variable and cursor */
   screen_y--;
+  screen_x = 0;
   update_cursor(0, screen_y);
 }
 
