@@ -24,7 +24,7 @@ extern void jump_userspace(void);
 #define USER_PROCESS_SIZE             MB_4
 #define USER_PROCESS_STACK            USER_PROCESS_START_VIRTUAL + USER_PROCESS_SIZE - 0x4
 #define ELF_OFFSET 										24
-#define USER_VIDMAP							0x4000000
+#define USER_VIDMAP						0xF8000
 
 #define ESP_MASK        0xFFFFE000
 #define PCB_SIZE				0x2000 /* 8 kB pages */
