@@ -111,7 +111,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   /* Initialize temp buffer */
   int8_t buffer[MAX_BUFF_LENGTH];
 
-  update_cursor(SHELL_OFFSET, get_screen_y());
+  update_cursor(get_screen_x(), get_screen_y());
 
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
