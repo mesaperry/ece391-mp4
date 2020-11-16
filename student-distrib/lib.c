@@ -268,11 +268,15 @@ format_char_switch:
  *   Return Value: Number of bytes written
  *    Function: Output a string to the console */
 int32_t puts(int8_t* s) {
+    uint8_t x = 0;
     register int32_t index = 0;
+    x = get_screen_x();
     while (s[index] != '\0') {
         putc(s[index]);
         index++;
+        x++;
     }
+    set_screen_x(x);
     return index;
 }
 

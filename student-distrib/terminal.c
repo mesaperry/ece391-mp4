@@ -469,8 +469,6 @@ int32_t keyboard_handler(void)
           return 0;
         }
 
-        set_screen_x((key_index - clear_offset + SHELL_OFFSET) % NUM_COLS);
-
         if(key_index < MAX_BUFF_LENGTH)
         {
           /* Print letter to screen */
@@ -484,7 +482,7 @@ int32_t keyboard_handler(void)
         }
 
         /* Get current screen_x and screen_y */
-        temp_x = key_index - clear_offset + SHELL_OFFSET;
+        temp_x = get_screen_x();
         temp_y = get_screen_y() + 1;
 
         /* Update cursor  */
