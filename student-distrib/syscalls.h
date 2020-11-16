@@ -13,7 +13,7 @@ extern void jump_userspace(void);
 #define FILE_ARRAY_LEN 	8
 #define MAX_DEVICES 		6
 
-#define MB_8 			0x800000
+#define MB_8 						0x800000
 #define MB_128          0x8000000
 #define MB_4            0x400000
 #define KB_8            0x2000
@@ -23,7 +23,8 @@ extern void jump_userspace(void);
 #define USER_PROCESS_IMAGE_OFFSET     0x48000
 #define USER_PROCESS_SIZE             MB_4
 #define USER_PROCESS_STACK            USER_PROCESS_START_VIRTUAL + USER_PROCESS_SIZE - 0x4
-#define ELF_OFFSET 24
+#define ELF_OFFSET 										24
+#define USER_VIDMAP							0x4000000
 
 #define ESP_MASK        0xFFFFE000
 #define PCB_SIZE				0x2000 /* 8 kB pages */

@@ -79,9 +79,9 @@ void excpt31_handler();
 */
 void provisional_interrupt()
 {
-    // cli();
+    cli();
     printf("provisional interrupt: EMPTY");
-    // sti();
+    sti();
 }
 
 

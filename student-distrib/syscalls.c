@@ -128,7 +128,7 @@ int32_t halt (uint8_t status)
 	uint32_t ebp;
 	uint32_t i;
 	uint32_t physical_addr;
-	
+
 
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
@@ -161,10 +161,13 @@ int32_t halt (uint8_t status)
 		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 1); // unmap
 	}
 
+	/* Unmap if vidmap was called */
+
 	/* Restore parent paging */
 	if(pcb_parent_ptr != NULL)
 	{
 		/* Set stack pointer to previous PCB's location */
+		/* Kernel_mode_stack address here */
 		esp = pcb_parent_ptr->esp;
 		ebp = pcb_parent_ptr->ebp;
 		//restore_registers(pcb_parent_ptr->p_id);
@@ -172,11 +175,10 @@ int32_t halt (uint8_t status)
 	else
 	{
 		/* Set stack pointer to top of kernel */
-		esp = pcb_child_ptr->esp;
-		ebp = pcb_child_ptr->ebp;
+		/* Call Execute */
 		// Don't care what registers are?
 	}
-	
+
 	uint32_t kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
 	/* Write parent's process info into TSS */
 	tss.esp0 = kernel_mode_stack_address;
@@ -365,7 +367,7 @@ int32_t execute (const uint8_t* all_arguments)
 ///// Higher addr
 ////                                           NOTE
 // look at pushfl for renabling interrupts - bit 9
-	// sti();
+	sti();
 	asm volatile ("                               \n\
 		movl %%esp, %0                            \n\
 		movl %%ebp, %1                            \n\
@@ -635,26 +637,32 @@ pcb_t* get_current_PCB() {
 }
 
 
-// /* Checkpoint 4 Syscalls */
-// /*
-// * int32_t vidmap (uint8_t** screen_start);
-// * DESCRIPTION:  Maps the text-mode video memory into user space at a pre-determined virtual address
-// * INPUTS: screen start - Pointer to start os user video memory
-// * OUTPUT: Return -1 on fail,return virtual address on success
-// * SIDE EFFECTS: Alters the physical memory buffer
-// */
-// int32_t vidmap (uint8_t** screen_start)
-// {
-/* Check if address is valid */
-// if(screen_start == NULL)
-// {
-// 	return -1;
-// }
+/* Checkpoint 4 Syscalls */
+/*
+* int32_t vidmap (uint8_t** screen_start);
+* DESCRIPTION:  Maps the text-mode video memory into user space at a pre-determined virtual address
+* INPUTS: screen start - Pointer to start os user video memory
+* OUTPUT: Return -1 on fail,return virtual address on success
+* SIDE EFFECTS: Alters the physical memory buffer
+*/
+int32_t vidmap (uint8_t** screen_start)
+{
+	 /* Check if address is valid */
+	 if(screen_start == NULL)
+	 {
+	 	return -1;
+	 }
 
-/* Check if within page boundaries */
+	/* Check if within page boundaries */
 
-// 	return 0;
-// }
+	/* Map 4kb page from user memory, point it to physical video memory */
+	map_v_p(USER_VIDMAP, VIDEO, 0, 1, 1);
+
+	// Set screen start to 64 MB
+	*screen_start = (uint8_t*)(USER_VIDMAP);
+
+	return USER_VIDMAP;
+}
 
 // /*
 // * int32_t set_handler (int32_t signum, void* handler_address);
