@@ -12,6 +12,8 @@
 #include "utils/char_util.h"
 #include "filesys.h"
 
+static process_count = 0;
+
 /* File operation structs */
 fops_t terminal_funcs =
 {
@@ -57,13 +59,12 @@ uint8_t vidmap_called = 0;
 * OUTPUT: returns process id on success, -1 on failure
 */
 int32_t add_process(){
-    uint32_t i;
-
-		/* Loop through available indices */
+    uint32_t i;		/* Loop through available indices */
     for(i = 0; i < MAX_DEVICES; i++){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
+			process_count++;
             return i;
         }
     }
@@ -84,6 +85,7 @@ int32_t delete_process(int32_t pid){
 
 		/* Free space for process pid */
     procs[pid] = 0;
+	process_count--;
     return 0;
 }
 
@@ -132,12 +134,16 @@ int32_t halt (uint8_t status)
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
 
-	/* */
+	/* Setting parent ptr, if it exists */
 	if (pcb_child_ptr->p_id > 0) {
 		pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
-	} else {
-		// TODO EXECUTE SHELL CORRECTLY
-		//execute(dechar('shell'))
+
+		/* If there are still active PCBs, map virtual address to parent pointers p_id */
+		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
+		map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
+
+		/* Write parent's process info into TSS */
+		tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
 	}
 
 	delete_process(pcb_child_ptr->p_id);
@@ -153,10 +159,6 @@ int32_t halt (uint8_t status)
 		pcb_child_ptr->file_array[i].flags = 0;
 	}
 
-	/* If there are still active PCBs, map virtual address to parent pointers p_id */
-	physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
-	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
-
 	/* Unmap if vidmap was called */
 	if(vidmap_called)
 	{
@@ -170,10 +172,6 @@ int32_t halt (uint8_t status)
 	esp = pcb_child_ptr->esp;
 	ebp = pcb_child_ptr->ebp;
 	//restore_registers(pcb_parent_ptr->p_id);
-
-	uint32_t kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
-	/* Write parent's process info into TSS */
-	tss.esp0 = kernel_mode_stack_address;
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
@@ -294,8 +292,6 @@ int32_t execute (const uint8_t* all_arguments)
 	tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
 	tss.ss0 = KERNEL_DS;
 
-	if (process_id > 0) //save_registers(process_id - 1);
-
 	asm volatile ("                               \n\
 		movl %%esp, %0                            \n\
 		movl %%ebp, %1                            \n\
@@ -327,16 +323,18 @@ int32_t execute (const uint8_t* all_arguments)
 		exec_ret:							\n\
 		xorl %%eax, %%eax								\n\
 		mov %%bl, %0					\n\
-		leave      \n\
-		ret        \n\
 	"
 	: "=rm"(output)
 	:
 	: "cc", "memory"
 	);
-	//printf(output);
+	if (process_count == 0) {
+		printf("Oops! Nothing to go to. Restarting shell...\n");
+		execute(dechar("shell"));
+	}
 	return output;
 }
+
 
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);
