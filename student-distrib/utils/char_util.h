@@ -18,6 +18,5 @@ uint8_t* dechar(const char* s);
 /* prints buffer data char by char */
 void print_buf(uint8_t* buf, uint32_t bytes);
 
-int32_t copy_buf_gradually(const uint8_t* source, uint8_t* dest, uint32_t nbytes);
 
 #endif /* _CHAR_UTIL_H */

@@ -2,6 +2,8 @@
 #include "syscalls.h"
 #include "lib.h"
 
+#include "utils/char_util.h"
+
 /*
 *   @TODO ----------------
 *   FUNCTIONS: ret type - int32_t, -1 on failure
@@ -235,11 +237,10 @@ put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1])
 int32_t
 dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
-    pcb_t* process = get_current_PCB();
-    fd_t* file = &process->file_array[fd];
-
+    //pcb_t* process = get_current_PCB();
+    //fd_t* file = &process->file_array[fd];
+    int32_t data;
     dentry_t dentry;
-    int i; /* character read index */
     
     int read_result = read_dentry_by_index(dr_index++, &dentry);
     
@@ -254,14 +255,14 @@ dir_read(int32_t fd, void* buf, int32_t nbytes)
     
     //copy_buf_gradually((uint8_t*)(dentry.name), buf, nbytes);
     
-    copy_buf(dentry.name, buf, nbytes);
+    data = copy_buf(dentry.name, buf, nbytes);
     return nbytes;
     // Flat
     // get pcb and file from fd
     //
 }
 
-
+// 257, 
 /*
  * file_read
  * DESCRIPTION: Reads the next file in the filesys_img

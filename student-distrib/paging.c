@@ -14,7 +14,7 @@ void init_paging()
 {
     int i; /* looping variable */
 
-    pde_4mb_t pde_4mb;       /* for init 4mb page directory entry */
+    
     pde_pte_t pde_pte;       /* for init page directory entry     */
     pte_4kb_t pte_4kb;       /* for init page table               */
 

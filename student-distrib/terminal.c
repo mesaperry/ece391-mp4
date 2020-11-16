@@ -5,6 +5,8 @@
 #include "lib.h"
 #include "x86_desc.h"
 
+#include "utils/char_util.h"
+
 #define KEYBOARD_IRQ 0x01
 #define KEYBOARD_PORT 0x60
 
@@ -189,6 +191,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
 {
   int32_t x, count;
+
 
   /* Initialize temp buffer */
   int8_t buffer[nbytes];
