@@ -156,9 +156,9 @@ int32_t halt (uint8_t status)
 	/* If there are still active PCBs, map virtual address to parent pointers p_id */
 	if(pcb_parent_ptr != NULL) {
 		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
-		map_v_p(USER_PROCESS_START_VIRTUAL, KERNEL_MEMORY_ADDR + (pcb_parent_ptr->p_id * MB_4), 1, 1, 1);
+		map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 	} else {
-		map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 1); // unmap
+		// map_v_p(USER_PROCESS_START_VIRTUAL, 0, 1, 0, 1); // unmap
 	}
 
 	/* Unmap if vidmap was called */
@@ -185,11 +185,9 @@ int32_t halt (uint8_t status)
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
-	asm volatile("             	\n\
-    movl    %1, %%esp					\n\
-    movl    %2, %%ebp					\n\
-    movb    %0, %%bl					\n\
-	jmp		exec_ret				\n\
+	asm volatile("           		  	\n\
+    	movb    %0, %%bl				\n\
+		jmp		exec_ret				\n\
 		"
 		:
 		: "r"(status), "r"(esp), "r"(ebp)
