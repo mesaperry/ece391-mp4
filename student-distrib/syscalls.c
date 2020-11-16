@@ -50,6 +50,7 @@ fops_t dir_funcs =
 static int32_t procs[MAX_DEVICES] = {0};
 
 uint8_t command_arguments[MAX_BUFF_LENGTH];
+uint8_t vidmap_called = 0;
 
 /*
 * add_process()
@@ -160,6 +161,11 @@ int32_t halt (uint8_t status)
 	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
 
 	/* Unmap if vidmap was called */
+	if(vidmap_called)
+	{
+		/* Unmap 4kb page from user video memory */
+		map_v_p(USER_VIDMAP, 0, 0, 1, 1);
+	}
 
 	/* Restore parent paging */
 	/* Set stack pointer to previous PCB's location */
@@ -575,11 +581,12 @@ int32_t vidmap (uint8_t** screen_start)
 	 }
 
 	/* Check if outside of program boundaries */
-	if(screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) || screen_start >= (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) + MB_4)
+	if(**screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) || **screen_start >= (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) + MB_4)
 	{
 		return -1;
 	}
 
+	vidmap_called = 1;
 
 	/* Map 4kb page from user memory, point it to physical video memory */
 	map_v_p(USER_VIDMAP, VIDEO, 0, 1, 1);
