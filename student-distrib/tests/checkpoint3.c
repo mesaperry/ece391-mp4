@@ -209,20 +209,25 @@ int test_page_mapping() {
 *	Coverage: execute/halt
 * 	Files: syscalls.h/c
 */
-int execute_getargs_syscall_test(int32_t fd)
+// int execute_getargs_syscall_test(int32_t fd)
+// {
+//     TEST_HEADER;
+//     if (execute(dechar("shell")) == -1) return FAIL;
+//
+//     // if (execute(dechar("testprint")) == -1) return FAIL;
+//
+// 	// if (execute(dechar("ls .")) == -1) return FAIL;
+//
+// 	uint8_t arg_buf[1];
+// 	// getargs(arg_buf, 1);
+// 	// if (arg_buf[0] != (uint8_t)'.') return -1;
+//
+//     return PASS;
+// }
+
+int start_shell()
 {
-    TEST_HEADER;
-    if (execute(dechar("shell")) == -1) return FAIL;
-
-    // if (execute(dechar("testprint")) == -1) return FAIL;
-
-	// if (execute(dechar("ls .")) == -1) return FAIL;
-
-	uint8_t arg_buf[1];
-	// getargs(arg_buf, 1);
-	// if (arg_buf[0] != (uint8_t)'.') return -1;
-
-    return PASS;
+	execute(dechar("shell"));
 }
 
 
@@ -253,6 +258,6 @@ void test_all_checkpoint3()
 // 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
 //     /* This ends with a page fault, so keep this last */
 //     TEST_OUTPUT("test page mapping", test_page_mapping());
-    execute(dechar("shell"));
+	start_shell();
 	return;
 }
