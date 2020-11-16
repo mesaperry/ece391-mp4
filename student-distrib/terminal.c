@@ -191,10 +191,10 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   int32_t x, count;
 
   /* Initialize temp buffer */
-  int8_t buffer[MAX_BUFF_LENGTH];
+  int8_t buffer[nbytes];
 
   count = 0;
-  for(x = 0; x < MAX_BUFF_LENGTH; x++)
+  for(x = 0; x < nbytes; x++)
   {
     buffer[x] = '\0';
   }
@@ -208,15 +208,15 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   /* Store temp buffer in buf */
   copy_buf(buf, buffer, nbytes);
 
-
   /* Write data to the screen */
   for(x = 0; x < nbytes; x++)
   {
-    if(x == 80)
+    if((x % 80 == 0) && x != 0 && (get_screen_y() + 1 == NUM_ROWS))
     {
-      set_screen_x(0);
-      set_screen_y(get_screen_y() + 1);
-      update_cursor(get_screen_x(), get_screen_y());
+        set_screen_y(get_screen_y() + 1);
+        scroll_handle();
+    } else if ((x % 80 == 0) && (x != 0)) {
+        wrap_around();
     }
 
     if(buffer[x] != '\0')

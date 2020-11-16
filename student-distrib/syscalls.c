@@ -12,7 +12,7 @@
 #include "utils/char_util.h"
 #include "filesys.h"
 
-static process_count = 0;
+static uint32_t process_count = 0;
 
 /* File operation structs */
 fops_t terminal_funcs =
@@ -172,7 +172,7 @@ int32_t halt (uint8_t status)
 	esp = pcb_child_ptr->esp;
 	ebp = pcb_child_ptr->ebp;
 	//restore_registers(pcb_parent_ptr->p_id);
-	
+
 	putc('\n');
 
 	/* Jump to execute return */
@@ -196,7 +196,6 @@ int32_t execute (const uint8_t* all_arguments)
 	uint8_t all_arguments_copy[MAX_BUFF_LENGTH];
 	int32_t command_length, process_id, i, output;
 	uint32_t virtual_stack_addr, physical_addr;
-	uint32_t kernel_mode_stack_address;
 	dentry_t dentry;
 	fd_t stdin;
 	fd_t stdout;
@@ -233,7 +232,7 @@ int32_t execute (const uint8_t* all_arguments)
 	read_dentry_by_name(executable, &dentry);
 	read_file_bytes_by_name(executable, (uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET), file_size(executable));
 
-	uint32_t* eip_ptr = USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET;
+	uint32_t* eip_ptr = (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET);
 	uint8_t eip_buf[4];
 	for (i = 0; i < 4; i++)
 	{
@@ -273,7 +272,7 @@ int32_t execute (const uint8_t* all_arguments)
 	stdout.flags = 1;
 	pcb->file_array[1] = stdout;
 
-	
+
 	/* Initialize remaining file array */
 	for(i = 2; i < FILE_ARRAY_LEN; i++)
 	{
@@ -528,7 +527,7 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 	copy_string(pcb->arg_buffer, buf);
 	/* another option... */
 	// copy_buf(pcb->arg_buffer, buf, nbytes);
-	printf("Args: %s\n", buf);
+	printf("getargs buf: %s\n", buf);
 	return 0;
 }
 
@@ -570,13 +569,13 @@ pcb_t* get_current_PCB() {
 int32_t vidmap (uint8_t** screen_start)
 {
 	 /* Check if address is valid */
-	 if(screen_start == NULL)
-	 {
-	 	return -1;
-	 }
+	if(screen_start == NULL)
+	{
+		return -1;
+	}
 
 	/* Check if outside of program boundaries */
-	if(*screen_start < USER_PROCESS_START_VIRTUAL || *screen_start >= USER_PROCESS_START_VIRTUAL + MB_4)
+	if((uint32_t)screen_start < USER_PROCESS_START_VIRTUAL || (uint32_t)screen_start >= USER_PROCESS_START_VIRTUAL + MB_4)
 	{
 		return -1;
 	}
