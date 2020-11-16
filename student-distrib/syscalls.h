@@ -82,10 +82,10 @@ int32_t open (const uint8_t* filename);
 int32_t close (int32_t fd);
 
 /* Checkpoint 4 syscalls */
-// int32_t getargs (uint8_t* buf, uint32_t nbytes);
-// int32_t vidmap (uint8_t** screen_start);
-// int32_t set_handler (int32_t signum, void* handler_address);
-// int32_t sigreturn (void);
+int32_t getargs (uint8_t* buf, uint32_t nbytes);
+int32_t vidmap (uint8_t** screen_start);
+int32_t set_handler (int32_t signum, void* handler_address);
+int32_t sigreturn (void);
 
 /* Loads an executable file into correct location in memory */
 int32_t load(dentry_t* d, uint8_t* mem);

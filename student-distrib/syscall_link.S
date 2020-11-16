@@ -8,12 +8,12 @@
 .extern sys_call
 
 # search for these guys
-.extern halt, execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
+.extern halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
 
 # jumptable for system calls
     # needs the null for the 0th element
 syscall_jumptable:
-    .long 0x0, halt, execute, read, write, open, close # , getargs, vidmap, set_handler, sigreturn
+    .long 0x0, halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
 
 sys_call:
     sti
