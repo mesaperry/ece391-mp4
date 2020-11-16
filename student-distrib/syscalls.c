@@ -186,7 +186,7 @@ int32_t halt (uint8_t status)
 	asm volatile("             	\n\
     movl    %1, %%esp					\n\
     movl    %2, %%ebp					\n\
-    movzbl    %0, %%eax					\n\
+    movb    %0, %%bl					\n\
 	jmp		exec_ret				\n\
 		"
 		:
@@ -378,7 +378,7 @@ int32_t execute (const uint8_t* all_arguments)
 	asm volatile("          				\n\
 		mov    $0x2B, %%ax                  \n\
 		mov    %%ax, %%ds                   \n\
-		pushl	$0x2B							\n\
+		pushl	$0x2B						\n\
 		pushl	%3							\n\
 		pushfl								\n\
 		popl    %%eax 						\n\
@@ -397,7 +397,8 @@ int32_t execute (const uint8_t* all_arguments)
 
 	asm volatile ("	\n\
 		exec_ret:							\n\
-		movl %%eax, %0					\n\
+		xorl %%eax, %%eax								\n\
+		mov %%bl, %0					\n\
 	"
 	: "=rm"(output)
 	:
