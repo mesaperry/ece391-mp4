@@ -651,7 +651,12 @@ int32_t vidmap (uint8_t** screen_start)
 	 	return -1;
 	 }
 
-	/* Check if within page boundaries */
+	/* Check if outside of program boundaries */
+	if(screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) || screen_start >= (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) + MB_4)
+	{
+		return -1;
+	}
+
 
 	/* Map 4kb page from user memory, point it to physical video memory */
 	map_v_p(USER_VIDMAP, VIDEO, 0, 1, 1);
