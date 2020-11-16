@@ -172,6 +172,8 @@ int32_t halt (uint8_t status)
 	esp = pcb_child_ptr->esp;
 	ebp = pcb_child_ptr->ebp;
 	//restore_registers(pcb_parent_ptr->p_id);
+	
+	putc('\n');
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
@@ -283,15 +285,8 @@ int32_t execute (const uint8_t* all_arguments)
 	/* Update PCB values */
 	pcb->p_id = process_id;
 
-	/* Parse out arguments from command and store in arg_buffer */
-	for(i = 0; i < MAX_BUFF_LENGTH; i++)
-	{
-	 pcb->arg_buffer[i] = command_arguments[i];
-	}
-
 	tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
 	tss.ss0 = KERNEL_DS;
-
 	asm volatile ("                               \n\
 		movl %%esp, %0                            \n\
 		movl %%ebp, %1                            \n\
@@ -329,7 +324,7 @@ int32_t execute (const uint8_t* all_arguments)
 	: "cc", "memory"
 	);
 	if (process_count == 0) {
-		printf("Oops! Nothing to go to. Restarting shell...\n");
+		printf("Haha! Nice try. Restarting shell...\n");
 		execute(dechar("shell"));
 	}
 	return output;
@@ -532,6 +527,7 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 	copy_string(pcb->arg_buffer, buf);
 	/* another option... */
 	// copy_buf(pcb->arg_buffer, buf, nbytes);
+	printf("Args: %s\n", buf);
 	return 0;
 }
 
