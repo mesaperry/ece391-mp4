@@ -236,14 +236,14 @@ int32_t
 dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
     pcb_t* process = get_current_PCB();
-    fd_t* file = &process->file_array[(uint32_t)fd];
+    fd_t* file = &process->file_array[fd];
 
     dentry_t dentry;
     int i; /* character read index */
     
-    int read_result = read_dentry_by_name(file->file_name, &dentry);
+    int read_result = read_dentry_by_index(dr_index++, &dentry);
     
-    printf(file->file_name);
+   
     
     if (read_result < 0) {
         /* Reached the end of dentries */
@@ -251,8 +251,11 @@ dir_read(int32_t fd, void* buf, int32_t nbytes)
         return 0;
     }
     
-    copy_buf((uint8_t*)(file->file_name), (uint8_t*)buf, nbytes);
-    return 1;
+    
+    //copy_buf_gradually((uint8_t*)(dentry.name), buf, nbytes);
+    
+    copy_buf(dentry.name, buf, nbytes);
+    return nbytes;
     // Flat
     // get pcb and file from fd
     //
