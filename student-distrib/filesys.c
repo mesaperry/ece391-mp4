@@ -235,7 +235,25 @@ put_next_dir_name(uint8_t buf[FNAME_MAX_LEN + 1])
 int32_t
 dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
-    return 0; // Flat
+    pcb_t* process = get_current_PCB();
+    fd_t* file = &process->file_array[(uint32_t)fd];
+
+    dentry_t dentry;
+    int i; /* character read index */
+    
+    int read_result = read_dentry_by_name(file->file_name, &dentry);
+    
+    printf(file->file_name);
+    
+    if (read_result < 0) {
+        /* Reached the end of dentries */
+        dr_index = 0;
+        return 0;
+    }
+    
+    copy_buf((uint8_t*)(file->file_name), (uint8_t*)buf, nbytes);
+    return 1;
+    // Flat
     // get pcb and file from fd
     //
 }
