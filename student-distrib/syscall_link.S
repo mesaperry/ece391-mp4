@@ -47,7 +47,7 @@ sys_call:
 
 # place holder
 invalid_syscall:
-    orl 0xFFFFFFFF, %eax        # return -1
+    movl $-1, %eax        # return -1
 done:
     popl %ebx                   # restore stack
     popl %ecx
