@@ -98,28 +98,7 @@ int32_t copy_buf(const uint8_t* source, uint8_t* dest, uint32_t nbytes)
     return 0;
 }
 
-int32_t copy_buf_gradually(const uint8_t* source, uint8_t* dest, uint32_t nbytes)
-{
-    if ((source == NULL)) return -1;
-    int32_t i = 0;
-    int32_t location;
-    while(dest[i] != "\n" || dest[i] != '\0')
-    {
-        i++;
-    }
-    location = i;
-    i = 0;
-    for (location; location < nbytes; location++) {
-        if (source[i] == NULL || source[i] == '\0')
-        {
-        dest[location] == '\0';
-        break;
-        }
-        dest[location] = source[i];
-        i++;
-    }
-    return 0;
-}
+
 /* dechar
  * DESCRIPTION: type casts a string to an uint8_t array
  * INPUTS: s -- array of chars

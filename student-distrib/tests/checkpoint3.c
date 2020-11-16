@@ -7,6 +7,7 @@
 #include "../utils/char_util.h"
 #include "../utils/clock_util.h"
 #include "../utils/file_util.h"
+#include "../utils/arg_util.h"
 #include "../rtc.h"
 #include "../idt.h"
 #include "../syscalls.h"
@@ -228,6 +229,7 @@ int test_page_mapping() {
 int start_shell()
 {
 	execute(dechar("shell"));
+    return 0;
 }
 
 
