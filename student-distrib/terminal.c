@@ -209,7 +209,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes)
   }
 
   /* Store temp buffer in buf */
-  copy_buf((int8_t*)buf, buffer, nbytes);
+  copy_buf((uint8_t*)buf, (uint8_t*)buffer, nbytes);
 
   /* Write data to the screen */
   for(x = 0; x < nbytes; x++)
