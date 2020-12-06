@@ -30,7 +30,7 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
  */
 uint32_t get_term_vid_addr(uint32_t term)
 {
-    return TERM_MEM + (PAGE_SIZE_KB * term); /* PAGE_SIZE_KB comes from x86_Desc.h
+    return TERM_MEM + (PAGE_SIZE_KB * term); /* PAGE_SIZE_KB comes from x86_Desc.h */
 }
 
 /* terminal_init
