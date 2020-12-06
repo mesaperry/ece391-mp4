@@ -27,6 +27,11 @@
 #define ALT_OFF 0xB8
 #define ESC 0x01
 #define BACKQUOTE 0x29
+#define MAX_TERMINAL_NUM 3
+#define F1 0x3B
+#define F2 0x3C
+#define F3 0x3D
+
 
 #include "types.h"
 #include "lib.h"
@@ -39,17 +44,19 @@ uint8_t capslock_check;
 uint8_t alt_check;
 uint8_t enter_down;
 uint8_t overflow_check;
+uint8_t alt_check;
 
 uint8_t shell_check;
 
 uint8_t current_line;
+uint8_t current_terminal;
 uint8_t wrapped;
-uint8_t clear_offset; // Used as the key_buffer offset when clearing the screen
+uint8_t clear_offset[MAX_TERMINAL_NUM]; // Used as the key_buffer offset when clearing the screen
 
 uint32_t table_index;
-uint32_t key_index;
+uint32_t key_index[MAX_TERMINAL_NUM];
 uint32_t key_offset;
-uint8_t key_buffer[MAX_BUFF_LENGTH];
+uint8_t key_buffer[MAX_TERMINAL_NUM][MAX_BUFF_LENGTH];
 
 void terminal_init(void);
 int32_t terminal_open(const uint8_t* filename);

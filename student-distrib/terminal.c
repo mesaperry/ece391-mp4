@@ -12,8 +12,6 @@
 
 #define INPUT_CUTOFF 0x3E
 
-#define OVERFLOW 32
-
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',']', ' ', ' ',
@@ -32,6 +30,7 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
  * Output - None
  */
 void terminal_init(void) {
+  int x,y;
   /* Clear Screen */
   clear();
 
@@ -51,13 +50,19 @@ void terminal_init(void) {
   table_index = 0;
   current_line = 0;
   wrapped = 0;
-  clear_offset = 0; // Used as the key_buffer offset when clearing the screen
-  overflow_check = 0;
+  clear_offset[0] = 0; // Used as the key_buffer offset when clearing the screen
+  clear_offset[1] = 0;
+  clear_offset[2] = 0;
   shell_check = 0;
+  alt_check = 0;
+  current_terminal = 0;
 
-  int x;
-  for(x = 0; x < MAX_BUFF_LENGTH; x++){
-			key_buffer[x] = '\0';
+  for(y = 0; y < MAX_TERMINAL_NUM; y++)
+  {
+    for(x = 0; x < MAX_BUFF_LENGTH; x++)
+    {
+        key_buffer[y][x] = '\0';
+    }
   }
 
   /* Set cursor to top-left of screen */
@@ -141,7 +146,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   /* Load keyboard_buffer into buf, up to MAX_BUFF_LENGTH */
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
-    buffer[x] = key_buffer[x];
+    buffer[x] = key_buffer[current_terminal][x];
     last = x + 1;
     count++;
     index = x;
@@ -253,10 +258,12 @@ int32_t clear_buffer()
   /* Reset key buffer with NULL values */
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
-    key_buffer[x] = '\0';
+    key_buffer[current_terminal][x] = '\0';
   }
 
-  key_index = 0; /* Reset keyboard buffer index */
+  key_index[0] = 0; /* Reset keyboard buffer index */
+  key_index[1] = 0;
+  key_index[2] = 0;
 
   // /* Close critical section */
   // sti();
@@ -273,7 +280,7 @@ int32_t clear_buffer()
 uint32_t get_key_index(void)
 {
   /* Return variable */
-  return key_index;
+  return key_index[current_terminal];
 }
 
 /*
@@ -285,7 +292,7 @@ uint32_t get_key_index(void)
 int32_t keyboard_handler(void)
 {
   /* Initialize variables */
-  uint8_t scancode, input, temp_x, temp_y;
+  uint8_t scancode, input, temp_x, temp_y, temp;
 
   /* Get keystroke from keyboard */
   scancode = inb(KEYBOARD_PORT);
@@ -325,10 +332,12 @@ int32_t keyboard_handler(void)
     }
     case SPACE:
     {
+      temp = key_index[current_terminal];
+
       /* Print space key and add to buffer */
       putc(' ');
-      key_buffer[key_index] = ' ';
-      key_index++;
+      key_buffer[current_terminal][temp] = ' ';
+      key_index[current_terminal]++;
 
       /* Update cursor                                                                */
       update_cursor(get_screen_x(), get_screen_y());
@@ -341,8 +350,9 @@ int32_t keyboard_handler(void)
       uint32_t x;
       for(x = 0; x < 4; x++){
         putc(' ');
-        key_buffer[key_index] = ' ';
-        key_index++;
+        temp = key_index[current_terminal];
+        key_buffer[current_terminal][temp] = ' ';
+        key_index[current_terminal]++;
 
         /* Update cursor                                                                */
         update_cursor(get_screen_x(), get_screen_y());
@@ -351,14 +361,15 @@ int32_t keyboard_handler(void)
     }
     case BACK:
     {
-      if((key_index - clear_offset) != 0)
+      temp = key_index[current_terminal];
+      if((key_index[current_terminal] - clear_offset[current_terminal]) != 0)
       {
         /* Print backspace */
         print_backspace();
 
         /* Update keyboard buffer */
-        key_index--;
-        key_buffer[key_index] = '\0';
+        temp--;
+        key_buffer[current_terminal][temp] = '\0';
       }
 
       goto SEND_EOI;
@@ -389,12 +400,14 @@ int32_t keyboard_handler(void)
     }
     case ENTER:
     {
+      temp = key_index[current_terminal];
+
       /* put newline character in buffer */
-      key_buffer[key_index] = '\n';
+      key_buffer[current_terminal][temp] = '\n';
       putc('\n');
       wrapped = 0;
-      key_index = 0;
-      clear_offset = 0;
+      key_index[current_terminal] = 0;
+      clear_offset[current_terminal] = 0;
       current_line++;
 
       /* set enter flag */
@@ -409,9 +422,197 @@ int32_t keyboard_handler(void)
 
       goto SEND_EOI;
     }
+    case F1: /* Handle switch to 1st terminal */
+    {
+      if(alt_check) /* Check that alt button has been pressed */
+      {
+        if(current_terminal != 0) /* Only update if not already in terminal 1 */
+        {
+          int z;
+          /* Print back spaces, the amount of the key_index */
+          for(z = 0; z < key_index[current_terminal]; z++)
+          {
+            print_backspace(); /* Erase the previous terminal's writings */
+          }
+          current_terminal = 0; /* Update variables for the new terminal */
+          if(wrapped) /* If key_index of old terminal is greater than 80, update variables accordingly for the new terminal */
+          {
+            current_line--;
+            wrapped = 0;
+          }
+
+
+          /* Print the current keyboard to the screen */
+          for(z = 0; z < key_index[current_terminal]; z++)
+          {
+            /* Get current screen_x and screen_y */
+            temp_x = get_screen_x() + 1;
+            temp_y = get_screen_y() + 1;
+
+            /* Update cursor  */
+            if(temp_x == 80 && !wrapped)
+            {
+              /* Print letter to screen */
+              putc(key_buffer[current_terminal][z]);
+
+              /* Check if screen_Y has reached end of screen */
+              if(temp_y == NUM_ROWS)
+              {
+                set_screen_y(temp_y);
+                scroll_handle();
+              }
+              else
+              {
+
+                wrap_around();
+              }
+
+              /* Declare wrapped and update line to print to after handling */
+              wrapped = 1;
+              current_line = temp_y;
+              update_cursor(0, temp_y);
+            }
+            else
+            {
+              /* Print letter to screen */
+              putc(key_buffer[current_terminal][z]);
+
+              /* Update cursor until, buffer is full */
+              update_cursor(get_screen_x(), get_screen_y());
+            }
+          }
+        }
+      }
+    }
+    case F2:
+    {
+      if(alt_check)
+      {
+        if(current_terminal != 1)
+        {
+          int z;
+          /* Print back spaces, the amount of the key_index */
+          for(z = 0; z < key_index[current_terminal]; z++)
+          {
+            print_backspace();
+          }
+          current_terminal = 1;
+          if(wrapped)
+          {
+            current_line--;
+            wrapped = 0;
+          }
+
+
+          /* Print the current keyboard to the screen */
+          for(z = 0; z < key_index[current_terminal]; z++)
+          {
+            /* Get current screen_x and screen_y */
+            temp_x = get_screen_x() + 1;
+            temp_y = get_screen_y() + 1;
+
+            /* Update cursor  */
+            if(temp_x == 80 && !wrapped)
+            {
+              /* Print letter to screen */
+              putc(key_buffer[current_terminal][z]);
+
+              /* Check if screen_Y has reached end of screen */
+              if(temp_y == NUM_ROWS)
+              {
+
+                set_screen_y(temp_y);
+                scroll_handle();
+              }
+              else
+              {
+
+                wrap_around();
+              }
+
+              /* Declare wrapped and update line to print to after handling */
+              wrapped = 1;
+              current_line = temp_y;
+              update_cursor(0, temp_y);
+            }
+            else
+            {
+              /* Print letter to screen */
+              putc(key_buffer[current_terminal][z]);
+
+              /* Update cursor until, buffer is full */
+              update_cursor(get_screen_x(), get_screen_y());
+            }
+          }
+        }
+      }
+    }
+    case F3:
+    {
+      if(alt_check)
+      {
+        if(current_terminal != 2)
+        {
+          int z;
+          /* Print back spaces, the amount of the key_index */
+          for(z = 0; z < key_index[current_terminal]; z++)
+          {
+            print_backspace();
+          }
+          current_terminal = 2;
+          if(wrapped)
+          {
+            current_line--;
+            wrapped = 0;
+          }
+
+
+          /* Print the current keyboard to the screen */
+          for(z = 0; z < key_index[current_terminal]; z++)
+          {
+            /* Get current screen_x and screen_y */
+            temp_x = get_screen_x() + 1;
+            temp_y = get_screen_y() + 1;
+
+            /* Update cursor  */
+            if(temp_x == 80 && !wrapped)
+            {
+              /* Print letter to screen */
+              putc(key_buffer[current_terminal][z]);
+
+              /* Check if screen_Y has reached end of screen */
+              if(temp_y == NUM_ROWS)
+              {
+
+                set_screen_y(temp_y);
+                scroll_handle();
+              }
+              else
+              {
+
+                wrap_around();
+              }
+
+              /* Declare wrapped and update line to print to after handling */
+              wrapped = 1;
+              current_line = temp_y;
+              update_cursor(0, temp_y);
+            }
+            else
+            {
+              /* Print letter to screen */
+              putc(key_buffer[current_terminal][z]);
+
+              /* Update cursor until, buffer is full */
+              update_cursor(get_screen_x(), get_screen_y());
+            }
+          }
+        }
+      }
+    }
     default:
     {
-
+      uint8_t temp;
       /* Only check for key-press scancodes, no key-release scancodes */
       if(scancode < INPUT_CUTOFF)
       {
@@ -449,9 +650,9 @@ int32_t keyboard_handler(void)
         {
           /* Re-set screen and buffer */
           clear();
-          if(key_index != 0)
+          if(key_index[current_terminal] != 0)
           {
-            clear_offset = key_index;
+            clear_offset[current_terminal] = key_index[current_terminal];
           }
           else
           {
@@ -482,11 +683,12 @@ int32_t keyboard_handler(void)
           /* Print letter to screen */
           putc(input);
 
+          temp = key_index[current_terminal];
           /* Load keyboard buffer with symbol */
-          key_buffer[key_index] = input;
+          key_buffer[current_terminal][temp] = input;
 
           /* Update index in keyboard buffer */
-          key_index++;
+          key_index[current_terminal]++;
 
           /* Check if screen_Y has reached end of screen */
           if(temp_y == NUM_ROWS)
@@ -506,16 +708,18 @@ int32_t keyboard_handler(void)
           current_line = temp_y;
           update_cursor(0, temp_y);
         }
-        else if(key_index < MAX_BUFF_LENGTH)
+        else if(key_index[current_terminal] < MAX_BUFF_LENGTH)
         {
           /* Print letter to screen */
           putc(input);
 
+          temp = key_index[current_terminal];
+
           /* Load keyboard buffer with symbol */
-          key_buffer[key_index] = input;
+          key_buffer[current_terminal][temp] = input;
 
           /* Update index in keyboard buffer */
-          key_index++;
+          key_index[current_terminal]++;
 
           /* Update cursor until, buffer is full */
           update_cursor(get_screen_x(), get_screen_y());
