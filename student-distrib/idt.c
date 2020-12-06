@@ -240,7 +240,7 @@ void setup_idt_interrupts()
     // starts at x20 and has 16 entries
 
     SET_IDT_ENTRY(idt[32], irq0);      // set for PIT channel 0
-    SET_IDT_ENTRY(idt[33], irq1); // set for keyboard
+    SET_IDT_ENTRY(idt[33], irq1);      // set for keyboard
     SET_IDT_ENTRY(idt[34], irq2);
     SET_IDT_ENTRY(idt[35], irq3);
     SET_IDT_ENTRY(idt[36], irq4);

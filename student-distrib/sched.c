@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "paging.h"
 #include "terminal.h"
+#include "syscalls.h"
 
 // Find the current process id which the OS is currently giving CPU time to
 int32_t cur_proc() {
@@ -57,8 +58,8 @@ uint32_t cycle_task() {
     /* Initialize variables */
 	uint32_t esp;
 	uint32_t ebp;
-  uint32_t cur_pcb_ptr = find_PCB(cur_p_id);
-	uint32_t next_pcb_ptr = find_PCB(next_p_id);
+    pcb_t* cur_pcb_ptr = find_PCB(cur_p_id);
+	pcb_t* next_pcb_ptr = find_PCB(next_p_id);
 
 	/* NOT closing all the files in the pcb (like we do in halt)*/
 
@@ -88,16 +89,16 @@ uint32_t cycle_task() {
   /* Jump to execute return */
   /* exec_ret jumps to assembly in execute */
   flush_tlb();
-  asm volatile("           		  	\n\
-      movb    %0, %%bl				\n\
-    movl    %1, %%esp               \n\
-    movl    %2, %%ebp               \n\
-    jmp		exec_ret				\n\
-    "
-    :
-    : "r"(status), "r"(esp), "r"(ebp)
-    : "cc", "memory"
-  );
+//   asm volatile("           		  	\n\
+//     movb    %0, %%bl				\n\
+//     movl    %1, %%esp               \n\
+//     movl    %2, %%ebp               \n\
+//     jmp		exec_ret				\n\
+//     "
+//     :
+//     : "r"(status), "r"(esp), "r"(ebp)
+//     : "cc", "memory"
+//   );
 
 	// asm volatile("           		  	\n\
     // 	movb    %0, %%bl				\n\
