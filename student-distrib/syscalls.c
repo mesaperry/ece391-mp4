@@ -329,7 +329,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 
     /* Check for valid fd */
     /* fd = 1 is write only */
-    if(buf == NULL || fd < 0 || fd > MAX_FD || fd == 1)
+    if(buf == NULL || fd < 0 || fd > MAX_FD || fd == 1 || nbytes < 0)
     {
         return -1;
     }
@@ -360,7 +360,7 @@ int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 
     /* Check for valid fd */
     /* fd = 0 is read only */
-    if(fd < 0 || fd > MAX_FD || fd == 0)
+    if(fd < 0 || fd > MAX_FD || fd == 0 || buf == NULL || nbytes < 0)
     {
         return -1;
     }
@@ -394,6 +394,8 @@ int32_t open(const uint8_t* filename)
 
 		/* Get current PCB */
 		pcb_t* pcb = get_current_PCB();
+
+	if (strlen(filename) > 32) return -1;
 
     for(index = 2; index < FILE_ARRAY_LEN; index++)
 		{
@@ -501,6 +503,7 @@ int32_t close(int32_t fd)
  * RETURNS: -1 if arguments can't fit, 0 if success
  * SIDE EFFECTS: none
  */
+// check for grep
 int32_t getargs (uint8_t* buf, uint32_t nbytes)
 {
 	pcb_t* pcb = get_current_PCB();

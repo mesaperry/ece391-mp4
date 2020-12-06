@@ -182,6 +182,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     /*        divided by 4096                                            */
     /*     3. copy data from one more block until we reach length        */
     /* But we're not doing this... do this for now                       */
+    
     for (byte_count = 0; (byte_count + offset < length) && (byte_count + offset < inode.length); byte_count++) {
         /* Don't *have* to do this every time, so this is lazy way */
         buffer[byte_count] = data_blocks[inode.data_indices[(byte_count + offset) >> BLOCK_SIZE_LOG_2]]
@@ -190,7 +191,6 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
 
     return byte_count;
 }
-
 /*
  * put_next_dir_name
  * DESCRIPTION: Reads the next file in the filesys_img
@@ -275,6 +275,7 @@ dir_read(int32_t fd, void* buf, int32_t nbytes)
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes)
 {
     pcb_t* process = get_current_PCB();
+    
     fd_t* file = &process->file_array[(uint32_t)fd];
 
     // uint32_t size;
@@ -287,7 +288,7 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes)
     int32_t data;
     data = read_data(file->inode, file->pos, buf, nbytes);
 
-    file->pos = file->pos + data;
+    file->pos = (file->pos) + data;
     // if (file->pos >= size) file->pos = 0;
 
     return data;

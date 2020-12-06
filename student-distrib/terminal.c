@@ -471,8 +471,9 @@ int32_t keyboard_handler(void)
         print_backspace();
 
         /* Update keyboard buffer */
-        temp--;
+        
         key_buffer[current_terminal][temp] = '\0';
+        key_index[current_terminal]--;
       }
 
       goto SEND_EOI;
