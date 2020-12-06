@@ -376,6 +376,8 @@ uint32_t term_switch(uint32_t term) {
         ((uint8_t*) VIDEO)[i] = ((uint8_t*) get_term_vid_addr(cur_term))[i];
     }
 
+    current_terminal = term;
+
     sti();
 }
 
