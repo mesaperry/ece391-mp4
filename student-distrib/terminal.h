@@ -32,6 +32,7 @@
 #define F2 0x3C
 #define F3 0x3D
 
+#define MAX_DEVICES 		6
 
 #include "types.h"
 #include "lib.h"
@@ -57,14 +58,18 @@ uint32_t table_index;
 uint32_t key_index[MAX_TERMINAL_NUM];
 uint32_t key_offset;
 uint8_t key_buffer[MAX_TERMINAL_NUM][MAX_BUFF_LENGTH];
+uint32_t term_procs[MAX_DEVICES]; // Handles the maximum number of devices the system should run
 
 void terminal_init(void);
+void set_term_process(int32_t pid);
+void remove_term_process(int32_t pid);
 int32_t terminal_open(const uint8_t* filename);
 int32_t terminal_close(int32_t fd);
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t clear_buffer();
 uint32_t get_key_index(void);
+uint32_t get_current_terminal(void);
 int32_t keyboard_handler(void);
 
 #endif  /* _TERMINAL_H   */

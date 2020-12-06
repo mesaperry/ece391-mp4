@@ -64,7 +64,8 @@ int32_t add_process(){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
-			process_count++;
+						set_term_process(i);
+						process_count++;
             return i;
         }
     }
@@ -85,7 +86,8 @@ int32_t delete_process(int32_t pid){
 
 		/* Free space for process pid */
     procs[pid] = 0;
-	process_count--;
+		remove_term_process(pid);
+		process_count--;
     return 0;
 }
 

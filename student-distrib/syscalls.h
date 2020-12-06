@@ -11,7 +11,6 @@ extern void jump_userspace(void);
 #define MIN_FD 					2
 #define MAX_FD 					7
 #define FILE_ARRAY_LEN 	8
-#define MAX_DEVICES 		6
 
 #define MB_8 						0x800000
 #define MB_128          0x8000000

@@ -65,8 +65,35 @@ void terminal_init(void) {
     }
   }
 
+  for(x = 0; x < MAX_DEVICES; x++)
+  {
+    term_procs[x] = -1;
+  }
+
   /* Set cursor to top-left of screen */
   update_cursor(SHELL_OFFSET,0);
+}
+
+/* set_term_process
+ *
+ * Associates process id to its terminal number
+ * Input - pid
+ * Output -
+ */
+void set_term_process(int32_t pid)
+{
+  term_procs[pid] = current_terminal + 1; // Set process to hold value of the terminal it's being run in
+}
+
+/* remove_term_process
+ *
+ * Disassociates process id from its terminal number
+ * Input - pid
+ * Output -
+ */
+void remove_term_process(int32_t pid)
+{
+  term_procs[pid] = -1; // Set process to hold value of the terminal it's being run in
 }
 
 /* terminal_open
@@ -271,6 +298,7 @@ int32_t clear_buffer()
   /* Return 0 on success */
   return 0;
 }
+
 /* get_key_index
  * used by lib.c
  * Returns the value of the key index
@@ -281,6 +309,18 @@ uint32_t get_key_index(void)
 {
   /* Return variable */
   return key_index[current_terminal];
+}
+
+/* get_current_Terminal
+ * used by lib.c
+ * Returns the value of the current terminal
+ * Input - None
+ * Output - Returns current_terminal
+ */
+uint32_t get_current_terminal(void)
+{
+  /* Return variable */
+  return current_terminal;
 }
 
 /*
