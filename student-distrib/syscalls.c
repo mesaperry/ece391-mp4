@@ -175,8 +175,11 @@ int32_t halt (uint8_t status)
 
 	putc('\n');
 
+	// TODO: TSS?
+
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
+	flush_tlb();
 	asm volatile("           		  	\n\
     	movb    %0, %%bl				\n\
 		movl    %1, %%esp               \n\

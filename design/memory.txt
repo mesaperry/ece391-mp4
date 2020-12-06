@@ -1,0 +1,54 @@
+Address                Physical                       Virtual
+================================================================================
+0x0
+
+...
+
+0xB8000                video                          video
+...
+0xC0000                terminal 1 - task 0            terminal 1 - task 0
+0xC1000                terminal 1 - task 1            terminal 1 - task 1
+0xC2000                terminal 1 - task 2            terminal 1 - task 2
+0xC3000                terminal 1 - task 3            terminal 1 - task 3
+0xC4000                terminal 1 - task 4            terminal 1 - task 4
+0xC5000                terminal 1 - task 5            terminal 1 - task 5
+0xC6000                terminal 2 - task 0            terminal 2 - task 0
+0xC7000                terminal 2 - task 1            terminal 2 - task 1
+0xC8000                terminal 2 - task 2            terminal 2 - task 2
+0xC9000                terminal 2 - task 3            terminal 2 - task 3
+0xCA000                terminal 2 - task 4            terminal 2 - task 4
+0xCB000                terminal 2 - task 5            terminal 2 - task 5
+0xCC000                terminal 3 - task 0            terminal 3 - task 0
+0xCD000                terminal 3 - task 1            terminal 3 - task 1
+0xCE000                terminal 3 - task 2            terminal 3 - task 2
+0xCF000                terminal 3 - task 3            terminal 3 - task 3
+0xD0000                terminal 3 - task 4            terminal 3 - task 4
+0xD1000                terminal 3 - task 5            terminal 3 - task 5
+
+...
+
+0xF8000                                               user video (vidmap)
+
+...
+--------------------------------------------------------------------------------
+0x400000  (4MB)        Kernel                         Kernel
+...
+0x7D0000  (8MB-12KB)   Kernel - Process 5             Kernel - Process 5
+0x7D0000  (8MB-10KB)   Kernel - Process 4             Kernel - Process 4
+0x7D0000  (8MB-8KB)    Kernel - Process 3             Kernel - Process 3
+0x7D0000  (8MB-6KB)    Kernel - Process 2             Kernel - Process 2
+0x7B0000  (8MB-4KB)    Kernel - Process 1             Kernel - Process 1
+0x7D0000  (8MB-2KB)    Kernel - Process 0             Kernel - Process 0
+--------------------------------------------------------------------------------
+0x800000  (8MB)        Process 0
+--------------------------------------------------------------------------------
+0xC00000  (12MB)       Process 1
+--------------------------------------------------------------------------------
+0x1000000 (16MB)       Process 2
+--------------------------------------------------------------------------------
+0x1400000 (20MB)       Process 3
+--------------------------------------------------------------------------------
+...
+--------------------------------------------------------------------------------
+0x8000000 (128MB)                                     Current Process
+--------------------------------------------------------------------------------
