@@ -4,11 +4,12 @@
 #include "x86_desc.h"
 #include "lib.h"
 
-#define UPPER_MASK 0xffff0000 // selects upper memeory bits
-#define SYS_CALL   0x80
+#define UPPER_MASK   0xffff0000 // selects upper memeory bits
+#define SYS_CALL     0x80
 #define KEYBOARD_VEC 0x60
 #define RTC_VEC      0x70
-#define PIT_VEC     0x41
+#define PIT_VEC      0x5F
+
 // assembly link declarations
 extern void irq0();
 extern void irq1();
@@ -179,7 +180,7 @@ void init_idt()
     setup_idt_exceptions();
     setup_idt_interrupts();
     SET_IDT_ENTRY(idt[SYS_CALL], sys_call);
-    //set up keyboard and rtc
+    //set up keyboard, rtc, and pit
     SET_IDT_ENTRY(idt[KEYBOARD_VEC], keyboard_intr);
     SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
     SET_IDT_ENTRY(idt[PIT_VEC], PIT_intr);

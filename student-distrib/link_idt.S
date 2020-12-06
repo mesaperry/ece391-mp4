@@ -19,7 +19,7 @@
 .global keyboard_intr, rtc_intr, PIT_intr
 
 # handlers for keyboard and rtc
-.extern keyboard_handler, rtc_handler, PIT_handler
+.extern keyboard_handler, rtc_handler, cycle_task
 
 # interrupt handler linkages for keyboard and rtc
 # clear intr
@@ -47,7 +47,7 @@ rtc_intr:
 PIT_intr:
     pushal
     pushfl
-    call PIT_handler
+    call cycle_task
     popfl
     popal
     iret
