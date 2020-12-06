@@ -383,7 +383,7 @@ int32_t write(int32_t fd, const void * buf, int32_t nbytes)
 
     /* Check for valid fd */
     /* fd = 0 is read only */
-    if(fd < 0 || fd > MAX_FD || fd == 0)
+    if(fd < 0 || fd > MAX_FD || fd == 0 || buf == NULL || nbytes < 0)
     {
         return -1;
     }
@@ -524,6 +524,7 @@ int32_t close(int32_t fd)
  * RETURNS: -1 if arguments can't fit, 0 if success
  * SIDE EFFECTS: none
  */
+// check for grep
 int32_t getargs (uint8_t* buf, uint32_t nbytes)
 {
 	pcb_t* pcb = get_current_PCB();
