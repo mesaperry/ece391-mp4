@@ -16,40 +16,18 @@
 # .extern gen_sys_call
 
 # setup for keyboard and rtc
-.global keyboard_intr, rtc_intr
+.global keyboard_intr, rtc_intr, PIT_intr
 
 # handlers for keyboard and rtc
-.extern keyboard_handler, rtc_handler
+.extern keyboard_handler, rtc_handler, cycle_task
 
-# interrupt handler linkages for keyboard and rtc
-# clear intr
-# push regs and flags
-# call handler
-# pop regs and flags
-# iret
-
-keyboard_intr:
-    pushal
-    pushfl
-    call keyboard_handler
-    popfl
-    popal
-    iret
-
-rtc_intr:
-    pushal
-    pushfl
-    call rtc_handler
-    popfl
-    popal
-    iret
 
 # irq interrupt handler linkage for pic
 
 irq0:
         pushal
         pushfl
-        call irq0_handler
+        call cycle_task
         popfl
         popal
         iret
@@ -105,7 +83,7 @@ irq7:
 irq8:
         pushal
         pushfl
-        call irq8_handler
+        call rtc_handler
         popfl
         popal
         iret
@@ -158,3 +136,37 @@ irq15:
         popfl
         popal
         iret
+
+
+
+# DELETED SCENES
+# interrupt handler linkages for keyboard and rtc
+# clear intr
+# push regs and flags
+# call handler
+# pop regs and flags
+# iret
+
+; keyboard_intr:
+;     pushal
+;     pushfl
+;     call keyboard_handler
+;     popfl
+;     popal
+;     iret
+
+; rtc_intr:
+;     pushal
+;     pushfl
+;     call rtc_handler
+;     popfl
+;     popal
+;     iret
+
+; PIT_intr:
+;     pushal
+;     pushfl
+;     call cycle_task
+;     popfl
+;     popal
+;     iret

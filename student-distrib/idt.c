@@ -4,10 +4,9 @@
 #include "x86_desc.h"
 #include "lib.h"
 
-#define UPPER_MASK 0xffff0000 // selects upper memeory bits
-#define SYS_CALL   0x80
-#define KEYBOARD_VEC 0x60
-#define RTC_VEC      0x70
+#define UPPER_MASK   0xffff0000 // selects upper memeory bits
+#define SYS_CALL     0x80
+
 // assembly link declarations
 extern void irq0();
 extern void irq1();
@@ -26,9 +25,6 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 extern void sys_call();
-
-void keyboard_intr();
-void rtc_intr();
 
 void setup_idt_exceptions();
 void setup_idt_exceptions();
@@ -177,9 +173,7 @@ void init_idt()
     setup_idt_exceptions();
     setup_idt_interrupts();
     SET_IDT_ENTRY(idt[SYS_CALL], sys_call);
-    //set up keyboard and rtc
-    SET_IDT_ENTRY(idt[KEYBOARD_VEC], keyboard_intr);
-    SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
+    
 }
 
 ////INTERRUPTS AND EXCEPTIONS? WHERE DO I GET THESE/what do i print
@@ -245,15 +239,15 @@ void setup_idt_interrupts()
     // for all interrupts
     // starts at x20 and has 16 entries
 
-    SET_IDT_ENTRY(idt[32], irq0);
-    SET_IDT_ENTRY(idt[33], irq1); //already set for keyboard
+    SET_IDT_ENTRY(idt[32], irq0);      // set for PIT channel 0
+    SET_IDT_ENTRY(idt[33], irq1); // set for keyboard
     SET_IDT_ENTRY(idt[34], irq2);
     SET_IDT_ENTRY(idt[35], irq3);
     SET_IDT_ENTRY(idt[36], irq4);
     SET_IDT_ENTRY(idt[37], irq5);
     SET_IDT_ENTRY(idt[38], irq6);
     SET_IDT_ENTRY(idt[39], irq7);
-    SET_IDT_ENTRY(idt[40], irq8);// already set for rtc
+    SET_IDT_ENTRY(idt[40], irq8);      // already set for rtc
     SET_IDT_ENTRY(idt[41], irq9);
     SET_IDT_ENTRY(idt[45], irq13);
     SET_IDT_ENTRY(idt[46], irq14);
