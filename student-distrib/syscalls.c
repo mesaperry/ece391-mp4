@@ -12,6 +12,8 @@
 #include "utils/char_util.h"
 #include "filesys.h"
 
+static uint32_t process_count = 0;
+
 /* File operation structs */
 fops_t terminal_funcs =
 {
@@ -57,13 +59,12 @@ uint8_t vidmap_called = 0;
 * OUTPUT: returns process id on success, -1 on failure
 */
 int32_t add_process(){
-    uint32_t i;
-
-		/* Loop through available indices */
+    uint32_t i;		/* Loop through available indices */
     for(i = 0; i < MAX_DEVICES; i++){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
+			process_count++;
             return i;
         }
     }
@@ -84,6 +85,7 @@ int32_t delete_process(int32_t pid){
 
 		/* Free space for process pid */
     procs[pid] = 0;
+	process_count--;
     return 0;
 }
 
@@ -132,12 +134,16 @@ int32_t halt (uint8_t status)
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
 
-	/* */
+	/* Setting parent ptr, if it exists */
 	if (pcb_child_ptr->p_id > 0) {
 		pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
-	} else {
-		// TODO EXECUTE SHELL CORRECTLY
-		//execute(dechar('shell'))
+
+		/* If there are still active PCBs, map virtual address to parent pointers p_id */
+		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
+		map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
+
+		/* Write parent's process info into TSS */
+		tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
 	}
 
 	delete_process(pcb_child_ptr->p_id);
@@ -153,10 +159,6 @@ int32_t halt (uint8_t status)
 		pcb_child_ptr->file_array[i].flags = 0;
 	}
 
-	/* If there are still active PCBs, map virtual address to parent pointers p_id */
-	physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
-	map_v_p(USER_PROCESS_START_VIRTUAL, physical_addr, 1, 1, 1);
-
 	/* Unmap if vidmap was called */
 	if(vidmap_called)
 	{
@@ -171,9 +173,7 @@ int32_t halt (uint8_t status)
 	ebp = pcb_child_ptr->ebp;
 	//restore_registers(pcb_parent_ptr->p_id);
 
-	uint32_t kernel_mode_stack_address = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
-	/* Write parent's process info into TSS */
-	tss.esp0 = kernel_mode_stack_address;
+	putc('\n');
 
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
@@ -196,7 +196,6 @@ int32_t execute (const uint8_t* all_arguments)
 	uint8_t all_arguments_copy[MAX_BUFF_LENGTH];
 	int32_t command_length, process_id, i, output;
 	uint32_t virtual_stack_addr, physical_addr;
-	uint32_t kernel_mode_stack_address;
 	dentry_t dentry;
 	fd_t stdin;
 	fd_t stdout;
@@ -233,7 +232,7 @@ int32_t execute (const uint8_t* all_arguments)
 	read_dentry_by_name(executable, &dentry);
 	read_file_bytes_by_name(executable, (uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET), file_size(executable));
 
-	uint32_t* eip_ptr = USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET;
+	uint32_t* eip_ptr = (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET);
 	uint8_t eip_buf[4];
 	for (i = 0; i < 4; i++)
 	{
@@ -273,6 +272,7 @@ int32_t execute (const uint8_t* all_arguments)
 	stdout.flags = 1;
 	pcb->file_array[1] = stdout;
 
+
 	/* Initialize remaining file array */
 	for(i = 2; i < FILE_ARRAY_LEN; i++)
 	{
@@ -285,17 +285,8 @@ int32_t execute (const uint8_t* all_arguments)
 	/* Update PCB values */
 	pcb->p_id = process_id;
 
-	/* Parse out arguments from command and store in arg_buffer */
-	for(i = 0; i < MAX_BUFF_LENGTH; i++)
-	{
-	 pcb->arg_buffer[i] = command_arguments[i];
-	}
-
 	tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
 	tss.ss0 = KERNEL_DS;
-
-	if (process_id > 0) //save_registers(process_id - 1);
-
 	asm volatile ("                               \n\
 		movl %%esp, %0                            \n\
 		movl %%ebp, %1                            \n\
@@ -327,16 +318,18 @@ int32_t execute (const uint8_t* all_arguments)
 		exec_ret:							\n\
 		xorl %%eax, %%eax								\n\
 		mov %%bl, %0					\n\
-		leave      \n\
-		ret        \n\
 	"
 	: "=rm"(output)
 	:
 	: "cc", "memory"
 	);
-	//printf(output);
+	if (process_count == 0) {
+		printf("Haha! Nice try. Restarting shell...\n");
+		execute(dechar("shell"));
+	}
 	return output;
 }
+
 
 /*
 * int32_t read(int32_t fd, const uint8_t * buf, int32_t nbytes);
@@ -534,6 +527,7 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 	copy_string(pcb->arg_buffer, buf);
 	/* another option... */
 	// copy_buf(pcb->arg_buffer, buf, nbytes);
+	printf("getargs buf: %s\n", buf);
 	return 0;
 }
 
@@ -575,13 +569,13 @@ pcb_t* get_current_PCB() {
 int32_t vidmap (uint8_t** screen_start)
 {
 	 /* Check if address is valid */
-	 if(screen_start == NULL)
-	 {
-	 	return -1;
-	 }
+	if(screen_start == NULL)
+	{
+		return -1;
+	}
 
 	/* Check if outside of program boundaries */
-	if(**screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) || **screen_start >= (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET) + MB_4)
+	if((uint32_t)screen_start < USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET || (uint32_t)screen_start >= USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + MB_4)
 	{
 		return -1;
 	}

@@ -7,6 +7,7 @@
 #include "../utils/char_util.h"
 #include "../utils/clock_util.h"
 #include "../utils/file_util.h"
+#include "../utils/arg_util.h"
 #include "../rtc.h"
 #include "../idt.h"
 #include "../syscalls.h"
@@ -77,6 +78,7 @@ int write_syscall_test(int32_t fd) {
 int32_t open_syscall_test() {
 	TEST_HEADER;
 
+  uint32_t* buf[1024];
   printf("File: frame0.txt");
   printf("\n");
 	int32_t fd = open((uint8_t*) "frame0.txt");
@@ -84,6 +86,8 @@ int32_t open_syscall_test() {
 		printf("FAIL: File not found\n");
 	} else {
 		printf("PASS: File found\n");
+        read(fd, buf, 1024);
+        print_buf(buf, 1024);
 	}
 	return fd;
 }
@@ -206,20 +210,26 @@ int test_page_mapping() {
 *	Coverage: execute/halt
 * 	Files: syscalls.h/c
 */
-int execute_getargs_syscall_test(int32_t fd)
+// int execute_getargs_syscall_test(int32_t fd)
+// {
+//     TEST_HEADER;
+//     if (execute(dechar("shell")) == -1) return FAIL;
+//
+//     // if (execute(dechar("testprint")) == -1) return FAIL;
+//
+// 	// if (execute(dechar("ls .")) == -1) return FAIL;
+//
+// 	uint8_t arg_buf[1];
+// 	// getargs(arg_buf, 1);
+// 	// if (arg_buf[0] != (uint8_t)'.') return -1;
+//
+//     return PASS;
+// }
+
+int start_shell()
 {
-    TEST_HEADER;
-    if (execute(dechar("shell")) == -1) return FAIL;
-
-    // if (execute(dechar("testprint")) == -1) return FAIL;
-
-	// if (execute(dechar("ls .")) == -1) return FAIL;
-
-	uint8_t arg_buf[1];
-	// getargs(arg_buf, 1);
-	// if (arg_buf[0] != (uint8_t)'.') return -1;
-
-    return PASS;
+	execute(dechar("shell"));
+    return 0;
 }
 
 
@@ -245,10 +255,11 @@ int linkage_test(int32_t fd)
 void test_all_checkpoint3()
 {
     clear();
+    //TEST_OUTPUT("read", open_syscall_test());
 //     printf("\n");
 // 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
 //     /* This ends with a page fault, so keep this last */
 //     TEST_OUTPUT("test page mapping", test_page_mapping());
-    execute(dechar("shell"));
+	start_shell();
 	return;
 }

@@ -50,7 +50,7 @@ typedef struct {
     uint32_t inode;
     uint32_t pos;
     uint32_t flags;
-		uint8_t file_name[FNAME_MAX_LEN];
+	uint8_t file_name[FNAME_MAX_LEN];
 } fd_t;
 
 /* Process control block struct */

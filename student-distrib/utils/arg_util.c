@@ -112,19 +112,19 @@ int32_t get_argument(const uint8_t* argument_string, uint32_t index, uint8_t* bu
 int32_t get_next_arguments(const uint8_t* argument_string, uint8_t* buf)
 {
     int32_t arg_count = get_argument_count(argument_string);
-    if (arg_count <= 0) return -1; // no first or get_argument_count failed 
+    if (arg_count <= 0) return -1; // no first or get_argument_count failed
 
     if (arg_count == 1) {
         buf[0] = '\0';  // nothing after first
         return 0;
     }
-
+    
     uint32_t i = 0;
-    uint32_t j = 0;
-    while (argument_string[i++] == ' ');
-    while (argument_string[i++] != ' ');
-    while (argument_string[i++] == ' ');
+    while (argument_string[i] == ' ') i++;
+    while (argument_string[i] != ' ') i++;
+    while (argument_string[i] == ' ') i++;
 
+    uint32_t j = 0;
     while (argument_string[i] != '\0') buf[j++] = argument_string[i++];
     buf[j] = (uint8_t)'\0';
 

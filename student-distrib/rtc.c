@@ -24,9 +24,14 @@
 #define REG_B               0x0B
 #define REG_C               0x0C
 
+#define MAX_RATE            0x06
+#define MAX_FREQ            1024
+
 static const int32_t DEF_FREQ = 2;
 
 volatile int32_t IR_flag;
+volatile int32_t clk;
+volatile int32_t virtual_freq;
 
 
 extern void rtc_intr();
@@ -50,15 +55,20 @@ void rtc_init() {
  * SIDE EFFECTS: Sends end of interrupt signal
  */
 void rtc_handler() {
-  /* Raise interrupt flag */
-  IR_flag = 1;
+    /* Increment clk counter */
+    clk = (clk + 1) % MAX_FREQ;
 
-  /* Select Register C and throw away contents */
-  outb(REG_C, RTC_PORT);
-  inb(CMOS_PORT);
+    /* Signal IR_flag */
+    if (virtual_freq != 0 && clk % virtual_freq == 0) {
+        IR_flag = 1;
+    }
 
-  /* Send end of interrupt signal */
-  send_eoi(RTC_IRQ);
+    /* Select Register C and throw away contents */
+    outb(REG_C, RTC_PORT);
+    inb(CMOS_PORT);
+
+    /* Send end of interrupt signal */
+    send_eoi(RTC_IRQ);
 }
 
 /* rtc_read
@@ -70,7 +80,9 @@ void rtc_handler() {
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     IR_flag = 0;
+    sti();
     while(!IR_flag); // wait for interrupt
+    cli();
     return 0;
 }
 
@@ -85,7 +97,6 @@ int32_t rtc_write( int32_t fd,
                    const void* buf,
                    int32_t nbytes ) {
     int32_t frequency;                      // input frequency
-    uint8_t rate;                           // clock rate used to set RTC register
 
     /* verify input is a 4-byte int */
     if (nbytes != 4 || buf == NULL) {
@@ -109,22 +120,7 @@ int32_t rtc_write( int32_t fd,
         return -1;
     }
 
-    /* get RTC rate from frequency */
-    if (frequency != 0) {
-        rate = 17;
-        while (frequency != 0) {
-            frequency >>= 1;
-            rate--;
-        }
-    }
-    else {
-        rate = 0;
-    }
-
-    cli();
-    outb((NMI | REG_A), RTC_PORT);
-    outb((inb(CMOS_PORT) & RATE_MASK) | rate, CMOS_PORT);
-    sti();
+    virtual_freq = frequency;
 
     return 0;
 }
@@ -138,7 +134,7 @@ int32_t rtc_write( int32_t fd,
  */
 int32_t rtc_open(const uint8_t* filename) {
 
-    /* Open critical section */
+    /* Clear IF */
     cli();
 
     /* Turn on IRQ 8 */
@@ -148,11 +144,16 @@ int32_t rtc_open(const uint8_t* filename) {
     /* Write prev value, or'd with 0x40 */
     outb(PI | inb(CMOS_PORT), CMOS_PORT);
 
-    /* Close critical section */
-    sti();
+    /* Set physical frequency to max */
+    cli();
+    outb((NMI | REG_A), RTC_PORT);
+    outb((inb(CMOS_PORT) & RATE_MASK) | MAX_RATE, CMOS_PORT);
 
-    /* Set clock rate to default */
+    /* Set virtual frequency to default */
     rtc_write(0, &DEF_FREQ, sizeof(DEF_FREQ));
+
+    /* Reset clk counter */
+    clk = 0;
 
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
@@ -171,16 +172,13 @@ int32_t rtc_close(int32_t fd) {
     /* Disable IRQs */
     disable_irq(RTC_IRQ);
 
-    /* Open critical section */
+    /* Clear IF */
     cli();
 
     /* Turn on IRQ 8 */
     /* Select Reg B and disable NMI */
     outb((NMI | REG_B), RTC_PORT);
     outb((inb(CMOS_PORT) & ~PI), CMOS_PORT);
-
-    /* Close critical section */
-    sti();
 
     return 0;
 }
@@ -198,7 +196,6 @@ uint8_t rtc_get_rate() {
     cli();
     outb((NMI | REG_A), RTC_PORT);
     rate = inb(CMOS_PORT) & ~RATE_MASK;
-    sti();
 
     return rate;
 }
@@ -216,7 +213,6 @@ int rtc_is_on() {
     cli();
     outb(REG_B | NMI, RTC_PORT);
     is_on = (PI & inb(CMOS_PORT)) != 0;
-    sti();
 
     return is_on;
 }

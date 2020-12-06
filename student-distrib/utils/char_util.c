@@ -98,6 +98,7 @@ int32_t copy_buf(const uint8_t* source, uint8_t* dest, uint32_t nbytes)
     return 0;
 }
 
+
 /* dechar
  * DESCRIPTION: type casts a string to an uint8_t array
  * INPUTS: s -- array of chars
