@@ -6,24 +6,9 @@ Address                Physical                       Virtual
 
 0xB8000                video                          video
 ...
-0xC0000                terminal 1 - task 0            terminal 1 - task 0
-0xC1000                terminal 1 - task 1            terminal 1 - task 1
-0xC2000                terminal 1 - task 2            terminal 1 - task 2
-0xC3000                terminal 1 - task 3            terminal 1 - task 3
-0xC4000                terminal 1 - task 4            terminal 1 - task 4
-0xC5000                terminal 1 - task 5            terminal 1 - task 5
-0xC6000                terminal 2 - task 0            terminal 2 - task 0
-0xC7000                terminal 2 - task 1            terminal 2 - task 1
-0xC8000                terminal 2 - task 2            terminal 2 - task 2
-0xC9000                terminal 2 - task 3            terminal 2 - task 3
-0xCA000                terminal 2 - task 4            terminal 2 - task 4
-0xCB000                terminal 2 - task 5            terminal 2 - task 5
-0xCC000                terminal 3 - task 0            terminal 3 - task 0
-0xCD000                terminal 3 - task 1            terminal 3 - task 1
-0xCE000                terminal 3 - task 2            terminal 3 - task 2
-0xCF000                terminal 3 - task 3            terminal 3 - task 3
-0xD0000                terminal 3 - task 4            terminal 3 - task 4
-0xD1000                terminal 3 - task 5            terminal 3 - task 5
+0xC0000                terminal 1                     terminal 1
+0xC1000                terminal 2                     terminal 2
+0xC2000                terminal 3                     terminal 3
 
 ...
 

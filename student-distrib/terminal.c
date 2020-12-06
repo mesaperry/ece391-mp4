@@ -4,13 +4,15 @@
 #include "i8259.h"
 #include "lib.h"
 #include "x86_desc.h"
+#include "paging.h"
 
 #include "utils/char_util.h"
 
-#define KEYBOARD_IRQ 0x01
+#define KEYBOARD_IRQ  0x01
 #define KEYBOARD_PORT 0x60
 
-#define INPUT_CUTOFF 0x3E
+#define INPUT_CUTOFF  0x3E
+#define TERM_MEM      0xC0000
 
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
@@ -22,6 +24,14 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
     'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', ' ', '|',
     'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'
 };
+
+/* get_term_vid_addr
+ * Gets the starting address for that terminal's video cache
+ */
+uint32_t get_term_vid_addr(uint32_t term)
+{
+    return TERM_MEM + 4096*term;
+}
 
 /* terminal_init
  *
@@ -72,6 +82,12 @@ void terminal_init(void) {
 
   /* Set cursor to top-left of screen */
   update_cursor(SHELL_OFFSET,0);
+
+  /* Allocate terminal video memory pages */
+  for (x = 0; x < 2; x++) {
+    map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
+  }
+
 }
 
 /* set_term_process
@@ -311,7 +327,7 @@ uint32_t get_key_index(void)
   return key_index[current_terminal];
 }
 
-/* get_current_Terminal
+/* get_current_terminal
  * used by lib.c
  * Returns the value of the current terminal
  * Input - None
@@ -321,6 +337,46 @@ uint32_t get_current_terminal(void)
 {
   /* Return variable */
   return current_terminal;
+}
+
+/* task_switch
+ *  DESCRIPTION:
+ *  INPUT:
+ *  OUTPUT:
+ *  RETURNS:
+ *  SIDE EFFECTS:
+ */
+uint32_t term_switch(uint32_t term) {
+
+    uint32_t i;
+    uint32_t cur_term = get_current_terminal();
+    /* Save state ?? Maybe don't need to */
+    // temp_x[term] =
+    // temp_y[term] =
+    // wrapped[term] =
+
+    cli();
+
+    /* Map virtual video memory to physical video memory */
+    map_v_p(VIDEO, VIDEO, 0, 1, 1);
+
+    /* Map current terminal's virtual video memory to its own physical memory */
+    map_v_p(get_term_vid_addr(cur_term), get_term_vid_addr(cur_term), 0, 1, 1);
+
+    /* Copy video memory into current process' cold storage */
+    for (i = 0; i < 4096; i++) {
+        ((uint8_t*) get_term_vid_addr(cur_term))[i] = ((uint8_t*) VIDEO)[i];
+    }
+
+    /* Map next terminal's virtual video memory to its own physical memory */
+    map_v_p(get_term_vid_addr(term), get_term_vid_addr(term), 0, 1, 1);
+
+    /* Copy video memory into current process' cold storage */
+    for (i = 0; i < 4096; i++) {
+        ((uint8_t*) VIDEO)[i] = ((uint8_t*) get_term_vid_addr(cur_term))[i];
+    }
+
+    sti();
 }
 
 /*
@@ -464,191 +520,24 @@ int32_t keyboard_handler(void)
     }
     case F1: /* Handle switch to 1st terminal */
     {
-      if(alt_check) /* Check that alt button has been pressed */
-      {
-        if(current_terminal != 0) /* Only update if not already in terminal 1 */
+        if(alt_check && (current_terminal != 0))
         {
-          int z;
-          /* Print back spaces, the amount of the key_index */
-          for(z = 0; z < key_index[current_terminal]; z++)
-          {
-            print_backspace(); /* Erase the previous terminal's writings */
-          }
-          current_terminal = 0; /* Update variables for the new terminal */
-          if(wrapped) /* If key_index of old terminal is greater than 80, update variables accordingly for the new terminal */
-          {
-            current_line--;
-            wrapped = 0;
-          }
-
-
-          /* Print the current keyboard to the screen */
-          for(z = 0; z < key_index[current_terminal]; z++)
-          {
-            /* Get current screen_x and screen_y */
-            temp_x = get_screen_x() + 1;
-            temp_y = get_screen_y() + 1;
-
-            /* Update cursor  */
-            if(temp_x == 80 && !wrapped)
-            {
-              /* Print letter to screen */
-              putc(key_buffer[current_terminal][z]);
-
-              /* Check if screen_Y has reached end of screen */
-              if(temp_y == NUM_ROWS)
-              {
-                set_screen_y(temp_y);
-                scroll_handle();
-              }
-              else
-              {
-
-                wrap_around();
-              }
-
-              /* Declare wrapped and update line to print to after handling */
-              wrapped = 1;
-              current_line = temp_y;
-              update_cursor(0, temp_y);
-            }
-            else
-            {
-              /* Print letter to screen */
-              putc(key_buffer[current_terminal][z]);
-
-              /* Update cursor until, buffer is full */
-              update_cursor(get_screen_x(), get_screen_y());
-            }
-          }
+            term_switch(0);
         }
-      }
     }
     case F2:
     {
-      if(alt_check)
-      {
-        if(current_terminal != 1)
+        if(alt_check && (current_terminal != 1))
         {
-          int z;
-          /* Print back spaces, the amount of the key_index */
-          for(z = 0; z < key_index[current_terminal]; z++)
-          {
-            print_backspace();
-          }
-          current_terminal = 1;
-          if(wrapped)
-          {
-            current_line--;
-            wrapped = 0;
-          }
-
-
-          /* Print the current keyboard to the screen */
-          for(z = 0; z < key_index[current_terminal]; z++)
-          {
-            /* Get current screen_x and screen_y */
-            temp_x = get_screen_x() + 1;
-            temp_y = get_screen_y() + 1;
-
-            /* Update cursor  */
-            if(temp_x == 80 && !wrapped)
-            {
-              /* Print letter to screen */
-              putc(key_buffer[current_terminal][z]);
-
-              /* Check if screen_Y has reached end of screen */
-              if(temp_y == NUM_ROWS)
-              {
-
-                set_screen_y(temp_y);
-                scroll_handle();
-              }
-              else
-              {
-
-                wrap_around();
-              }
-
-              /* Declare wrapped and update line to print to after handling */
-              wrapped = 1;
-              current_line = temp_y;
-              update_cursor(0, temp_y);
-            }
-            else
-            {
-              /* Print letter to screen */
-              putc(key_buffer[current_terminal][z]);
-
-              /* Update cursor until, buffer is full */
-              update_cursor(get_screen_x(), get_screen_y());
-            }
-          }
+            term_switch(1);
         }
-      }
     }
     case F3:
     {
-      if(alt_check)
-      {
-        if(current_terminal != 2)
+        if(alt_check && (current_terminal != 2))
         {
-          int z;
-          /* Print back spaces, the amount of the key_index */
-          for(z = 0; z < key_index[current_terminal]; z++)
-          {
-            print_backspace();
-          }
-          current_terminal = 2;
-          if(wrapped)
-          {
-            current_line--;
-            wrapped = 0;
-          }
-
-
-          /* Print the current keyboard to the screen */
-          for(z = 0; z < key_index[current_terminal]; z++)
-          {
-            /* Get current screen_x and screen_y */
-            temp_x = get_screen_x() + 1;
-            temp_y = get_screen_y() + 1;
-
-            /* Update cursor  */
-            if(temp_x == 80 && !wrapped)
-            {
-              /* Print letter to screen */
-              putc(key_buffer[current_terminal][z]);
-
-              /* Check if screen_Y has reached end of screen */
-              if(temp_y == NUM_ROWS)
-              {
-
-                set_screen_y(temp_y);
-                scroll_handle();
-              }
-              else
-              {
-
-                wrap_around();
-              }
-
-              /* Declare wrapped and update line to print to after handling */
-              wrapped = 1;
-              current_line = temp_y;
-              update_cursor(0, temp_y);
-            }
-            else
-            {
-              /* Print letter to screen */
-              putc(key_buffer[current_terminal][z]);
-
-              /* Update cursor until, buffer is full */
-              update_cursor(get_screen_x(), get_screen_y());
-            }
-          }
+            term_switch(2);
         }
-      }
     }
     default:
     {
