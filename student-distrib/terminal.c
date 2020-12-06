@@ -82,7 +82,7 @@ void terminal_init(void) {
  */
 void set_term_process(int32_t pid)
 {
-  term_procs[pid] = current_terminal + 1; // Set process to hold value of the terminal it's being run in
+  term_procs[pid] = current_terminal; // Set process to hold value of the terminal it's being run in
 }
 
 /* remove_term_process
