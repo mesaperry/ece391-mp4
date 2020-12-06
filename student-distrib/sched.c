@@ -22,6 +22,25 @@ int32_t proc_disp(uint32_t proc) {
     }
 }
 
+// Return the video address for the terminal associated with a given process
+int32_t get_term_vid_addr(uint32_t proc)
+{
+  if(term_procs[proc] == 0)
+  {
+    return VIDEO_TERM_1;
+  }
+  else if(term_procs[proc] == 1)
+  {
+    return VIDEO_TERM_2;
+  }
+  else if(term_procs[proc] == 2)
+  {
+    return VIDEO_TERM_3;
+  }
+
+  return -1;
+}
+
 /* cycle_task
    DESCRIPTION: function to call for the OS to move to another task,
                   to be called periodically by PIT
@@ -52,7 +71,7 @@ uint32_t cycle_task() {
     /* Initialize variables */
 	uint32_t esp;
 	uint32_t ebp;
-    uint32_t cur_pcb_ptr = find_PCB(cur_p_id);
+  uint32_t cur_pcb_ptr = find_PCB(cur_p_id);
 	uint32_t next_pcb_ptr = find_PCB(next_p_id);
 
 	/* NOT closing all the files in the pcb (like we do in halt)*/
@@ -60,6 +79,9 @@ uint32_t cycle_task() {
     // TODO: DO SOMETHING WITH VIDMAP?
     //  if it was previously called on the incoming task, do we have to remap it?
     //  And if it was called on the outgoing task, do we have to unmap it?
+
+    // The answer to this ^^ was no right? Because it should only be called for the main task that has the screen spaces
+    // Although makes me wonder about if we run fish from multiple terminals
 
 
     /* === CONTEXT SWITCH === */
@@ -70,23 +92,27 @@ uint32_t cycle_task() {
     //  so that it can restore itself with a round-robin approach rather
     //  than a parent-child approach
 
-    // asm volatile ("                               \n\
-	// 	movl %%esp, %0                            \n\
-	// 	movl %%ebp, %1                            \n\
-	// 	"
-	// 	: "=r"(cur_pcb_ptr->esp), "=r"(cur_pcb_ptr->ebp)
-	// 	: /* no inputs */
-	// 	: "cc"
-	// );
-	// esp = next_pcb_ptr->esp;
-	// ebp = next_pcb_ptr->ebp;
+    // Switch current tasks esp/ebp to the one that's currently running on the next terminal
+	esp = next_pcb_ptr->esp;
+	ebp = next_pcb_ptr->ebp;
 
-    /* Update TSS */
-    // tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (next_p_id) * PCB_SIZE - 4;
+  /* Update TSS */
+  tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (next_p_id) * PCB_SIZE - 4;
 
-	/* Jump to execute return */
-	/* exec_ret jumps to assembly in execute */
-    // flush_tlb();
+  /* Jump to execute return */
+  /* exec_ret jumps to assembly in execute */
+  flush_tlb();
+  asm volatile("           		  	\n\
+      movb    %0, %%bl				\n\
+    movl    %1, %%esp               \n\
+    movl    %2, %%ebp               \n\
+    jmp		exec_ret				\n\
+    "
+    :
+    : "r"(status), "r"(esp), "r"(ebp)
+    : "cc", "memory"
+  );
+
 	// asm volatile("           		  	\n\
     // 	movb    %0, %%bl				\n\
 	// 	movl    %1, %%esp               \n\
