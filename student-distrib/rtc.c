@@ -56,10 +56,11 @@ void rtc_init() {
  */
 void rtc_handler() {
     /* Increment clk counter */
+    cli();
     clk = (clk + 1) % MAX_FREQ;
 
     /* Signal IR_flag */
-    if (virtual_freq != 0 && clk % virtual_freq == 0) {
+    if (virtual_freq != 0 && (clk % (MAX_FREQ / virtual_freq)) == 0) {
         IR_flag = 1;
     }
 

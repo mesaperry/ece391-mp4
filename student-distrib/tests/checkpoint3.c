@@ -258,8 +258,8 @@ void test_all_checkpoint3()
     //TEST_OUTPUT("read", open_syscall_test());
 //     printf("\n");
 // 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
-//     /* This ends with a page fault, so keep this last */
-//     TEST_OUTPUT("test page mapping", test_page_mapping());
+    /* This ends with a page fault, so keep this last */
+    // TEST_OUTPUT("test page mapping", test_page_mapping());
 	start_shell();
 	return;
 }

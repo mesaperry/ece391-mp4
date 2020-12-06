@@ -175,8 +175,11 @@ int32_t halt (uint8_t status)
 
 	putc('\n');
 
+	// TODO: TSS?
+
 	/* Jump to execute return */
 	/* exec_ret jumps to assembly in execute */
+	flush_tlb();
 	asm volatile("           		  	\n\
     	movb    %0, %%bl				\n\
 		movl    %1, %%esp               \n\
@@ -575,7 +578,8 @@ int32_t vidmap (uint8_t** screen_start)
 	}
 
 	/* Check if outside of program boundaries */
-	if((uint32_t)screen_start < USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET || (uint32_t)screen_start >= USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + MB_4)
+	if((uint32_t)screen_start < (USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET)
+	 	|| (uint32_t)screen_start >= (USER_PROCESS_START_VIRTUAL + MB_4))
 	{
 		return -1;
 	}
@@ -587,7 +591,6 @@ int32_t vidmap (uint8_t** screen_start)
 
 	// Set screen start to 64 MB
 	*screen_start = (uint8_t*)(USER_VIDMAP);
-
 	return USER_VIDMAP;
 }
 
