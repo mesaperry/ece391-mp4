@@ -59,8 +59,8 @@ uint32_t table_index;
 uint32_t key_index[MAX_TERMINAL_NUM];
 uint32_t key_offset;
 uint8_t key_buffer[MAX_TERMINAL_NUM][MAX_BUFF_LENGTH];
-uint32_t term_procs[MAX_DEVICES]; // Handles the maximum number of devices the system should run
-uint32_t running_procs[MAX_TERMINAL_NUM];  // The foremost processes in each terminal
+int32_t term_procs[MAX_DEVICES]; // Handles the maximum number of devices the system should run
+int32_t running_procs[MAX_TERMINAL_NUM];  // The foremost processes in each terminal
 
 void terminal_init(void);
 void set_term_process(int32_t pid);

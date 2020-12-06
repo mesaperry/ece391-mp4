@@ -260,6 +260,6 @@ void test_all_checkpoint3()
 // 	TEST_OUTPUT("test syscall interrupt", linkage_test(f));
     /* This ends with a page fault, so keep this last */
     // TEST_OUTPUT("test page mapping", test_page_mapping());
-	start_shell();
+	// start_shell();
 	return;
 }

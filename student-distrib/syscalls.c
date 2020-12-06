@@ -64,8 +64,10 @@ int32_t add_process(){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
-						set_term_process(i);
-						process_count++;
+			set_term_process(i);
+			process_count++;
+			running_procs[current_terminal] = i;
+			term_procs[i] = current_terminal;
             return i;
         }
     }
@@ -84,10 +86,12 @@ int32_t delete_process(int32_t pid){
         return -1;
     }
 
-		/* Free space for process pid */
+	/* Free space for process pid */
     procs[pid] = 0;
-		remove_term_process(pid);
-		process_count--;
+	remove_term_process(pid);
+	process_count--;
+	running_procs[current_terminal] = find_PCB(pid)->par_p_id;
+	term_procs[pid] = -1;
     return 0;
 }
 
@@ -106,7 +110,6 @@ int32_t halt (uint8_t status)
 	uint32_t i;
 	uint32_t physical_addr;
 
-
 	/* Restore parent data */
 	pcb_child_ptr = get_current_PCB();
 
@@ -120,9 +123,23 @@ int32_t halt (uint8_t status)
 
 		/* Write parent's process info into TSS */
 		tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (pcb_parent_ptr->p_id) * PCB_SIZE - 4;
-	}
 
-	delete_process(pcb_child_ptr->p_id);
+		/* Set stack pointer to previous PCB's location */
+		/* Kernel_mode_stack address here */
+		esp = pcb_parent_ptr->esp;
+		ebp = pcb_parent_ptr->ebp;
+		delete_process(pcb_child_ptr->p_id);
+	} else {
+		delete_process(pcb_child_ptr->p_id);
+		asm volatile("           		  	\n\
+			movb    %0, %%bl				\n\
+			jmp		exec_ret				\n\
+			"
+			:
+			: "r"(status)
+			: "cc", "memory"
+		);
+	}
 
 	/* Close all the files in the pcb */
 	for(i = 0; i < FILE_ARRAY_LEN; i++)
@@ -141,13 +158,6 @@ int32_t halt (uint8_t status)
 		/* Unmap 4kb page from user video memory */
 		map_v_p(USER_VIDMAP, 0, 0, 1, 1);
 	}
-
-	/* Restore parent paging */
-	/* Set stack pointer to previous PCB's location */
-	/* Kernel_mode_stack address here */
-	esp = pcb_parent_ptr->esp;
-	ebp = pcb_parent_ptr->ebp;
-	//restore_registers(pcb_parent_ptr->p_id);
 
 	putc('\n');
 
@@ -196,11 +206,9 @@ int32_t execute (const uint8_t* all_arguments)
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
 
 	/* Update process ids */
+	parent_process_id = running_procs[current_terminal];
 	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
-	parent_process_id = running_procs[current_terminal];
-	running_procs[process_id];
-	term_procs[process_id] = current_terminal;
 
 	/* Create next PCB */
 	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
@@ -258,14 +266,17 @@ int32_t execute (const uint8_t* all_arguments)
 
 	tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
 	tss.ss0 = KERNEL_DS;
-	asm volatile ("                               \n\
-		movl %%esp, %0                            \n\
-		movl %%ebp, %1                            \n\
-		"
-		: "=r"(pcb->esp), "=r"(pcb->ebp)
-		: /* no inputs */
-		: "cc"
-	);
+	if (parent_process_id >= 0) {
+		asm volatile ("                               \n\
+			movl %%esp, %0                            \n\
+			movl %%ebp, %1                            \n\
+			"
+			: "=r"(find_PCB(parent_process_id)->esp), "=r"(find_PCB(parent_process_id)->ebp)
+			: /* no inputs */
+			: "cc"
+		);
+	}
+
 
 	asm volatile("          				\n\
 		mov    $0x2B, %%ax                  \n\
@@ -294,7 +305,7 @@ int32_t execute (const uint8_t* all_arguments)
 	:
 	: "cc", "memory"
 	);
-	if (parent_process_id < 0) {
+	if (running_procs[current_terminal] < 0) {
 		printf("Haha! Nice try. Restarting shell...\n");
 		execute(dechar("shell"));
 	}

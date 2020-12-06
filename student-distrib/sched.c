@@ -36,6 +36,10 @@ uint32_t cycle_task() {
     uint32_t next_p_id = next_proc();
     /* Map virtual memory to appriate physical location */
 
+    if (cur_p_id < 0) {
+        execute(dechar("shell"));
+    }
+
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
     if (proc_disp(next_p_id)) {
