@@ -66,6 +66,7 @@ void terminal_init(void) {
   shell_check = 0;
   alt_check = 0;
   current_terminal = 0;
+  running_terminal = 0;
 
   for(y = 0; y < MAX_TERMINAL_NUM; y++)
   {
@@ -78,6 +79,11 @@ void terminal_init(void) {
   for(x = 0; x < MAX_DEVICES; x++)
   {
     term_procs[x] = -1;
+  }
+
+  for(x = 0; x < MAX_TERMINAL_NUM; x++)
+  {
+    running_procs[x] = -1;
   }
 
   /* Set cursor to top-left of screen */

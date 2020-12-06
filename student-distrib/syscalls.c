@@ -91,32 +91,6 @@ int32_t delete_process(int32_t pid){
     return 0;
 }
 
-/* Helper function to restore current registers into a pid */
-void restore_registers(int32_t pid)
-{
-	pcb_t* pcb = find_PCB(pid);
-	asm volatile ("                                 \
-		movl %0, %%eax                            \n\
-		movl %1, %%ebx                            \n\
-		movl %2, %%ecx                            \n\
-		movl %3, %%edx                            \n\
-		"
-		: /* no outputs */
-		: "r"(pcb->eax), "r"(pcb->ebx), "r"(pcb->ecx), "r"(pcb->edx)
-		: "cc"
-	);
-	asm volatile ("                                 \
-		movl %0, %%esp                            \n\
-		movl %1, %%ebp                            \n\
-		movl %2, %%esi                            \n\
-		movl %3, %%edi                            \n\
-		"
-		: /* no outputs */
-		: "r"(pcb->esp), "r"(pcb->ebp), "r"(pcb->esi), "r"(pcb->edi)
-		: "cc"
-	);
-}
-
 /*
 * int32_t halt(int32_t fd);
 * DESCRIPTION: clean-up process
@@ -125,8 +99,8 @@ void restore_registers(int32_t pid)
 int32_t halt (uint8_t status)
 {
 	/* Initialize variables */
-	pcb_t* pcb_parent_ptr = NULL;
 	pcb_t* pcb_child_ptr;
+	pcb_t* pcb_parent_ptr = NULL;
 	uint32_t esp;
 	uint32_t ebp;
 	uint32_t i;
@@ -137,8 +111,8 @@ int32_t halt (uint8_t status)
 	pcb_child_ptr = get_current_PCB();
 
 	/* Setting parent ptr, if it exists */
-	if (pcb_child_ptr->p_id > 0) {
-		pcb_parent_ptr = find_PCB((pcb_child_ptr->p_id) - 1);
+	if (pcb_child_ptr->par_p_id >= 0) {
+		pcb_parent_ptr = find_PCB(pcb_child_ptr->par_p_id);
 
 		/* If there are still active PCBs, map virtual address to parent pointers p_id */
 		physical_addr = USER_PROCESS_START_PHYSICAL + pcb_parent_ptr->p_id * USER_PROCESS_SIZE;
@@ -171,8 +145,8 @@ int32_t halt (uint8_t status)
 	/* Restore parent paging */
 	/* Set stack pointer to previous PCB's location */
 	/* Kernel_mode_stack address here */
-	esp = pcb_child_ptr->esp;
-	ebp = pcb_child_ptr->ebp;
+	esp = pcb_parent_ptr->esp;
+	ebp = pcb_parent_ptr->ebp;
 	//restore_registers(pcb_parent_ptr->p_id);
 
 	putc('\n');
@@ -199,7 +173,7 @@ int32_t execute (const uint8_t* all_arguments)
 {
 	pcb_t* pcb;
 	uint8_t all_arguments_copy[MAX_BUFF_LENGTH];
-	int32_t command_length, process_id, i, output;
+	int32_t command_length, process_id, parent_process_id, i, output;
 	uint32_t virtual_stack_addr, physical_addr;
 	dentry_t dentry;
 	fd_t stdin;
@@ -221,8 +195,18 @@ int32_t execute (const uint8_t* all_arguments)
 	/* Paging: load user level program loaded in page starting at 128MB */
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
 
+	/* Update process ids */
 	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
+	parent_process_id = running_procs[current_terminal];
+	running_procs[process_id];
+	term_procs[process_id] = current_terminal;
+
+	/* Create next PCB */
+	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
+
+	/* Save extra parameters to global variable, stripped of leading spaces */
+	get_next_arguments(all_arguments_copy, pcb->arg_buffer);
 
 	/* Need to double check the values i the below formulas */
 	physical_addr = USER_PROCESS_START_PHYSICAL + process_id * USER_PROCESS_SIZE;
@@ -237,32 +221,13 @@ int32_t execute (const uint8_t* all_arguments)
 	read_dentry_by_name(executable, &dentry);
 	read_file_bytes_by_name(executable, (uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET), file_size(executable));
 
+	/* Create eip_buf to put into EIP location in asm */
 	uint32_t* eip_ptr = (uint32_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET);
 	uint8_t eip_buf[4];
 	for (i = 0; i < 4; i++)
 	{
   		eip_buf[i] = *(uint8_t*)(USER_PROCESS_START_VIRTUAL + USER_PROCESS_IMAGE_OFFSET + ELF_OFFSET + 3 - i);
 	}
-	//pass eip_buf into EIP location in asm
-
-
-	/* SHOW USER SPACE DATA */
-	// print_buf((uint8_t*)USER_PROCESS_START_VIRTUAL, 20);
-	// printf("\n");
-	// printf("Virtual memory EIP ptr without flipping  -without flipping: %x\n", eip_ptr);
-	// printf("Virtual memory EIP ptr deref (EIP)       -without flipping: %x\n", *eip_ptr);
-	// printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*eip_ptr));
-	// printf("Virtual memory EIP backwards                                %x\n", *(uint32_t*)(eip_buf));
-	// printf("Virtual memory EIP deref                 -without flipping: %x\n", *(uint32_t*)(*(uint32_t*)(eip_buf)));
-
-	// printf("user_mode_stack_address: %x\n", (uint32_t*)virtual_stack_addr);
-	// printf("user_mode_stack_address deref: %x\n", *(uint32_t*)virtual_stack_addr);
-
-	/* Create next PCB */
-	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
-
-	/* Save extra parameters to global variable, stripped of leading spaces */
-	get_next_arguments(all_arguments_copy, pcb->arg_buffer);
 
 	/* Set fd = 0 and fd = 1 in file_array */
 	stdin.fops = &terminal_funcs;
@@ -289,6 +254,7 @@ int32_t execute (const uint8_t* all_arguments)
 
 	/* Update PCB values */
 	pcb->p_id = process_id;
+	pcb->par_p_id = parent_process_id;
 
 	tss.esp0 = (KERNEL_MEMORY_ADDR + MB_4) - (process_id) * PCB_SIZE - 4;
 	tss.ss0 = KERNEL_DS;
@@ -328,7 +294,7 @@ int32_t execute (const uint8_t* all_arguments)
 	:
 	: "cc", "memory"
 	);
-	if (process_count == 0) {
+	if (parent_process_id < 0) {
 		printf("Haha! Nice try. Restarting shell...\n");
 		execute(dechar("shell"));
 	}

@@ -1,29 +1,25 @@
 #include "sched.h"
 #include "lib.h"
 #include "paging.h"
+#include "terminal.h"
 
 // Find the current process id which the OS is currently giving CPU time to
 int32_t cur_proc() {
-    // TODO
-    return -1;
+    return running_procs[running_terminal];
 }
 
 // Find the next process id which the OS will give CPU time to next
 int32_t next_proc() {
-    // TODO
-    return -1;
+    return running_procs[(running_terminal + 1) % 3];
 }
 
-// Return whether a process is currently open in a terminal. False: 0, True: 1
-int32_t proc_in_term() {
-    // TODO
-    return -1;
-}
-
-// Gets the address for non-display memory for a specific process
-uint32_t proc_non_disp_addr(uint32_t p_id) {
-    // TODO
-    return NULL;
+// Return whether a process is currently displayed. False: 0, True: 1
+int32_t proc_disp(uint32_t proc) {
+    if (term_procs[proc] == current_terminal) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /* cycle_task
@@ -42,14 +38,14 @@ uint32_t cycle_task() {
 
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
-    if (proc_in_term(next_p_id)) {
+    if (proc_disp(next_p_id)) {
         map_v_p(VIDEO, VIDEO, 0, 1, 1);
     }
 
     // if next process is not in open terminal, map virtual video memory
     //   to task's non-display memory
     else {
-        map_v_p(VIDEO, proc_non_disp_addr(next_p_id), 0, 1, 1);
+        map_v_p(VIDEO, get_term_vid_addr(term_procs[next_p_id]), 0, 1, 1);
     }
 
     /* TASK SWITCH (do something similar to HALT) */

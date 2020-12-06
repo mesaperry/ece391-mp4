@@ -57,14 +57,9 @@ typedef struct pcb {
 	fd_t file_array[FILE_ARRAY_LEN];
  	uint8_t arg_buffer[MAX_BUFF_LENGTH];
 	int32_t p_id;
+	int32_t par_p_id;
   	uint32_t esp;
   	uint32_t ebp;
-  	uint32_t esi;
-  	uint32_t edi;
-  	uint32_t eax;
-  	uint32_t ebx;
-  	uint32_t ecx;
-  	uint32_t edx;
 } pcb_t;
 
 /* Used for read/write/open/close */
