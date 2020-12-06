@@ -81,18 +81,17 @@ void terminal_init(void) {
     term_procs[x] = -1;
   }
 
-  for(x = 0; x < MAX_TERMINAL_NUM; x++)
-  {
+  /* Allocate multiple-terminal info */
+  for (x = 0; x < MAX_TERMINAL_NUM; x++) {
     running_procs[x] = -1;
+    map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
+    for(y = 0; y < PAGE_SIZE_KB; y++) {
+      ((int8_t*) TERM_MEM + (PAGE_SIZE_KB * x))[y] = ' ';
+    }
   }
 
   /* Set cursor to top-left of screen */
   update_cursor(SHELL_OFFSET,0);
-
-  /* Allocate terminal video memory pages */
-  for (x = 0; x < 2; x++) {
-    map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
-  }
 
 }
 
