@@ -22,25 +22,6 @@ int32_t proc_disp(uint32_t proc) {
     }
 }
 
-// Return the video address for the terminal associated with a given process
-int32_t get_term_vid_addr(uint32_t proc)
-{
-  if(term_procs[proc] == 0)
-  {
-    return VIDEO_TERM_1;
-  }
-  else if(term_procs[proc] == 1)
-  {
-    return VIDEO_TERM_2;
-  }
-  else if(term_procs[proc] == 2)
-  {
-    return VIDEO_TERM_3;
-  }
-
-  return -1;
-}
-
 /* cycle_task
    DESCRIPTION: function to call for the OS to move to another task,
                   to be called periodically by PIT
@@ -53,6 +34,7 @@ uint32_t cycle_task() {
     /* Get next process id which we will switch to */
     uint32_t cur_p_id = cur_proc();
     uint32_t next_p_id = next_proc();
+    uint32_t status = 1;
     /* Map virtual memory to appriate physical location */
 
     // if next process is in open terminal, map virtual video memory to
