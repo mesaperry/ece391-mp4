@@ -352,7 +352,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes)
 
     /* Check for valid fd */
     /* fd = 1 is write only */
-    if(buf == NULL || fd < 0 || fd > MAX_FD || fd == 1)
+    if(buf == NULL || fd < 0 || fd > MAX_FD || fd == 1 || nbytes < 0)
     {
         return -1;
     }

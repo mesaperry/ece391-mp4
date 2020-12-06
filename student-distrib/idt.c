@@ -8,6 +8,7 @@
 #define SYS_CALL   0x80
 #define KEYBOARD_VEC 0x60
 #define RTC_VEC      0x70
+#define PIT_VEC     0x41
 // assembly link declarations
 extern void irq0();
 extern void irq1();
@@ -29,6 +30,7 @@ extern void sys_call();
 
 void keyboard_intr();
 void rtc_intr();
+void PIT_intr();
 
 void setup_idt_exceptions();
 void setup_idt_exceptions();
@@ -180,6 +182,7 @@ void init_idt()
     //set up keyboard and rtc
     SET_IDT_ENTRY(idt[KEYBOARD_VEC], keyboard_intr);
     SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
+    SET_IDT_ENTRY(idt[PIT_VEC], PIT_intr);
 }
 
 ////INTERRUPTS AND EXCEPTIONS? WHERE DO I GET THESE/what do i print

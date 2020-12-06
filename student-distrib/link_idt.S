@@ -16,10 +16,10 @@
 # .extern gen_sys_call
 
 # setup for keyboard and rtc
-.global keyboard_intr, rtc_intr
+.global keyboard_intr, rtc_intr, PIT_intr
 
 # handlers for keyboard and rtc
-.extern keyboard_handler, rtc_handler
+.extern keyboard_handler, rtc_handler, PIT_handler
 
 # interrupt handler linkages for keyboard and rtc
 # clear intr
@@ -44,6 +44,13 @@ rtc_intr:
     popal
     iret
 
+PIT_intr:
+    pushal
+    pushfl
+    call PIT_handler
+    popfl
+    popal
+    iret
 # irq interrupt handler linkage for pic
 
 irq0:
