@@ -191,9 +191,6 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
 
     return byte_count;
 }
-///// larger than 32 retrun -1 
-//read_data(file->inode, file->pos, buf, nbytes)
-
 /*
  * put_next_dir_name
  * DESCRIPTION: Reads the next file in the filesys_img
@@ -278,6 +275,7 @@ dir_read(int32_t fd, void* buf, int32_t nbytes)
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes)
 {
     pcb_t* process = get_current_PCB();
+    
     fd_t* file = &process->file_array[(uint32_t)fd];
 
     // uint32_t size;

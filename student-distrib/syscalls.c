@@ -384,6 +384,8 @@ int32_t open(const uint8_t* filename)
 		/* Get current PCB */
 		pcb_t* pcb = get_current_PCB();
 
+	if (strlen(filename) > 32) return -1;
+
     for(index = 2; index < FILE_ARRAY_LEN; index++)
 		{
 				/* Find an unused file in file_array */
