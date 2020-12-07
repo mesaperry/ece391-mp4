@@ -25,6 +25,9 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
     'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'
 };
 
+int last_screen_x[MAX_TERMINAL_NUM];
+int last_screen_y[MAX_TERMINAL_NUM];
+
 /* get_term_vid_addr
  * Gets the starting address for that terminal's video cache
  */
@@ -86,7 +89,10 @@ void terminal_init(void) {
     running_procs[x] = -1;
     map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
     memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, PAGE_SIZE_KB);
+    last_screen_x[x] = SHELL_OFFSET;
+    last_screen_y[x] = 0;
   }
+
 
   /* Set cursor to top-left of screen */
   update_cursor(SHELL_OFFSET,0);
@@ -354,6 +360,9 @@ uint32_t term_switch(uint32_t term) {
     uint32_t i;
     uint32_t cur_term = get_current_terminal();
 
+    last_screen_x[cur_term] = get_screen_x();
+    last_screen_y[cur_term] = get_screen_y();
+
     /* Copy video memory into current process' cold storage */
     memcpy((uint32_t) get_term_vid_addr(cur_term), (uint32_t) VIDEO, PAGE_SIZE_KB);
 
@@ -361,6 +370,9 @@ uint32_t term_switch(uint32_t term) {
     memcpy((uint32_t) VIDEO, (uint32_t) get_term_vid_addr(term), PAGE_SIZE_KB);
 
     current_terminal = term;
+    set_screen_x(last_screen_x[term]);
+    set_screen_y(last_screen_y[term]);
+    update_cursor(last_screen_x[term], last_screen_y[term]);
 
 }
 
