@@ -81,9 +81,8 @@ extern void rtc_handler() {
     /* Signal IR_flag */
     // tried: setting IR->1 without if: THIS WORKS BUT BREAKS pingpong
     
-    IR_flag = 1;
     if (virtual_freq != 0 && (clk % (MAX_FREQ / virtual_freq)) == 0) {
-       // IR_flag = 1;
+       IR_flag = 1;
     }
 
     /* Select Register C and throw away contents */
