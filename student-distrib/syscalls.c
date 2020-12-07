@@ -526,7 +526,7 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 {
 	pcb_t* pcb = get_current_PCB();
 	/* pcb->arg_buffer must have EOS */
-	if ((string_length(pcb->arg_buffer) + 1) > nbytes ||(pcb->arg_buffer == NULL) || buf == NULL || nbytes < 0 || strlen(pcb->arg_buffer) == 0) return -1;
+	if ((string_length(pcb->arg_buffer) + 1) > nbytes ||(pcb->arg_buffer == NULL) || buf == NULL || strlen(pcb->arg_buffer) == 0) return -1;
 	copy_string(pcb->arg_buffer, buf);
 	/* another option... */
 	// copy_buf(pcb->arg_buffer, buf, nbytes);

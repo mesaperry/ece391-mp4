@@ -7,7 +7,13 @@
 #define INT_INTERVAL                 15 // timer interrupt interval in ms
 #define PIT_IRQ                     0x00
 
-
+/*  pit_init
+ *  DESCRIPTION: Initalizes PIT and sets channel 0 starting frequency
+ *  INPUT: None
+ *  OUTPUT: None
+ *  RETURNS: None
+ *  SIDE EFFECTS: enables the PIT on the PIC and give a starting frequency
+ */
 void pit_init() {
     uint16_t divisor = 1193182 * INT_INTERVAL / 1000;
 

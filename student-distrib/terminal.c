@@ -80,10 +80,16 @@ void terminal_init(void) {
   for (x = 0; x < MAX_TERMINAL_NUM; x++) {
     running_procs[x] = -1;
     map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
+<<<<<<< HEAD
+    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
+    last_screen_x[x] = SHELL_OFFSET;
+=======
     memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, PAGE_SIZE_KB);
     last_screen_x[x] = 0;
+>>>>>>> 4cb134aaf292ce2497e8a30a27fdce71e6454e29
     last_screen_y[x] = 0;
   }
+
 
 
   /* Set cursor to top-left of screen */
@@ -346,12 +352,12 @@ uint32_t get_display_terminal(void)
   return display_terminal;
 }
 
-/* task_switch
- *  DESCRIPTION:
- *  INPUT:
- *  OUTPUT:
- *  RETURNS:
- *  SIDE EFFECTS:
+/* term_switch
+ *  DESCRIPTION: Switches the current terminal with the selected terminal
+ *  INPUT: term - the terminal number to switch to
+ *  OUTPUT: None
+ *  RETURNS: returns 0 on success
+ *  SIDE EFFECTS: maps the selected termnial to the correct video memory location and saves previous terminal data and pos
  */
 uint32_t switch_display_terminal(uint32_t term) {
 
@@ -362,10 +368,10 @@ uint32_t switch_display_terminal(uint32_t term) {
     last_screen_y[cur_term] = get_screen_y();
 
     /* Copy video memory into current process' cold storage */
-    memcpy((uint32_t) get_term_vid_addr(cur_term), (uint32_t) VIDEO, PAGE_SIZE_KB);
+    memcpy((void *) get_term_vid_addr(cur_term), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
 
     /* Copy new video memory into physical video memory */
-    memcpy((uint32_t) VIDEO, (uint32_t) get_term_vid_addr(term), PAGE_SIZE_KB);
+    memcpy((void *) VIDEO, (uint32_t) get_term_vid_addr(term), (uint32_t) PAGE_SIZE_KB);
 
     /* Restore State */
     display_terminal = term;
