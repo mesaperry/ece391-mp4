@@ -36,6 +36,7 @@ void cycle_task_force(uint32_t next_terminal) {
     if (cur_p_id < 0) {
         execute(dechar("shell"));
     }
+/// yes, but need to save current esp and ebp, do not need to save eip, never return from line 46, need full algo for base shells
 
     // SAVE ESP/EBP
     pcb_t* cur_pcb_ptr = find_PCB(cur_p_id);
@@ -62,8 +63,6 @@ void cycle_task_force(uint32_t next_terminal) {
     }
 
     /* CONTEXT SWITCH (do something similar to HALT) */
-
-    /* Initialize variables */
 
 	/* NOT closing all the files in the pcb (like we do in halt)*/
 
