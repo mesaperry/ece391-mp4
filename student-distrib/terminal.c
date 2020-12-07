@@ -60,8 +60,6 @@ void terminal_init(void) {
   clear_offset[2] = 0;
   shell_check = 0;
   alt_check = 0;
-  display_terminal = 0;
-  running_terminal = 0;
 
   for(y = 0; y < MAX_TERMINAL_NUM; y++)
   {
@@ -71,21 +69,11 @@ void terminal_init(void) {
     }
   }
 
-  for(x = 0; x < MAX_DEVICES; x++)
-  {
-    term_procs[x] = -1;
-  }
-
   /* Allocate multiple-terminal info */
   for (x = 0; x < MAX_TERMINAL_NUM; x++) {
-    running_procs[x] = -1;
-    map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
-    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
     last_screen_x[x] = 0;
     last_screen_y[x] = 0;
   }
-
-
 
   /* Set cursor to top-left of screen */
   update_cursor(SHELL_OFFSET,0);
@@ -525,10 +513,8 @@ int32_t keyboard_handler(void)
         if(/*alt_check &&*/ (display_terminal != 0))
         {
             switch_display_terminal(0);
-            if (running_procs[0] < 0) {
-                send_eoi(1);
-                execute(dechar("shell"));
-            }
+            send_eoi(1);
+            switch_running_terminal(0);
         }
         goto SEND_EOI;
     }
@@ -537,10 +523,8 @@ int32_t keyboard_handler(void)
         if(/*alt_check &&*/ (display_terminal != 1))
         {
             switch_display_terminal(1);
-            if (running_procs[1] < 0) {
-                send_eoi(1);
-                execute(dechar("shell"));
-            }
+            send_eoi(1);
+            switch_running_terminal(1);
         }
         goto SEND_EOI;
     }
@@ -549,10 +533,8 @@ int32_t keyboard_handler(void)
         if(/*alt_check &&*/ (display_terminal != 2))
         {
             switch_display_terminal(2);
-            if (running_procs[2] < 0) {
-                send_eoi(1);
-                execute(dechar("shell"));
-            }
+            send_eoi(1);
+            switch_running_terminal(2);
         }
         goto SEND_EOI;
     }

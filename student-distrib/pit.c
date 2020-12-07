@@ -17,7 +17,6 @@
 void pit_init() {
     uint16_t divisor = 1193182 * INT_INTERVAL / 1000;
 
-    cli();
     outb(0x36, 0x43);
     outb((uint8_t) (divisor & 0xFF), 0x40);
     outb((uint8_t) ((divisor >> 8) & 0xFF), 0x40);

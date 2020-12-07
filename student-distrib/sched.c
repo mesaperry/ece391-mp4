@@ -15,6 +15,23 @@ int32_t proc_disp(uint32_t proc) {
     }
 }
 
+/* Scheduling initalize */
+void sched_init() {
+    display_terminal = 0;
+    running_terminal = 0;
+
+    /* Allocate multiple-terminal info */
+    int x;
+    for(x = 0; x < MAX_DEVICES; x++) {
+        term_procs[x] = -1;
+    }
+    for (x = 0; x < MAX_TERMINAL_NUM; x++) {
+        running_procs[x] = -1;
+        map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
+        memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
+    }
+}
+
 /*  cycle_task
 *   DESCRIPTION: function to call for the OS to move to another task,
 *                  to be called periodically by PIT
@@ -36,14 +53,15 @@ void cycle_task() {
 */
 void switch_running_terminal(uint32_t next_terminal) {
     /* Get next process id which we will switch to */
-    uint32_t cur_p_id = running_procs[running_terminal];
-    uint32_t next_p_id = running_procs[next_terminal];
-    running_terminal = next_terminal;
+    int32_t cur_p_id = running_procs[running_terminal];
+    int32_t next_p_id = running_procs[next_terminal];
 
-    // if (next_p_id < 0) {
-    //     execute(dechar("shell"));
-    // }
-/// yes, but need to save current esp and ebp, do not need to save eip, never return from line 46, need full algo for base shells
+    if (next_p_id < 0) {
+        set_video_mem((char*) VIDEO);
+        execute(dechar("shell"));
+    }
+
+    running_terminal = next_terminal;
 
     // SAVE ESP/EBP
     pcb_t* cur_pcb_ptr = find_PCB(cur_p_id);
