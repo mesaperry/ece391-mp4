@@ -15,18 +15,25 @@ int32_t proc_disp(uint32_t proc) {
     }
 }
 
-/* cycle_task
-   DESCRIPTION: function to call for the OS to move to another task,
-                  to be called periodically by PIT
-   INPUTS: none
-   OUTPUTS: none
-   RETURNS: none
-   SIDE EFFECTS: switches tasks running in CPU
+/*  cycle_task
+*   DESCRIPTION: function to call for the OS to move to another task,
+*                  to be called periodically by PIT
+*   INPUTS: none
+*   OUTPUTS: none
+*   RETURNS: none
+*   SIDE EFFECTS: switches tasks running in CPU
 */
 void cycle_task() {
     cycle_task_force((running_terminal + 1) % 3);
 }
 
+/*  cycle_task_force
+*   DESCRIPTION: function to call for the terminal to move to another task, on another terminal
+*   INPUTS: The terminal to switch to 
+*   OUTPUTS: None
+*   RETURNS: None
+*   SIDE EFFECTS: switches tasks running in CPU
+*/
 void cycle_task_force(uint32_t next_terminal) {
     /* Get next process id which we will switch to */
     uint32_t cur_p_id = running_procs[running_terminal];
