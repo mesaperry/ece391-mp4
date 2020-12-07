@@ -80,13 +80,8 @@ void terminal_init(void) {
   for (x = 0; x < MAX_TERMINAL_NUM; x++) {
     running_procs[x] = -1;
     map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
-<<<<<<< HEAD
-    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
-    last_screen_x[x] = SHELL_OFFSET;
-=======
-    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, PAGE_SIZE_KB);
+    memcpy((void *) get_term_vid_addr(x), (void *) VIDEO, PAGE_SIZE_KB);
     last_screen_x[x] = 0;
->>>>>>> 4cb134aaf292ce2497e8a30a27fdce71e6454e29
     last_screen_y[x] = 0;
   }
 
@@ -368,10 +363,10 @@ uint32_t term_switch(uint32_t term) {
     last_screen_y[cur_term] = get_screen_y();
 
     /* Copy video memory into current process' cold storage */
-    memcpy((void *) get_term_vid_addr(cur_term), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
+    memcpy((void *) get_term_vid_addr(cur_term), (void *) VIDEO, (uint32_t) PAGE_SIZE_KB);
 
     /* Copy new video memory into physical video memory */
-    memcpy((void *) VIDEO, (uint32_t) get_term_vid_addr(term), (uint32_t) PAGE_SIZE_KB);
+    memcpy((void *) VIDEO, (void *) get_term_vid_addr(term), (uint32_t) PAGE_SIZE_KB);
 
     /* Restore State */
     current_terminal = term;
@@ -525,37 +520,67 @@ int32_t keyboard_handler(void)
 
       goto SEND_EOI;
     }
-    case /*F1*/ 0x1A: /* Handle switch to 1st terminal */
+    case F1: /* Handle switch to 1st terminal */
     {
-        if(/*alt_check &&*/ (current_terminal != 0))
+        if(alt_check && (current_terminal != 0))
         {
             term_switch(0);
             if (running_procs[0] < 0) {
-                send_eoi(1);
                 execute(dechar("shell"));
             }
         }
         goto SEND_EOI;
     }
-    case /*F2*/ 0x1B:
+    case 0x1A:
     {
-        if(/*alt_check &&*/ (current_terminal != 1))
+        if(current_terminal != 0)
+        {
+            term_switch(0);
+            if (running_procs[0] < 0) {
+                execute(dechar("shell"));
+            }
+        }
+        goto SEND_EOI;
+    }
+    case F2:
+    {
+        if(alt_check && (current_terminal != 1))
         {
             term_switch(1);
             if (running_procs[1] < 0) {
-                send_eoi(1);
                 execute(dechar("shell"));
             }
         }
         goto SEND_EOI;
     }
-    case /*F3*/ 0x2B:
+    case 0x1B:
     {
-        if(/*alt_check &&*/ (current_terminal != 2))
+        if(current_terminal != 1)
+        {
+            term_switch(1);
+            if (running_procs[1] < 0) {
+                execute(dechar("shell"));
+            }
+        }
+        goto SEND_EOI;
+    }
+    case F3:
+    {
+        if(alt_check && (current_terminal != 2))
         {
             term_switch(2);
             if (running_procs[2] < 0) {
-                send_eoi(1);
+                execute(dechar("shell"));
+            }
+        }
+        goto SEND_EOI;
+    }
+    case 0x2B:
+    {
+        if(current_terminal != 2)
+        {
+            term_switch(2);
+            if (running_procs[2] < 0) {
                 execute(dechar("shell"));
             }
         }
