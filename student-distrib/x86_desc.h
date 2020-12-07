@@ -48,7 +48,7 @@ extern void irq12_handler(void);
 extern void irq13_handler(void);
 extern void irq14_handler(void);
 extern void irq15_handler(void);
-
+extern void rtc_handler(void);
 /* This structure is used to load descriptor base registers
  * like the GDTR and IDTR */
 typedef struct x86_desc {

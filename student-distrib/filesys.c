@@ -188,6 +188,7 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
         buffer[byte_count] = data_blocks[inode.data_indices[(byte_count + offset) >> BLOCK_SIZE_LOG_2]]
                                 .data[(byte_count + offset) & BLOCK_MASK];
     }
+    // SOMETHING WRONG FISH
 
     return byte_count;
 }

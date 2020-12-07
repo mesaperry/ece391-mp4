@@ -44,7 +44,23 @@ extern void rtc_intr();
  * SIDE EFFECTS: Sets up RTC IDT
  */
 void rtc_init() {
-    SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
+    // SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
+    /* Clear IF */
+    cli();
+
+    /* Turn on IRQ 8 */
+    /* Select Reg B and disable NMI */
+    outb(REG_B | NMI, RTC_PORT);
+
+    /* Write prev value, or'd with 0x40 */
+    outb(PI | inb(CMOS_PORT), CMOS_PORT);
+
+    /* Set physical frequency to max */
+    cli();
+    outb((NMI | REG_A), RTC_PORT);
+    outb((inb(CMOS_PORT) & RATE_MASK) | MAX_RATE, CMOS_PORT);
+    /* Enable interrupt */
+    enable_irq(RTC_IRQ);
 }
 
 /* rtc_handler
@@ -54,14 +70,17 @@ void rtc_init() {
  * INPUT/OUTPUT: None
  * SIDE EFFECTS: Sends end of interrupt signal
  */
-void rtc_handler() {
+extern void rtc_handler() {
     /* Increment clk counter */
     cli();
     clk = (clk + 1) % MAX_FREQ;
 
     /* Signal IR_flag */
+    // tried: setting IR->1 without if
+    
+
     if (virtual_freq != 0 && (clk % (MAX_FREQ / virtual_freq)) == 0) {
-        IR_flag = 1;
+        IR_flag = 1; 
     }
 
     /* Select Register C and throw away contents */
@@ -70,6 +89,7 @@ void rtc_handler() {
 
     /* Send end of interrupt signal */
     send_eoi(RTC_IRQ);
+
 }
 
 /* rtc_read
@@ -80,10 +100,17 @@ void rtc_handler() {
  * SIDE EFFECTS: Makes thread wait
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
-    IR_flag = 0;
+    
+    // tried: putting sti() in while, putting IR->0 after, removed cli()
+    // IR_flag = 0;
     sti();
-    while(!IR_flag); // wait for interrupt
-    cli();
+    while(!IR_flag){
+       
+    }
+    // sti();
+    // wait for interrupt
+    IR_flag = 0;
+    //cli();
     return 0;
 }
 
@@ -123,7 +150,7 @@ int32_t rtc_write( int32_t fd,
 
     virtual_freq = frequency;
 
-    return 0;
+    return nbytes;
 }
 
 /* rtc_open
@@ -135,20 +162,7 @@ int32_t rtc_write( int32_t fd,
  */
 int32_t rtc_open(const uint8_t* filename) {
 
-    /* Clear IF */
-    cli();
 
-    /* Turn on IRQ 8 */
-    /* Select Reg B and disable NMI */
-    outb(REG_B | NMI, RTC_PORT);
-
-    /* Write prev value, or'd with 0x40 */
-    outb(PI | inb(CMOS_PORT), CMOS_PORT);
-
-    /* Set physical frequency to max */
-    cli();
-    outb((NMI | REG_A), RTC_PORT);
-    outb((inb(CMOS_PORT) & RATE_MASK) | MAX_RATE, CMOS_PORT);
 
     /* Set virtual frequency to default */
     rtc_write(0, &DEF_FREQ, sizeof(DEF_FREQ));
@@ -156,9 +170,8 @@ int32_t rtc_open(const uint8_t* filename) {
     /* Reset clk counter */
     clk = 0;
 
-    /* Enable interrupt */
-    enable_irq(RTC_IRQ);
-
+  
+// sets starting freq
     return 0;
 }
 
@@ -170,17 +183,7 @@ int32_t rtc_open(const uint8_t* filename) {
  * SIDE EFFECTS: Disables RTC interrupts
  */
 int32_t rtc_close(int32_t fd) {
-    /* Disable IRQs */
-    disable_irq(RTC_IRQ);
-
-    /* Clear IF */
-    cli();
-
-    /* Turn on IRQ 8 */
-    /* Select Reg B and disable NMI */
-    outb((NMI | REG_B), RTC_PORT);
-    outb((inb(CMOS_PORT) & ~PI), CMOS_PORT);
-
+  
     return 0;
 }
 
