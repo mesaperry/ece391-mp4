@@ -519,7 +519,7 @@ int32_t keyboard_handler(void)
 
       goto SEND_EOI;
     }
-    case 0x1A: /* Handle switch to 1st terminal */
+    case F1: /* Handle switch to 1st terminal */
     {
         if(alt_check && (current_terminal != 0))
         {
@@ -527,7 +527,7 @@ int32_t keyboard_handler(void)
         }
         goto SEND_EOI;
     }
-    case 0x1B:
+    case F2:
     {
         if(alt_check && (current_terminal != 1))
         {
@@ -535,7 +535,7 @@ int32_t keyboard_handler(void)
         }
         goto SEND_EOI;
     }
-    case 0x2B:
+    case F3:
     {
         if(alt_check && (current_terminal != 2))
         {
