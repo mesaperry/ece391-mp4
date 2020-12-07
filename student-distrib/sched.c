@@ -3,6 +3,8 @@
 #include "paging.h"
 #include "terminal.h"
 #include "syscalls.h"
+#include "utils/char_util.h"
+#include "lib.h"
 
 // Find the current process id which the OS is currently giving CPU time to
 int32_t cur_proc() {
@@ -45,13 +47,13 @@ uint32_t cycle_task() {
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
     if (proc_disp(next_p_id)) {
-        map_v_p(VIDEO, VIDEO, 0, 1, 1);
+        video_mem = (char*) VIDEO;
     }
 
     // if next process is not in open terminal, map virtual video memory
     //   to task's non-display memory
     else {
-        map_v_p(VIDEO, get_term_vid_addr(term_procs[next_p_id]), 0, 1, 1);
+        video_mem = (char*) get_term_vid_addr(term_procs[next_p_id]);
     }
 
     /* TASK SWITCH (do something similar to HALT) */

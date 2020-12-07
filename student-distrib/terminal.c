@@ -12,7 +12,7 @@
 #define KEYBOARD_PORT 0x60
 
 #define INPUT_CUTOFF  0x3E
-#define TERM_MEM      0xC0000
+#define TERM_MEM      0xD0000
 
 const unsigned char KEY_TABLE[KEY_SIZE] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9','0','-', '=',' ', ' ',
@@ -85,9 +85,7 @@ void terminal_init(void) {
   for (x = 0; x < MAX_TERMINAL_NUM; x++) {
     running_procs[x] = -1;
     map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
-    for(y = 0; y < PAGE_SIZE_KB; y++) {
-      ((int8_t*) TERM_MEM + (PAGE_SIZE_KB * x))[y] = ' ';
-    }
+    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, PAGE_SIZE_KB);
   }
 
   /* Set cursor to top-left of screen */
@@ -178,7 +176,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   enter_down = 0;
   sti();
   while(!enter_down);
-  cli();
+  // cli();
   enter_down = 0;
 
   /* Fail if no bytes, or negative bytes to be returned */
@@ -355,35 +353,15 @@ uint32_t term_switch(uint32_t term) {
 
     uint32_t i;
     uint32_t cur_term = get_current_terminal();
-    /* Save state ?? Maybe don't need to */
-    // temp_x[term] =
-    // temp_y[term] =
-    // wrapped[term] =
-
-    cli();
-
-    /* Map virtual video memory to physical video memory */
-    map_v_p(VIDEO, VIDEO, 0, 1, 1);
-
-    /* Map current terminal's virtual video memory to its own physical memory */
-    map_v_p(get_term_vid_addr(cur_term), get_term_vid_addr(cur_term), 0, 1, 1);
 
     /* Copy video memory into current process' cold storage */
-    for (i = 0; i < 4096; i++) {
-        ((uint8_t*) get_term_vid_addr(cur_term))[i] = ((uint8_t*) VIDEO)[i];
-    }
+    memcpy((uint32_t) get_term_vid_addr(cur_term), (uint32_t) VIDEO, PAGE_SIZE_KB);
 
-    /* Map next terminal's virtual video memory to its own physical memory */
-    map_v_p(get_term_vid_addr(term), get_term_vid_addr(term), 0, 1, 1);
-
-    /* Copy video memory into current process' cold storage */
-    for (i = 0; i < 4096; i++) {
-        ((uint8_t*) VIDEO)[i] = ((uint8_t*) get_term_vid_addr(cur_term))[i];
-    }
+    /* Copy new video memory into physical video memory */
+    memcpy((uint32_t) VIDEO, (uint32_t) get_term_vid_addr(term), PAGE_SIZE_KB);
 
     current_terminal = term;
 
-    sti();
 }
 
 /*
@@ -399,6 +377,10 @@ int32_t keyboard_handler(void)
 
   /* Get keystroke from keyboard */
   scancode = inb(KEYBOARD_PORT);
+
+  /* Map the virtual video memory to the physical video memory */
+  char* prev_video_mem = video_mem;
+  video_mem = (char*) VIDEO;
 
   /* Handle keystroke */
   switch(scancode)
@@ -471,7 +453,7 @@ int32_t keyboard_handler(void)
         print_backspace();
 
         /* Update keyboard buffer */
-        
+
         key_buffer[current_terminal][temp] = '\0';
         key_index[current_terminal]--;
       }
@@ -532,6 +514,7 @@ int32_t keyboard_handler(void)
         {
             term_switch(0);
         }
+        goto SEND_EOI;
     }
     case F2:
     {
@@ -539,6 +522,7 @@ int32_t keyboard_handler(void)
         {
             term_switch(1);
         }
+        goto SEND_EOI;
     }
     case F3:
     {
@@ -546,6 +530,7 @@ int32_t keyboard_handler(void)
         {
             term_switch(2);
         }
+        goto SEND_EOI;
     }
     default:
     {
@@ -666,6 +651,7 @@ int32_t keyboard_handler(void)
   }
 
   SEND_EOI:
+      video_mem = prev_video_mem;
       /* Send interrupt signal for keyboard, the first IRQ */
       send_eoi(1);
       return 0;
