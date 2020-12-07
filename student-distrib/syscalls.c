@@ -66,8 +66,8 @@ int32_t add_process(){
             procs[i] = 1;
 			set_term_process(i);
 			process_count++;
-			running_procs[current_terminal] = i;
-			term_procs[i] = current_terminal;
+			running_procs[display_terminal] = i;
+			term_procs[i] = display_terminal;
             return i;
         }
     }
@@ -90,7 +90,7 @@ int32_t delete_process(int32_t pid){
     procs[pid] = 0;
 	remove_term_process(pid);
 	process_count--;
-	running_procs[current_terminal] = find_PCB(pid)->par_p_id;
+	running_procs[display_terminal] = find_PCB(pid)->par_p_id;
 	term_procs[pid] = -1;
     return 0;
 }
@@ -221,7 +221,7 @@ int32_t execute (const uint8_t* all_arguments)
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
 
 	/* Update process ids */
-	parent_process_id = running_procs[current_terminal];
+	parent_process_id = running_procs[display_terminal];
 	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
 
@@ -320,7 +320,7 @@ int32_t execute (const uint8_t* all_arguments)
 	:
 	: "cc", "memory"
 	);
-	if (running_procs[current_terminal] < 0) {
+	if (running_procs[display_terminal] < 0) {
 		printf("Haha! Nice try. Restarting shell...\n");
 		execute(dechar("shell"));
 	}

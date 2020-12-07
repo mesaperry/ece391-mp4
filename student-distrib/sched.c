@@ -8,7 +8,7 @@
 
 // Return whether a process is currently displayed. False: 0, True: 1
 int32_t proc_disp(uint32_t proc) {
-    if (term_procs[proc] == current_terminal) {
+    if (term_procs[proc] == display_terminal) {
         return 1;
     } else {
         return 0;
@@ -25,10 +25,10 @@ int32_t proc_disp(uint32_t proc) {
 */
 void cycle_task() {
     return 0;
-    cycle_task_force((running_terminal + 1) % 3);
+    switch_running_terminal((running_terminal + 1) % 3);
 }
 
-void cycle_task_force(uint32_t next_terminal) {
+void switch_running_terminal(uint32_t next_terminal) {
     /* Get next process id which we will switch to */
     uint32_t cur_p_id = running_procs[running_terminal];
     uint32_t next_p_id = running_procs[next_terminal];
@@ -53,7 +53,7 @@ void cycle_task_force(uint32_t next_terminal) {
     /* Map memory to appriate physical location */
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
-    if (term_procs[next_p_id] == current_terminal) {
+    if (term_procs[next_p_id] == display_terminal) {
         video_mem = (char*) VIDEO;
     }
 
