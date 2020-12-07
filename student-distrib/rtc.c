@@ -79,11 +79,11 @@ extern void rtc_handler() {
     clk = (clk + 1) % MAX_FREQ;
 
     /* Signal IR_flag */
-    // tried: setting IR->1 without if
+    // tried: setting IR->1 without if: THIS WORKS BUT BREAKS pingpong
     
-
+    IR_flag = 1;
     if (virtual_freq != 0 && (clk % (MAX_FREQ / virtual_freq)) == 0) {
-        IR_flag = 1; 
+       // IR_flag = 1;
     }
 
     /* Select Register C and throw away contents */
@@ -104,15 +104,16 @@ extern void rtc_handler() {
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     
-    // tried: putting sti() in while, putting IR->0 after, removed cli()
     // IR_flag = 0;
+
     sti();
     while(!IR_flag){
        
     }
+    IR_flag = 0;
+
     // sti();
     // wait for interrupt
-    IR_flag = 0;
     //cli();
     return 0;
 }
@@ -166,7 +167,7 @@ int32_t rtc_write( int32_t fd,
 int32_t rtc_open(const uint8_t* filename) {
 
 
-
+    enable_irq(RTC_IRQ);
     /* Set virtual frequency to default */
     rtc_write(0, &DEF_FREQ, sizeof(DEF_FREQ));
 
