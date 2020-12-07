@@ -155,7 +155,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initialize clock */
     rtc_init();
-    rtc_open(NULL);
+    // rtc_open(NULL);
 
     /* Initialize terminal */
     terminal_init();

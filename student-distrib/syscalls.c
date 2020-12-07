@@ -490,8 +490,11 @@ int32_t close(int32_t fd)
     curr->file_array[fd].fops = NULL;
     curr->file_array[fd].pos = 0;
     curr->file_array[fd].flags = 0;
-
-		/* Return 0 on success */
+	int i;
+	for (i = 0; i < FNAME_MAX_LEN; i++){
+		curr->file_array[fd].file_name[i] = '/0';
+		/* Return 0 on success */}
+	
     return 0;
 }
 
@@ -513,6 +516,8 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 	/* another option... */
 	// copy_buf(pcb->arg_buffer, buf, nbytes);
 	printf("getargs buf: %s\n", buf);
+	// clear buffer
+	
 	return 0;
 }
 
