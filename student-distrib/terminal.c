@@ -519,67 +519,37 @@ int32_t keyboard_handler(void)
 
       goto SEND_EOI;
     }
-    case F1: /* Handle switch to 1st terminal */
+    case /*F1*/ 0x1A: /* Handle switch to 1st terminal */
     {
-        if(alt_check && (current_terminal != 0))
+        if(/*alt_check &&*/ (current_terminal != 0))
         {
             term_switch(0);
             if (running_procs[0] < 0) {
+                send_eoi(1);
                 execute(dechar("shell"));
             }
         }
         goto SEND_EOI;
     }
-    case 0x1A:
+    case /*F2*/ 0x1B:
     {
-        if(current_terminal != 0)
-        {
-            term_switch(0);
-            if (running_procs[0] < 0) {
-                execute(dechar("shell"));
-            }
-        }
-        goto SEND_EOI;
-    }
-    case F2:
-    {
-        if(alt_check && (current_terminal != 1))
+        if(/*alt_check &&*/ (current_terminal != 1))
         {
             term_switch(1);
             if (running_procs[1] < 0) {
+                send_eoi(1);
                 execute(dechar("shell"));
             }
         }
         goto SEND_EOI;
     }
-    case 0x1B:
+    case /*F3*/ 0x2B:
     {
-        if(current_terminal != 1)
-        {
-            term_switch(1);
-            if (running_procs[1] < 0) {
-                execute(dechar("shell"));
-            }
-        }
-        goto SEND_EOI;
-    }
-    case F3:
-    {
-        if(alt_check && (current_terminal != 2))
+        if(/*alt_check &&*/ (current_terminal != 2))
         {
             term_switch(2);
             if (running_procs[2] < 0) {
-                execute(dechar("shell"));
-            }
-        }
-        goto SEND_EOI;
-    }
-    case 0x2B:
-    {
-        if(current_terminal != 2)
-        {
-            term_switch(2);
-            if (running_procs[2] < 0) {
+                send_eoi(1);
                 execute(dechar("shell"));
             }
         }
