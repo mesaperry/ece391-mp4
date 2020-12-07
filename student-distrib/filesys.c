@@ -27,7 +27,6 @@
 uint32_t filesys_addr;    /* Address of filesys in memory            */
 boot_block_t boot_block;  /* Local copy of boot_block from filesys   */
 uint32_t dr_index;        /* Indexing variable of files in filesys   */
-uint32_t bytes_copied;    /* Total bytes copied into read_data bytes */
 
 /*
  * init_filesys
@@ -186,13 +185,16 @@ read_data (uint32_t inode_i, uint32_t offset, uint8_t* buffer, uint32_t length)
     
     // global for total bytes, with offset < length both used while ()
     // 
-    for (byte_count = 0; (byte_count + offset < length) && (byte_count + offset < inode.length); byte_count++) {
+    byte_count = 0;
+    for (byte_count = 0; (byte_count < length) && (byte_count + offset < inode.length); byte_count++) {
         /* Don't *have* to do this every time, so this is lazy way */
         buffer[byte_count] = data_blocks[inode.data_indices[(byte_count + offset) >> BLOCK_SIZE_LOG_2]]
                                 .data[(byte_count + offset) & BLOCK_MASK];
     }
 
-    // SOMETHING WRONG - FISH
+    
+
+    // SOMETHING WRONG - FISH // b terminal read
 
     return byte_count;
 }
@@ -326,7 +328,7 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes)
  */
 int32_t file_open(const uint8_t* filename)
 {
-
+    // bytes_copied = 0;
     return 0;
 }
 

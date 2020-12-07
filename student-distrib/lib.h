@@ -13,6 +13,7 @@
 #define VIDEO       0xB8000
 
 #define SHELL_OFFSET 7
+
 static char* video_mem = (char *)VIDEO;
 
 int32_t printf(int8_t *format, ...);
