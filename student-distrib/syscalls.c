@@ -108,6 +108,8 @@ int32_t delete_process(int32_t pid){
 //
 //         Of course, Counter is halted by the program returning and Shell is
 //         halted through the keyboard, but the kernel doesn't seem to care...
+
+//  When keyboard handler calls, force switch the scheduler
 /*
 * int32_t halt(int32_t fd);
 * DESCRIPTION: clean-up process

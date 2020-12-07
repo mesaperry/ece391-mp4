@@ -28,14 +28,6 @@ const unsigned char KEY_TABLE[KEY_SIZE] = {
 int last_screen_x[MAX_TERMINAL_NUM];
 int last_screen_y[MAX_TERMINAL_NUM];
 
-/* get_term_vid_addr
- * Gets the starting address for that terminal's video cache
- */
-uint32_t get_term_vid_addr(uint32_t term)
-{
-    return TERM_MEM + (PAGE_SIZE_KB * term); /* PAGE_SIZE_KB comes from x86_Desc.h */
-}
-
 /* terminal_init
  *
  * Initialize terminal vars
@@ -119,6 +111,14 @@ void set_term_process(int32_t pid)
 void remove_term_process(int32_t pid)
 {
   term_procs[pid] = -1; // Set process to hold value of the terminal it's being run in
+}
+
+/* get_term_vid_addr
+ * Gets the starting address for that terminal's video cache
+ */
+uint32_t get_term_vid_addr(uint32_t term)
+{
+    return TERM_MEM + (PAGE_SIZE_KB * term); /* PAGE_SIZE_KB comes from x86_Desc.h */
 }
 
 /* terminal_open
@@ -355,7 +355,6 @@ uint32_t get_current_terminal(void)
  */
 uint32_t term_switch(uint32_t term) {
 
-    uint32_t i;
     uint32_t cur_term = get_current_terminal();
 
     /* Save state */
@@ -373,6 +372,7 @@ uint32_t term_switch(uint32_t term) {
     set_screen_x(last_screen_x[term]);
     set_screen_y(last_screen_y[term]);
     update_cursor(last_screen_x[term], last_screen_y[term]);
+    return 0;
 }
 
 /*
@@ -389,9 +389,8 @@ int32_t keyboard_handler(void)
   /* Get keystroke from keyboard */
   scancode = inb(KEYBOARD_PORT);
 
-  /* Map the virtual video memory to the physical video memory */
-  char* prev_video_mem = video_mem;
-  video_mem = (char*) VIDEO;
+  /* Switch to the task in this program */
+  cycle_task_force(current_terminal);
 
   /* Handle keystroke */
   switch(scancode)
@@ -662,7 +661,6 @@ int32_t keyboard_handler(void)
   }
 
   SEND_EOI:
-      video_mem = prev_video_mem;
       /* Send interrupt signal for keyboard, the first IRQ */
       send_eoi(1);
       return 0;
