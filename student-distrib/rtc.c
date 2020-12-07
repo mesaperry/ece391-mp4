@@ -59,6 +59,9 @@ void rtc_init() {
     cli();
     outb((NMI | REG_A), RTC_PORT);
     outb((inb(CMOS_PORT) & RATE_MASK) | MAX_RATE, CMOS_PORT);
+
+    rtc_open(NULL);
+
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
 }
