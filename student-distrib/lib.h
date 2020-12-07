@@ -14,8 +14,9 @@
 
 #define SHELL_OFFSET 7
 
+char* get_video_mem();
+void set_video_mem(char* new_mem);
 
-static char* video_mem = (char *)VIDEO;
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
 int32_t puts(int8_t *s);

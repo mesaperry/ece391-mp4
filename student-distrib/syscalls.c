@@ -64,10 +64,9 @@ int32_t add_process(){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
             procs[i] = 1;
-			set_term_process(i);
 			process_count++;
-			running_procs[display_terminal] = i;
-			term_procs[i] = display_terminal;
+			running_procs[running_terminal] = i;
+			term_procs[i] = running_terminal;
             return i;
         }
     }
@@ -154,6 +153,7 @@ int32_t halt (uint8_t status)
 			: "r"(status)
 			: "cc", "memory"
 		);
+		return 0; // Shouldn't be called
 	}
 
 	/* Close all the files in the pcb */
@@ -191,7 +191,7 @@ int32_t halt (uint8_t status)
 		: "r"(status), "r"(esp), "r"(ebp)
 		: "cc", "memory"
 	);
-	return 0;
+	return 0; // Shouldn't be called
 }
 
 int32_t execute (const uint8_t* all_arguments)
@@ -221,7 +221,7 @@ int32_t execute (const uint8_t* all_arguments)
 	/*           and physical memory starts at 8MB + (pid * 4MB)        */
 
 	/* Update process ids */
-	parent_process_id = running_procs[display_terminal];
+	parent_process_id = running_procs[running_terminal];
 	process_id = add_process();
 	if (process_id < 0) return -1;  // add process failed
 
@@ -554,12 +554,13 @@ pcb_t* find_PCB(int pid) {
 * OUTPUT: Returns the current PCB
 */
 pcb_t* get_current_PCB() {
-    uint32_t esp;
-    asm volatile (              \
-        "movl %%esp, %0"        \
-        : "=rm" (esp)           \
-    );
-    return (pcb_t*)(esp & ESP_MASK);
+	return find_PCB(running_procs[running_terminal]);
+    // uint32_t esp;
+    // asm volatile (              \
+    //     "movl %%esp, %0"        \
+    //     : "=rm" (esp)           \
+    // );
+    // return (pcb_t*)(esp & ESP_MASK);
 }
 
 

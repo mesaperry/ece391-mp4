@@ -11,6 +11,21 @@
 
 static int screen_x;
 static int screen_y;
+static char* video_mem = (char *)VIDEO;
+
+/* get_video_mem
+ * getter for the video_mem location
+ */
+char* get_video_mem() {
+    return video_mem;
+}
+
+/* set_video_mem
+ * setter for the video_mem location
+ */
+void set_video_mem(char* new_mem) {
+    video_mem = new_mem;
+}
 
 /* void clear(void);
  * Inputs: void
