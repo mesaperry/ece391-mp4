@@ -34,7 +34,7 @@ volatile int32_t clk;
 volatile int32_t virtual_freq;
 
 
-extern void rtc_intr();
+// extern void rtc_intr();
 
 /* rtc_init
  *
@@ -44,7 +44,7 @@ extern void rtc_intr();
  * SIDE EFFECTS: Sets up RTC IDT
  */
 void rtc_init() {
-    SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
+    // SET_IDT_ENTRY(idt[RTC_VEC], rtc_intr);
 }
 
 /* rtc_handler
