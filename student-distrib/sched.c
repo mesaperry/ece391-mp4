@@ -24,7 +24,6 @@ int32_t proc_disp(uint32_t proc) {
 *   SIDE EFFECTS: switches tasks running in CPU
 */
 void cycle_task() {
-    return 0;
     switch_running_terminal((running_terminal + 1) % 3);
 }
 
@@ -61,13 +60,13 @@ void switch_running_terminal(uint32_t next_terminal) {
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
     if (term_procs[next_p_id] == display_terminal) {
-        video_mem = (char*) VIDEO;
+        set_video_mem((char*) VIDEO);
     }
 
     // if next process is not in open terminal, map virtual video memory
     //   to task's non-display memory
     else {
-        video_mem = (char*) get_term_vid_addr(term_procs[next_p_id]);
+        set_video_mem((char*) get_term_vid_addr(term_procs[next_p_id]));
     }
 
     /* CONTEXT SWITCH (do something similar to HALT) */

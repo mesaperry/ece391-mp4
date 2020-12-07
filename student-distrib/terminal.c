@@ -80,13 +80,8 @@ void terminal_init(void) {
   for (x = 0; x < MAX_TERMINAL_NUM; x++) {
     running_procs[x] = -1;
     map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
-<<<<<<< HEAD
     memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
-    last_screen_x[x] = SHELL_OFFSET;
-=======
-    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, PAGE_SIZE_KB);
     last_screen_x[x] = 0;
->>>>>>> 4cb134aaf292ce2497e8a30a27fdce71e6454e29
     last_screen_y[x] = 0;
   }
 
