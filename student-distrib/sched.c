@@ -45,10 +45,13 @@ uint32_t cycle_task() {
     if (cur_p_id < 0) {
         execute(dechar("shell"));
     }
+/// yes, but need to save current esp and ebp, do not need to save eip, never return from line 46, need full algo for base shells
 
     // TA_Q: Can we map video like this:
     //   Make video_mem the normal VIDEO location if process is displayed
     //   Make video_mem the terminal's fake location if process is not displayed
+
+//// mapping: yes exactly what you want to do
 
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
@@ -65,10 +68,18 @@ uint32_t cycle_task() {
     /* TASK SWITCH (do something similar to HALT) */
 
     // TA_Q: Which registers are required in task switch?
+///// esp, ebp for the respective processes cur -> save esp and ebp NOT tss.esp0, next -> restore esp and ebp
+        //// update tss.esp0 with next process esp0, need to save esp0 in execute code -> WE DO
+    
     // TA_Q: Do we need to save the esp and ebp before we enter the function?
+
+///// yes
+
     // TA_Q: Can this model work: Do a "halt-like" thing upon entering this
     //         function and then do an "execute-like" thing upon leaving?
     
+///// not nessasarily, pit is faster than light, saving current state and restoring next, dont wanna execute new prog, pause and play
+
     /* Initialize variables */
 	uint32_t esp;
 	uint32_t ebp;
