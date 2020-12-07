@@ -68,7 +68,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t clear_buffer();
 uint32_t get_key_index(void);
-uint32_t get_current_terminal(void);
+uint32_t get_display_terminal(void);
 int32_t keyboard_handler(void);
 
 #endif  /* _TERMINAL_H   */

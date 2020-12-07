@@ -60,7 +60,7 @@ void terminal_init(void) {
   clear_offset[2] = 0;
   shell_check = 0;
   alt_check = 0;
-  current_terminal = 0;
+  display_terminal = 0;
   running_terminal = 0;
 
   for(y = 0; y < MAX_TERMINAL_NUM; y++)
@@ -100,7 +100,7 @@ void terminal_init(void) {
  */
 void set_term_process(int32_t pid)
 {
-  term_procs[pid] = current_terminal; // Set process to hold value of the terminal it's being run in
+  term_procs[pid] = display_terminal; // Set process to hold value of the terminal it's being run in
 }
 
 /* remove_term_process
@@ -199,7 +199,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes)
   /* Load keyboard_buffer into buf, up to MAX_BUFF_LENGTH */
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
-    buffer[x] = key_buffer[current_terminal][x];
+    buffer[x] = key_buffer[display_terminal][x];
     last = x + 1;
     count++;
     index = x;
@@ -311,10 +311,10 @@ int32_t clear_buffer()
   /* Reset key buffer with NULL values */
   for(x = 0; x < MAX_BUFF_LENGTH; x++)
   {
-    key_buffer[current_terminal][x] = '\0';
+    key_buffer[display_terminal][x] = '\0';
   }
 
-  key_index[current_terminal] = 0; /* Reset keyboard buffer index */
+  key_index[display_terminal] = 0; /* Reset keyboard buffer index */
 
   // /* Close critical section */
   // sti();
@@ -332,19 +332,19 @@ int32_t clear_buffer()
 uint32_t get_key_index(void)
 {
   /* Return variable */
-  return key_index[current_terminal];
+  return key_index[display_terminal];
 }
 
-/* get_current_terminal
+/* get_display_terminal
  * used by lib.c
  * Returns the value of the current terminal
  * Input - None
- * Output - Returns current_terminal
+ * Output - Returns display_terminal
  */
-uint32_t get_current_terminal(void)
+uint32_t get_display_terminal(void)
 {
   /* Return variable */
-  return current_terminal;
+  return display_terminal;
 }
 
 /* term_switch
@@ -354,9 +354,9 @@ uint32_t get_current_terminal(void)
  *  RETURNS: returns 0 on success
  *  SIDE EFFECTS: maps the selected termnial to the correct video memory location and saves previous terminal data and pos
  */
-uint32_t term_switch(uint32_t term) {
+uint32_t switch_display_terminal(uint32_t term) {
 
-    uint32_t cur_term = get_current_terminal();
+    uint32_t cur_term = get_display_terminal();
 
     /* Save state */
     last_screen_x[cur_term] = get_screen_x();
@@ -369,7 +369,7 @@ uint32_t term_switch(uint32_t term) {
     memcpy((void *) VIDEO, (void *) get_term_vid_addr(term), (uint32_t) PAGE_SIZE_KB);
 
     /* Restore State */
-    current_terminal = term;
+    display_terminal = term;
     running_terminal = term;
     set_screen_x(last_screen_x[term]);
     set_screen_y(last_screen_y[term]);
@@ -392,7 +392,7 @@ int32_t keyboard_handler(void)
   scancode = inb(KEYBOARD_PORT);
 
   /* Switch to the task in this program */
-  cycle_task_force(current_terminal);
+  switch_running_terminal(display_terminal);
 
   /* Handle keystroke */
   switch(scancode)
@@ -429,12 +429,12 @@ int32_t keyboard_handler(void)
     }
     case SPACE:
     {
-      temp = key_index[current_terminal];
+      temp = key_index[display_terminal];
 
       /* Print space key and add to buffer */
       putc(' ');
-      key_buffer[current_terminal][temp] = ' ';
-      key_index[current_terminal]++;
+      key_buffer[display_terminal][temp] = ' ';
+      key_index[display_terminal]++;
 
       /* Update cursor                                                                */
       update_cursor(get_screen_x(), get_screen_y());
@@ -447,9 +447,9 @@ int32_t keyboard_handler(void)
       uint32_t x;
       for(x = 0; x < 4; x++){
         putc(' ');
-        temp = key_index[current_terminal];
-        key_buffer[current_terminal][temp] = ' ';
-        key_index[current_terminal]++;
+        temp = key_index[display_terminal];
+        key_buffer[display_terminal][temp] = ' ';
+        key_index[display_terminal]++;
 
         /* Update cursor                                                                */
         update_cursor(get_screen_x(), get_screen_y());
@@ -458,16 +458,16 @@ int32_t keyboard_handler(void)
     }
     case BACK:
     {
-      temp = key_index[current_terminal];
-      if((key_index[current_terminal] - clear_offset[current_terminal]) != 0)
+      temp = key_index[display_terminal];
+      if((key_index[display_terminal] - clear_offset[display_terminal]) != 0)
       {
         /* Print backspace */
         print_backspace();
 
         /* Update keyboard buffer */
 
-        key_buffer[current_terminal][temp] = '\0';
-        key_index[current_terminal]--;
+        key_buffer[display_terminal][temp] = '\0';
+        key_index[display_terminal]--;
       }
 
       goto SEND_EOI;
@@ -498,14 +498,14 @@ int32_t keyboard_handler(void)
     }
     case ENTER:
     {
-      temp = key_index[current_terminal];
+      temp = key_index[display_terminal];
 
       /* put newline character in buffer */
-      key_buffer[current_terminal][temp] = '\n';
+      key_buffer[display_terminal][temp] = '\n';
       putc('\n');
       wrapped = 0;
-      key_index[current_terminal] = 0;
-      clear_offset[current_terminal] = 0;
+      key_index[display_terminal] = 0;
+      clear_offset[display_terminal] = 0;
       current_line++;
 
       /* set enter flag */
@@ -522,9 +522,9 @@ int32_t keyboard_handler(void)
     }
     case F1: /* Handle switch to 1st terminal */
     {
-        if(alt_check && (current_terminal != 0))
+        if(/*alt_check &&*/ (display_terminal != 0))
         {
-            term_switch(0);
+            switch_display_terminal(0);
             if (running_procs[0] < 0) {
                 execute(dechar("shell"));
             }
@@ -533,22 +533,11 @@ int32_t keyboard_handler(void)
     }
     case 0x1A:
     {
+<<<<<<< HEAD
         if(current_terminal != 0)
         {
             term_switch(0);
-            if (running_procs[0] < 0) {
-                execute(dechar("shell"));
-            }
-        }
-        goto SEND_EOI;
-    }
-    case F2:
-    {
-        if(alt_check && (current_terminal != 1))
-        {
-            term_switch(1);
             if (running_procs[1] < 0) {
-                execute(dechar("shell"));
             }
         }
         goto SEND_EOI;
@@ -578,8 +567,10 @@ int32_t keyboard_handler(void)
     case 0x2B:
     {
         if(current_terminal != 2)
+
+        if(/*alt_check &&*/ (display_terminal != 2))
         {
-            term_switch(2);
+            switch_display_terminal(2);
             if (running_procs[2] < 0) {
                 execute(dechar("shell"));
             }
@@ -626,9 +617,9 @@ int32_t keyboard_handler(void)
         {
           /* Re-set screen and buffer */
           clear();
-          if(key_index[current_terminal] != 0)
+          if(key_index[display_terminal] != 0)
           {
-            clear_offset[current_terminal] = key_index[current_terminal];
+            clear_offset[display_terminal] = key_index[display_terminal];
           }
           else
           {
@@ -659,12 +650,12 @@ int32_t keyboard_handler(void)
           /* Print letter to screen */
           putc(input);
 
-          temp = key_index[current_terminal];
+          temp = key_index[display_terminal];
           /* Load keyboard buffer with symbol */
-          key_buffer[current_terminal][temp] = input;
+          key_buffer[display_terminal][temp] = input;
 
           /* Update index in keyboard buffer */
-          key_index[current_terminal]++;
+          key_index[display_terminal]++;
 
           /* Check if screen_Y has reached end of screen */
           if(temp_y == NUM_ROWS)
@@ -684,18 +675,18 @@ int32_t keyboard_handler(void)
           current_line = temp_y;
           update_cursor(0, temp_y);
         }
-        else if(key_index[current_terminal] < MAX_BUFF_LENGTH)
+        else if(key_index[display_terminal] < MAX_BUFF_LENGTH)
         {
           /* Print letter to screen */
           putc(input);
 
-          temp = key_index[current_terminal];
+          temp = key_index[display_terminal];
 
           /* Load keyboard buffer with symbol */
-          key_buffer[current_terminal][temp] = input;
+          key_buffer[display_terminal][temp] = input;
 
           /* Update index in keyboard buffer */
-          key_index[current_terminal]++;
+          key_index[display_terminal]++;
 
           /* Update cursor until, buffer is full */
           update_cursor(get_screen_x(), get_screen_y());
