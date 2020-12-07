@@ -513,9 +513,9 @@ int32_t keyboard_handler(void)
 
       goto SEND_EOI;
     }
-    case /*F1*/ 0x1A: /* Handle switch to 1st terminal */
+    case F1: /* Handle switch to 1st terminal */
     {
-        if(/*alt_check &&*/ (display_terminal != 0))
+        if(alt_check && (display_terminal != 0))
         {
 
             switch_display_terminal(0);
@@ -526,9 +526,9 @@ int32_t keyboard_handler(void)
         }
         goto SEND_EOI;
     }
-    case /*F2*/ 0x1B:
+    case F2:
     {
-        if(/*alt_check &&*/ (display_terminal != 1))
+        if(alt_check && (display_terminal != 1))
         {
             switch_display_terminal(1);
             if (switch_running_terminal(1)) {
@@ -539,9 +539,9 @@ int32_t keyboard_handler(void)
         }
         goto SEND_EOI;
     }
-    case /*F3*/ 0x2B:
+    case F3:
     {
-        if(/*alt_check &&*/ (display_terminal != 2))
+        if(alt_check && (display_terminal != 2))
         {
             switch_display_terminal(2);
             if (switch_running_terminal(2)) {
