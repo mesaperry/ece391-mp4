@@ -18,7 +18,8 @@ int32_t proc_disp(uint32_t proc) {
 /* Scheduling initalize */
 void sched_init() {
     display_terminal = 0;
-    running_terminal = 0;
+    if (USING_PIT) running_terminal = -1;
+    else running_terminal = 0;
 
     /* Allocate multiple-terminal info */
     int x;
@@ -37,31 +38,31 @@ void sched_init() {
 *                  to be called periodically by PIT
 *   INPUTS: none
 *   OUTPUTS: none
-*   RETURNS: none
+*   RETURNS: 0 if success, 1 if nothing is running on this terminal
 *   SIDE EFFECTS: switches tasks running in CPU
 */
-void cycle_task() {
-    switch_running_terminal((running_terminal + 1) % 3);
+uint32_t cycle_task() {
+    return switch_running_terminal((running_terminal + 1) % 3);
 }
 
 /*  switch_running_terminal
 *   DESCRIPTION: function to call for the terminal to move to another task, on another terminal
 *   INPUTS: The terminal to switch to
 *   OUTPUTS: None
-*   RETURNS: None
+*   RETURNS: 0 if success, 1 if nothing is running on this terminal
 *   SIDE EFFECTS: switches tasks running in CPU
 */
-void switch_running_terminal(uint32_t next_terminal) {
+uint32_t switch_running_terminal(uint32_t next_terminal) {
     /* Get next process id which we will switch to */
     int32_t cur_p_id = running_procs[running_terminal];
     int32_t next_p_id = running_procs[next_terminal];
+    running_terminal = next_terminal;
 
     if (next_p_id < 0) {
-        set_video_mem((char*) VIDEO);
-        execute(dechar("shell"));
+        if (running_terminal == display_terminal) set_video_mem((char*) VIDEO);
+        else set_video_mem((char*) get_term_vid_addr(running_terminal));
+        return 1;
     }
-
-    running_terminal = next_terminal;
 
     // SAVE ESP/EBP
     pcb_t* cur_pcb_ptr = find_PCB(cur_p_id);
@@ -73,6 +74,8 @@ void switch_running_terminal(uint32_t next_terminal) {
         : /* no inputs */
         : "cc"
     );
+
+    map_v_p(USER_PROCESS_START_VIRTUAL, USER_PROCESS_START_PHYSICAL + next_p_id * USER_PROCESS_SIZE, 1, 1, 1);
 
     /* Map memory to appriate physical location */
     // if next process is in open terminal, map virtual video memory to
@@ -100,8 +103,13 @@ void switch_running_terminal(uint32_t next_terminal) {
     /* === CONTEXT SWITCH === */
 	/* Update stack pointers and base pointers */
 
+    flush_tlb();
+
+    /* Update TSS */
     /* Restore next process' esp/ebp */
     pcb_t* next_pcb_ptr = find_PCB(next_p_id);
+    /* Update TSS */
+    tss.esp0 = next_pcb_ptr->esp;
     asm volatile("           		  	\n\
         movl    %0, %%esp               \n\
         movl    %1, %%ebp               \n\
@@ -110,9 +118,5 @@ void switch_running_terminal(uint32_t next_terminal) {
         : "r"(next_pcb_ptr->esp), "r"(next_pcb_ptr->ebp)
         : "cc", "memory"
     );
-
-    /* Update TSS */
-    tss.esp0 = next_pcb_ptr->esp;
-
-    flush_tlb();
+    return 0;
 }

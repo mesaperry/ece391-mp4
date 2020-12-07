@@ -19,7 +19,7 @@
 .global keyboard_intr, rtc_intr, PIT_intr
 
 # handlers for keyboard and rtc
-.extern keyboard_handler, rtc_handler, cycle_task
+.extern keyboard_handler, rtc_handler, pit_handler
 
 
 # irq interrupt handler linkage for pic

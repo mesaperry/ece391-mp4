@@ -14,8 +14,8 @@ int32_t running_procs[MAX_TERMINAL_NUM];  // The foremost processes in each term
 /* Initialize scheduler */
 extern void sched_init();
 /* Move to the next scheduled task */
-extern void cycle_task();
+extern uint32_t cycle_task();
 /* Move to the task in the given terminal */
-extern void switch_running_terminal();
+extern uint32_t switch_running_terminal();
 
 #endif /* _SCHED_H */

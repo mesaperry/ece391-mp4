@@ -4,13 +4,18 @@
 #include "x86_desc.h"
 #include "i8259.h"
 #include "sched.h"
+#include "utils/char_util.h"
+#include "syscalls.h"
 
 #define INT_INTERVAL                 15 // timer interrupt interval in ms
 #define PIT_IRQ                     0x00
 
 
 void pit_handler() {
-    cycle_task();
+    if (cycle_task()) {
+        send_eoi(PIT_IRQ);
+        execute(dechar("shell"));
+    }
     send_eoi(PIT_IRQ);
 }
 

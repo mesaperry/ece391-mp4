@@ -107,6 +107,10 @@ void remove_term_process(int32_t pid)
  */
 uint32_t get_term_vid_addr(uint32_t term)
 {
+    if (term > 2 || term < 0) {
+        printf("Failure!");
+        return -1;
+    }
     return TERM_MEM + (PAGE_SIZE_KB * term); /* PAGE_SIZE_KB comes from x86_Desc.h */
 }
 
@@ -344,7 +348,7 @@ uint32_t get_display_terminal(void)
  */
 uint32_t switch_display_terminal(uint32_t term) {
 
-    uint32_t cur_term = get_display_terminal();
+    uint32_t cur_term = display_terminal;
 
     /* Save state */
     last_screen_x[cur_term] = get_screen_x();
@@ -358,7 +362,6 @@ uint32_t switch_display_terminal(uint32_t term) {
 
     /* Restore State */
     display_terminal = term;
-    running_terminal = term;
     set_screen_x(last_screen_x[term]);
     set_screen_y(last_screen_y[term]);
     update_cursor(last_screen_x[term], last_screen_y[term]);
@@ -512,9 +515,12 @@ int32_t keyboard_handler(void)
     {
         if(/*alt_check &&*/ (display_terminal != 0))
         {
+
             switch_display_terminal(0);
+            if (switch_running_terminal(0)) {
+                execute(dechar("shell"));
+            }
             send_eoi(1);
-            switch_running_terminal(0);
         }
         goto SEND_EOI;
     }
@@ -523,8 +529,11 @@ int32_t keyboard_handler(void)
         if(/*alt_check &&*/ (display_terminal != 1))
         {
             switch_display_terminal(1);
+            if (switch_running_terminal(1)) {
+                send_eoi(1);
+                execute(dechar("shell"));
+            }
             send_eoi(1);
-            switch_running_terminal(1);
         }
         goto SEND_EOI;
     }
@@ -533,8 +542,11 @@ int32_t keyboard_handler(void)
         if(/*alt_check &&*/ (display_terminal != 2))
         {
             switch_display_terminal(2);
+            if (switch_running_terminal(2)) {
+                send_eoi(1);
+                execute(dechar("shell"));
+            }
             send_eoi(1);
-            switch_running_terminal(2);
         }
         goto SEND_EOI;
     }

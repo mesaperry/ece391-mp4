@@ -6,7 +6,7 @@
 #include "types.h"
 #include "lib.h"
 
-void pit_handler();
-void pit_init();
+extern void pit_handler();
+extern void pit_init();
 
 #endif
