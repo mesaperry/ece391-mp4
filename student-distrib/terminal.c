@@ -358,6 +358,7 @@ uint32_t term_switch(uint32_t term) {
     uint32_t i;
     uint32_t cur_term = get_current_terminal();
 
+    /* Save state */
     last_screen_x[cur_term] = get_screen_x();
     last_screen_y[cur_term] = get_screen_y();
 
@@ -367,6 +368,7 @@ uint32_t term_switch(uint32_t term) {
     /* Copy new video memory into physical video memory */
     memcpy((uint32_t) VIDEO, (uint32_t) get_term_vid_addr(term), PAGE_SIZE_KB);
 
+    /* Restore State */
     current_terminal = term;
     set_screen_x(last_screen_x[term]);
     set_screen_y(last_screen_y[term]);

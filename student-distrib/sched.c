@@ -33,6 +33,7 @@ int32_t proc_disp(uint32_t proc) {
    RETURNS: -1 on failure, 0 on success
    SIDE EFFECTS: switches tasks running in CPU
 */
+
 uint32_t cycle_task() {
     /* Get next process id which we will switch to */
     uint32_t cur_p_id = cur_proc();
@@ -40,9 +41,14 @@ uint32_t cycle_task() {
     uint32_t status = 1;
     /* Map virtual memory to appriate physical location */
 
+    // TA_Q: If there is no shell yet, then start it here?
     if (cur_p_id < 0) {
         execute(dechar("shell"));
     }
+
+    // TA_Q: Can we map video like this:
+    //   Make video_mem the normal VIDEO location if process is displayed
+    //   Make video_mem the terminal's fake location if process is not displayed
 
     // if next process is in open terminal, map virtual video memory to
     //   physical video memory
@@ -57,6 +63,12 @@ uint32_t cycle_task() {
     }
 
     /* TASK SWITCH (do something similar to HALT) */
+
+    // TA_Q: Which registers are required in task switch?
+    // TA_Q: Do we need to save the esp and ebp before we enter the function?
+    // TA_Q: Can this model work: Do a "halt-like" thing upon entering this
+    //         function and then do an "execute-like" thing upon leaving?
+    
     /* Initialize variables */
 	uint32_t esp;
 	uint32_t ebp;

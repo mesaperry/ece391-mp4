@@ -95,6 +95,19 @@ int32_t delete_process(int32_t pid){
     return 0;
 }
 
+
+// TA_Q: When Halt is called, how do we know which process should be halted?
+//         Example: Terminal 2 is running Shell and another Shell and
+//         Terminal 1 is running Shell and Counter.
+//         The scheduler is currently servicing Terminal 1's count.
+//         Halt is then called.
+//         How do we know which to halt?
+//         We can't check for which terminal is displayed because it could
+//         be Counter (T1, not displayed, running) or
+//         Shell (T2, displayed, not running).
+//
+//         Of course, Counter is halted by the program returning and Shell is
+//         halted through the keyboard, but the kernel doesn't seem to care...
 /*
 * int32_t halt(int32_t fd);
 * DESCRIPTION: clean-up process
@@ -494,7 +507,7 @@ int32_t close(int32_t fd)
 	for (i = 0; i < FNAME_MAX_LEN; i++){
 		curr->file_array[fd].file_name[i] = '/0';
 		/* Return 0 on success */}
-	
+
     return 0;
 }
 
@@ -517,7 +530,7 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 	// copy_buf(pcb->arg_buffer, buf, nbytes);
 	printf("getargs buf: %s\n", buf);
 	// clear buffer
-	
+
 	return 0;
 }
 
