@@ -13,6 +13,7 @@
 #include "rtc.h"
 #include "terminal.h"
 #include "filesys.h"
+#include "pit.h"
 
 #define RUN_TESTS 1
 
@@ -158,6 +159,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initialize terminal */
     terminal_init();
+
+    /* Initialize PIT */
+    // pit_init();
 
 
     /* Enable interrupts */

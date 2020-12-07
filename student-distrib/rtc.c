@@ -34,7 +34,7 @@ volatile int32_t clk;
 volatile int32_t virtual_freq;
 
 
-extern void rtc_intr();
+// extern void rtc_intr();
 
 /* rtc_init
  *
