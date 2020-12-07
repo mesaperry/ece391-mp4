@@ -80,8 +80,13 @@ void terminal_init(void) {
   for (x = 0; x < MAX_TERMINAL_NUM; x++) {
     running_procs[x] = -1;
     map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
+<<<<<<< HEAD
     memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
     last_screen_x[x] = SHELL_OFFSET;
+=======
+    memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, PAGE_SIZE_KB);
+    last_screen_x[x] = 0;
+>>>>>>> 4cb134aaf292ce2497e8a30a27fdce71e6454e29
     last_screen_y[x] = 0;
   }
 
@@ -370,6 +375,7 @@ uint32_t term_switch(uint32_t term) {
 
     /* Restore State */
     current_terminal = term;
+    running_terminal = term;
     set_screen_x(last_screen_x[term]);
     set_screen_y(last_screen_y[term]);
     update_cursor(last_screen_x[term], last_screen_y[term]);
@@ -524,6 +530,20 @@ int32_t keyboard_handler(void)
         if(alt_check && (current_terminal != 0))
         {
             term_switch(0);
+            if (running_procs[0] < 0) {
+                execute(dechar("shell"));
+            }
+        }
+        goto SEND_EOI;
+    }
+    case 0x1A:
+    {
+        if(current_terminal != 0)
+        {
+            term_switch(0);
+            if (running_procs[0] < 0) {
+                execute(dechar("shell"));
+            }
         }
         goto SEND_EOI;
     }
@@ -532,6 +552,20 @@ int32_t keyboard_handler(void)
         if(alt_check && (current_terminal != 1))
         {
             term_switch(1);
+            if (running_procs[1] < 0) {
+                execute(dechar("shell"));
+            }
+        }
+        goto SEND_EOI;
+    }
+    case 0x1B:
+    {
+        if(current_terminal != 1)
+        {
+            term_switch(1);
+            if (running_procs[1] < 0) {
+                execute(dechar("shell"));
+            }
         }
         goto SEND_EOI;
     }
@@ -540,6 +574,20 @@ int32_t keyboard_handler(void)
         if(alt_check && (current_terminal != 2))
         {
             term_switch(2);
+            if (running_procs[2] < 0) {
+                execute(dechar("shell"));
+            }
+        }
+        goto SEND_EOI;
+    }
+    case 0x2B:
+    {
+        if(current_terminal != 2)
+        {
+            term_switch(2);
+            if (running_procs[2] < 0) {
+                execute(dechar("shell"));
+            }
         }
         goto SEND_EOI;
     }

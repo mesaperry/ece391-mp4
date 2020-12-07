@@ -24,6 +24,7 @@ int32_t proc_disp(uint32_t proc) {
 *   SIDE EFFECTS: switches tasks running in CPU
 */
 void cycle_task() {
+    return 0;
     cycle_task_force((running_terminal + 1) % 3);
 }
 
@@ -40,9 +41,9 @@ void cycle_task_force(uint32_t next_terminal) {
     uint32_t next_p_id = running_procs[next_terminal];
     running_terminal = next_terminal;
 
-    if (cur_p_id < 0) {
-        execute(dechar("shell"));
-    }
+    // if (next_p_id < 0) {
+    //     execute(dechar("shell"));
+    // }
 /// yes, but need to save current esp and ebp, do not need to save eip, never return from line 46, need full algo for base shells
 
     // SAVE ESP/EBP
@@ -71,8 +72,6 @@ void cycle_task_force(uint32_t next_terminal) {
 
     /* CONTEXT SWITCH (do something similar to HALT) */
 
-	/* NOT closing all the files in the pcb (like we do in halt)*/
-
     // TODO: DO SOMETHING WITH VIDMAP?
     //  if it was previously called on the incoming task, do we have to remap it?
     //  And if it was called on the outgoing task, do we have to unmap it?
@@ -83,11 +82,6 @@ void cycle_task_force(uint32_t next_terminal) {
 
     /* === CONTEXT SWITCH === */
 	/* Update stack pointers and base pointers */
-    // TODO: PROBLEM:
-    //  currently a task's esp and ebp is stored on its child's PCB.
-    //  To make scheduling work, it needs to be stored on its own PCB
-    //  so that it can restore itself with a round-robin approach rather
-    //  than a parent-child approach
 
     /* Restore next process' esp/ebp */
     pcb_t* next_pcb_ptr = find_PCB(next_p_id);
