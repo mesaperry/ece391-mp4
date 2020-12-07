@@ -3,9 +3,16 @@
 #include "pit.h"
 #include "x86_desc.h"
 #include "i8259.h"
+#include "sched.h"
 
 #define INT_INTERVAL                 15 // timer interrupt interval in ms
 #define PIT_IRQ                     0x00
+
+
+void pit_handler() {
+    cycle_task();
+    send_eoi(PIT_IRQ);
+}
 
 /*  pit_init
  *  DESCRIPTION: Initalizes PIT and sets channel 0 starting frequency

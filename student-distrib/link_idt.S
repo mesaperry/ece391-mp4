@@ -27,7 +27,7 @@
 irq0:
         pushal
         pushfl
-        call cycle_task
+        call pit_handler
         popfl
         popal
         iret
