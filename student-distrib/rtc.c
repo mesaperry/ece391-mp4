@@ -34,7 +34,7 @@ volatile int32_t clk;
 volatile int32_t virtual_freq;
 
 
-extern void rtc_intr();
+// extern void rtc_intr();
 
 /* rtc_init
  *
@@ -59,6 +59,9 @@ void rtc_init() {
     cli();
     outb((NMI | REG_A), RTC_PORT);
     outb((inb(CMOS_PORT) & RATE_MASK) | MAX_RATE, CMOS_PORT);
+
+    rtc_open(NULL);
+
     /* Enable interrupt */
     enable_irq(RTC_IRQ);
 }
@@ -76,11 +79,10 @@ extern void rtc_handler() {
     clk = (clk + 1) % MAX_FREQ;
 
     /* Signal IR_flag */
-    // tried: setting IR->1 without if
+    // tried: setting IR->1 without if: THIS WORKS BUT BREAKS pingpong
     
-
     if (virtual_freq != 0 && (clk % (MAX_FREQ / virtual_freq)) == 0) {
-        IR_flag = 1; 
+       IR_flag = 1;
     }
 
     /* Select Register C and throw away contents */
@@ -101,15 +103,16 @@ extern void rtc_handler() {
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     
-    // tried: putting sti() in while, putting IR->0 after, removed cli()
     // IR_flag = 0;
+
     sti();
     while(!IR_flag){
        
     }
+    IR_flag = 0;
+
     // sti();
     // wait for interrupt
-    IR_flag = 0;
     //cli();
     return 0;
 }
@@ -163,7 +166,7 @@ int32_t rtc_write( int32_t fd,
 int32_t rtc_open(const uint8_t* filename) {
 
 
-
+    enable_irq(RTC_IRQ);
     /* Set virtual frequency to default */
     rtc_write(0, &DEF_FREQ, sizeof(DEF_FREQ));
 
