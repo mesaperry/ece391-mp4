@@ -29,7 +29,7 @@ void sched_init() {
     for (x = 0; x < MAX_TERMINAL_NUM; x++) {
         running_procs[x] = -1;
         map_v_p(get_term_vid_addr(x), get_term_vid_addr(x), 0, 1, 1);
-        memcpy((uint32_t) get_term_vid_addr(x), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
+        memcpy((void *) get_term_vid_addr(x), (void *) VIDEO, (uint32_t) PAGE_SIZE_KB);
     }
 }
 

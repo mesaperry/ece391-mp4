@@ -14,7 +14,10 @@
 #include "terminal.h"
 #include "filesys.h"
 #include "sched.h"
+#include "syscalls.h"
 #include "pit.h"
+
+#include "utils/char_util.h"
 
 #define RUN_TESTS 1
 
@@ -181,7 +184,6 @@ void entry(unsigned long magic, unsigned long addr) {
 #endif
     /* Execute the first program ("shell") ... */
     if (!USING_PIT) execute(dechar("shell"));
-
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

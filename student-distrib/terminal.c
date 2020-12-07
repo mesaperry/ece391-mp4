@@ -5,6 +5,7 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "paging.h"
+#include "syscalls.h"
 
 #include "utils/char_util.h"
 
@@ -355,10 +356,10 @@ uint32_t switch_display_terminal(uint32_t term) {
     last_screen_y[cur_term] = get_screen_y();
 
     /* Copy video memory into current process' cold storage */
-    memcpy((void *) get_term_vid_addr(cur_term), (uint32_t) VIDEO, (uint32_t) PAGE_SIZE_KB);
+    memcpy((void *) get_term_vid_addr(cur_term), (void*) VIDEO,  PAGE_SIZE_KB);
 
     /* Copy new video memory into physical video memory */
-    memcpy((void *) VIDEO, (uint32_t) get_term_vid_addr(term), (uint32_t) PAGE_SIZE_KB);
+    memcpy((void *) VIDEO, (void*) get_term_vid_addr(term),  PAGE_SIZE_KB);
 
     /* Restore State */
     display_terminal = term;
@@ -367,6 +368,7 @@ uint32_t switch_display_terminal(uint32_t term) {
     update_cursor(last_screen_x[term], last_screen_y[term]);
     return 0;
 }
+
 
 /*
 * keyboard_handler(void)

@@ -8,7 +8,7 @@
 
 #include "types.h"
 
-#define USING_PIT 1
+#define USING_PIT 0
 
 /* Segment selector values */
 #define KERNEL_CS   0x0010

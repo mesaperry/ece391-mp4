@@ -410,7 +410,7 @@ int32_t open(const uint8_t* filename)
 		/* Get current PCB */
 		pcb_t* pcb = get_current_PCB();
 
-	if (strlen(filename) > 32) return -1;
+	if (string_length(filename) > 32) return -1;
 
     for(index = 2; index < FILE_ARRAY_LEN; index++)
 		{
@@ -500,14 +500,14 @@ int32_t close(int32_t fd)
 		{
         return -1;
     }
-
+	// char nol = '/0';
 		/* Re-set file with default values */
     curr->file_array[fd].fops = NULL;
     curr->file_array[fd].pos = 0;
     curr->file_array[fd].flags = 0;
 	int i;
 	for (i = 0; i < FNAME_MAX_LEN; i++){
-		curr->file_array[fd].file_name[i] = '/0';
+		curr->file_array[(uint32_t)fd].file_name[(uint32_t)i] = NULL;
 		/* Return 0 on success */}
 
     return 0;
@@ -526,7 +526,7 @@ int32_t getargs (uint8_t* buf, uint32_t nbytes)
 {
 	pcb_t* pcb = get_current_PCB();
 	/* pcb->arg_buffer must have EOS */
-	if ((string_length(pcb->arg_buffer) + 1) > nbytes ||(pcb->arg_buffer == NULL) || buf == NULL || strlen(pcb->arg_buffer) == 0) return -1;
+	if ((string_length(pcb->arg_buffer) + 1) > nbytes ||(pcb->arg_buffer == NULL) || buf == NULL || string_length(pcb->arg_buffer) == 0) return -1;
 	copy_string(pcb->arg_buffer, buf);
 	/* another option... */
 	// copy_buf(pcb->arg_buffer, buf, nbytes);
@@ -556,9 +556,9 @@ pcb_t* find_PCB(int pid) {
 pcb_t* get_current_PCB() {
 	return find_PCB(running_procs[running_terminal]);
     // uint32_t esp;
-    // asm volatile (              \
-    //     "movl %%esp, %0"        \
-    //     : "=rm" (esp)           \
+    // asm volatile (              //add "\" down this row
+    //     "movl %%esp, %0"        //
+    //     : "=rm" (esp)           //
     // );
     // return (pcb_t*)(esp & ESP_MASK);
 }
