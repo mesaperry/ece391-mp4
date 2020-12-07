@@ -313,9 +313,7 @@ int32_t clear_buffer()
     key_buffer[current_terminal][x] = '\0';
   }
 
-  key_index[0] = 0; /* Reset keyboard buffer index */
-  key_index[1] = 0;
-  key_index[2] = 0;
+  key_index[current_terminal] = 0; /* Reset keyboard buffer index */
 
   // /* Close critical section */
   // sti();
@@ -373,7 +371,6 @@ uint32_t term_switch(uint32_t term) {
     set_screen_x(last_screen_x[term]);
     set_screen_y(last_screen_y[term]);
     update_cursor(last_screen_x[term], last_screen_y[term]);
-
 }
 
 /*
@@ -520,7 +517,7 @@ int32_t keyboard_handler(void)
 
       goto SEND_EOI;
     }
-    case F1: /* Handle switch to 1st terminal */
+    case 0x1A: /* Handle switch to 1st terminal */
     {
         if(alt_check && (current_terminal != 0))
         {
@@ -528,7 +525,7 @@ int32_t keyboard_handler(void)
         }
         goto SEND_EOI;
     }
-    case F2:
+    case 0x1B:
     {
         if(alt_check && (current_terminal != 1))
         {
@@ -536,7 +533,7 @@ int32_t keyboard_handler(void)
         }
         goto SEND_EOI;
     }
-    case F3:
+    case 0x2B:
     {
         if(alt_check && (current_terminal != 2))
         {
