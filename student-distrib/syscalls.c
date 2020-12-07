@@ -60,6 +60,22 @@ uint8_t vidmap_called = 0;
 */
 int32_t add_process(){
     uint32_t i;		/* Loop through available indices */
+	uint32_t num_procs_per_term[MAX_TERMINAL_NUM];
+	for (i = 0; i < MAX_TERMINAL_NUM; i++) {
+		num_procs_per_term[i] = 0;
+	}
+	for (i = 0; i < MAX_DEVICES; i++) {
+		if (term_procs[i] >= 0) num_procs_per_term[term_procs[i]]++;
+	}
+	uint32_t num_procs_virt = 0;
+	for (i = 0; i < MAX_TERMINAL_NUM; i++) {
+		if (num_procs_per_term[i] == 0) {
+			num_procs_virt++;
+		} else {
+			num_procs_virt += num_procs_per_term[i];
+		}
+	}
+	if ((num_procs_per_term[running_terminal] != 0) && (num_procs_virt >= MAX_DEVICES)) return -1;
     for(i = 0; i < MAX_DEVICES; i++){
 			/* If processindex is available, return the index */
         if(procs[i] == 0){
@@ -223,7 +239,10 @@ int32_t execute (const uint8_t* all_arguments)
 	/* Update process ids */
 	parent_process_id = running_procs[running_terminal];
 	process_id = add_process();
-	if (process_id < 0) return -1;  // add process failed
+	if (process_id < 0) {
+		printf("You can't do that!\n");
+		return 0;  // add process failed
+	}
 
 	/* Create next PCB */
 	pcb = (pcb_t*)((KERNEL_MEMORY_ADDR + MB_4) - (process_id + 1) * PCB_SIZE);
