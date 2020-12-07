@@ -27,16 +27,15 @@
 #define ALT_OFF 0xB8
 #define ESC 0x01
 #define BACKQUOTE 0x29
-#define MAX_TERMINAL_NUM 3
 #define F1 0x3B
 #define F2 0x3C
 #define F3 0x3D
 
-#define MAX_DEVICES 		6
 
 #include "types.h"
 #include "lib.h"
 #include "i8259.h"
+#include "sched.h"
 
 uint8_t R_shift_check;
 uint8_t L_shift_check;
@@ -50,8 +49,6 @@ uint8_t alt_check;
 uint8_t shell_check;
 
 uint8_t current_line;
-uint8_t current_terminal;
-uint8_t running_terminal;  // The current terminal which is running
 uint8_t wrapped;
 uint8_t clear_offset[MAX_TERMINAL_NUM]; // Used as the key_buffer offset when clearing the screen
 
@@ -59,12 +56,12 @@ uint32_t table_index;
 uint32_t key_index[MAX_TERMINAL_NUM];
 uint32_t key_offset;
 uint8_t key_buffer[MAX_TERMINAL_NUM][MAX_BUFF_LENGTH];
-int32_t term_procs[MAX_DEVICES]; // Handles the maximum number of devices the system should run
-int32_t running_procs[MAX_TERMINAL_NUM];  // The foremost processes in each terminal
+
 
 void terminal_init(void);
 void set_term_process(int32_t pid);
 void remove_term_process(int32_t pid);
+uint32_t get_term_vid_addr(uint32_t term);
 int32_t terminal_open(const uint8_t* filename);
 int32_t terminal_close(int32_t fd);
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
