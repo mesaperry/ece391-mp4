@@ -161,7 +161,7 @@ void entry(unsigned long magic, unsigned long addr) {
     terminal_init();
 
     /* Initialize PIT */
-    pit_init();
+    // pit_init();
 
 
     /* Enable interrupts */
