@@ -1,3 +1,8 @@
+WARNING
+-----
+This repository is not for use in your own project without proper citation. That includes your own ECE391 project. This is a violation of academic integrity.
+
+
 ACADEMIC INTEGRITY
 -----
 Please review the University of Illinois Student Code before starting,
